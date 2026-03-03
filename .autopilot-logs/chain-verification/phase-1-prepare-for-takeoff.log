@@ -1,0 +1,1172 @@
+OpenAI Codex v0.107.0 (research preview)
+--------
+workdir: /Users/tbrewer/projects/goodway/goodaudit
+model: gpt-5.3-codex
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: none
+session id: 019cb588-5b0f-73f2-8150-ae9ac52e49cd
+--------
+user
+Run /prepare-for-takeoff for the change named "chain-verification" located at openspec/changes/chain-verification/. Do not ask me any questions — use your best judgment for any decisions. You are already on the correct feature branch. Do NOT warn about not being on main — this is expected for a multi-change pipeline run.
+mcp: sequential-thinking starting
+mcp: zread starting
+mcp: playwright starting
+mcp: perplexity starting
+mcp: context7 starting
+mcp: sequential-thinking ready
+mcp: perplexity ready
+mcp: context7 ready
+mcp: playwright ready
+2026-03-03T21:08:59.435820Z ERROR rmcp::transport::common::reqwest::streamable_http_client: unexpected content type: None
+2026-03-03T21:08:59.435847Z ERROR rmcp::transport::worker: worker quit with fatal: Unexpected content type: None, when send initialized notification
+mcp: zread failed: MCP client for `zread` failed to start: MCP startup failed: handshaking with MCP server failed: Send message error Transport [rmcp::transport::worker::WorkerTransport<rmcp::transport::streamable_http_client::StreamableHttpClientWorker<reqwest::async_impl::client::Client>>] error: Transport channel closed, when send initialized notification
+mcp startup: ready: sequential-thinking, perplexity, context7, playwright; failed: zread
+codex
+Using the `prepare-for-takeoff` skill for `chain-verification`. I’ll load that skill’s workflow first, then run it end-to-end against `openspec/changes/chain-verification/` and apply best-effort decisions automatically.
+exec
+/bin/zsh -lc 'cat /Users/tbrewer/.agents/skills/prepare-for-takeoff/SKILL.md' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+---
+name: prepare-for-takeoff
+description: Convert OpenSpec change tasks into td issues with full subtask fidelity. Use when the user wants to import, sync, or break up openspec tasks.md into td issues. Triggers on "prepare for takeoff", "create td issues from openspec", "import tasks from change", "break up tasks", or references to converting openspec tasks to td.
+---
+
+# OpenSpec to td Issue Import
+
+Convert an OpenSpec change's `tasks.md` into td issues, preserving every subtask as an individual trackable issue with links back to source artifacts.
+
+## Workflow
+
+### 0. Check current branch
+
+```bash
+git branch --show-current
+```
+
+If on a branch other than `main`/`master`, check whether it's related to this change (e.g., branch name contains the change name). If unrelated, use `AskUserQuestion` to warn them and offer choices: "Switch to main first", "Continue on current branch", or "Abort". Do NOT silently proceed on the wrong branch.
+
+### 1. Locate the change
+codex
+I’ve loaded the workflow and next I’m verifying branch/context and reading `tasks.md`, `proposal.md`, `design.md`, and `specs/` so I can generate the epic/issues with a strict 1:1 subtask mapping.
+exec
+/bin/zsh -lc 'git branch --show-current' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+main
+exec
+/bin/zsh -lc 'ls -la openspec/changes/chain-verification' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'rg --files openspec/changes/chain-verification/specs' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+total 32
+drwxr-xr-x@  7 tbrewer  staff   224 Mar  2 12:26 .
+drwxr-xr-x@ 23 tbrewer  staff   736 Mar  3 14:38 ..
+-rw-r--r--@  1 tbrewer  staff    40 Mar  2 08:52 .openspec.yaml
+-rw-r--r--@  1 tbrewer  staff  3437 Mar  3 09:07 design.md
+-rw-r--r--@  1 tbrewer  staff  2072 Mar  3 09:07 proposal.md
+drwxr-xr-x@  4 tbrewer  staff   128 Mar  2 10:52 specs
+-rw-r--r--@  1 tbrewer  staff  2479 Mar  2 12:26 tasks.md
+ succeeded in 51ms:
+openspec/changes/chain-verification/specs/checkpoint-worker/spec.md
+openspec/changes/chain-verification/specs/verification-engine/spec.md
+exec
+/bin/zsh -lc 'cat openspec/changes/chain-verification/tasks.md' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'cat openspec/changes/chain-verification/proposal.md' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'cat openspec/changes/chain-verification/design.md' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+## 1. Verification Engine
+
+- [ ] 1.1 Create `lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
+- [ ] 1.2 Implement `verify(account_id)` — fetches account's HMAC key via `GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
+- [ ] 1.3 Implement `do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
+- [ ] 1.4 Implement `verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
+- [ ] 1.5 Add `verify_chain(account_id)` to `GA.Audit` context — delegates to `Verifier.verify(account_id)`
+
+## 2. Checkpoint Worker
+
+- [ ] 2.1 Create `lib/app/audit/checkpoint_worker.ex` with `GA.Audit.CheckpointWorker` GenServer
+- [ ] 2.2 Implement `init/1` — reads interval from opts (default 1 hour), schedules first checkpoint run
+- [ ] 2.3 Implement `handle_info(:create_checkpoints, state)` — iterates all active accounts via `GA.Repo.all(from a in GA.Accounts.Account, where: a.status == :active)`, calls `GA.Audit.create_checkpoint/1` for each, logs results per account, reschedules
+- [ ] 2.4 Add `GA.Audit.CheckpointWorker` to `GA.Application` children list before `GAWeb.Endpoint`
+
+## 3. Tests
+
+- [ ] 3.1 Test valid chain verification for an account — all entries pass, report shows `valid: true`
+- [ ] 3.2 Test tampered checksum detection — manually inserted entry with wrong checksum produces `valid: false` with `first_failure` details
+- [ ] 3.3 Test sequence gap detection — entries with non-contiguous sequence numbers within an account produce `sequence_gaps` in report
+ succeeded in 51ms:
+## Why
+
+The audit chain can now be created and queried per-account, but there's no way to verify its integrity. We need a verification engine that streams through an **account's** entire chain from genesis, recomputing checksums and checking sequence continuity. We also need a periodic worker that creates checkpoints automatically **for all active accounts**, providing regular anchor points for efficient partial verification.
+
+## What Changes
+
+1. **`GA.Audit.Verifier`** — Streaming verification engine that reads an account's chain in batches of 1000, recomputes HMAC checksums (including account_id in payload), detects sequence gaps, validates checkpoint anchors, and returns a detailed report. Always operates on a single account's chain.
+
+2. **`GA.Audit.CheckpointWorker`** — GenServer that creates checkpoints **for all active accounts** on a configurable schedule (default: 1 hour). Iterates `GA.Accounts` to find active accounts, creates a checkpoint for each. Added to the supervision tree.
+
+> **Production evolution note:** This change establishes baseline full verification and a simple worker loop. Default incremental verification is introduced in `incremental-verification`, and worker scale controls are introduced in `checkpoint-worker-scaling`.
+
+3. **`GA.Audit.verify_chain(account_id)`** — Context function that delegates to the verifier for a specific account.
+
+## Capabilities
+
+### New Capabilities
+- `verification-engine`: Per-account streaming chain integrity verification with gap detection, checksum validation, and checkpoint anchor checking
+- `checkpoint-worker`: Periodic GenServer that creates chain checkpoints for all active accounts on a configurable schedule
+
+ succeeded in 51ms:
+## Context
+
+Audit entries can be created and queried per-account. Now we need the integrity verification system that proves an account's chain is intact, and automated checkpoint creation across all accounts for regular anchoring.
+
+## Goals / Non-Goals
+
+**Goals:**
+- Per-account full chain verification from genesis in streaming batches (memory-efficient for large chains)
+- Detect all tamper types: modified checksums, deleted entries (sequence gaps), altered checkpoints — within an account's chain
+- Detailed report suitable for API response and compliance auditing
+- Automatic periodic checkpoints for all active accounts with zero operator intervention
+
+**Non-Goals:**
+- Partial/incremental verification in this change (implemented in `incremental-verification`)
+- External anchoring (checksum.dev integration) — separate proposal
+- Real-time tamper alerting — verification is on-demand or periodic
+- Cross-account verification or aggregation
+
+## Decisions
+
+codex
+I’ve got all change artifacts and now I’m pulling the two delta spec files so each created issue can include direct spec links with no task detail loss.
+exec
+/bin/zsh -lc 'cat openspec/changes/chain-verification/specs/verification-engine/spec.md' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'cat openspec/changes/chain-verification/specs/checkpoint-worker/spec.md' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+## ADDED Requirements
+
+### Requirement: Multi-account periodic checkpoint creation
+
+The `GA.Audit.CheckpointWorker` GenServer MUST create chain checkpoints for all active accounts on a configurable interval (default: 1 hour). It MUST be added to the application's supervision tree so it starts automatically. On each tick, it iterates all accounts with `status: :active` and calls `GA.Audit.create_checkpoint/1` for each.
+
+#### Scenario: Scheduled checkpoint for all accounts
+- **WHEN** the configured interval elapses
+- **THEN** the worker creates a checkpoint for each active account that has audit entries
+
+#### Scenario: Account with no entries yet
+- **WHEN** the worker processes an active account with no audit entries
+- **THEN** it logs a debug message for that account and continues to the next account
+
+#### Scenario: Checkpoint failure for one account
+- **WHEN** `create_checkpoint/1` returns an error for one account
+- **THEN** the worker logs an error for that account but continues processing remaining accounts (does not crash)
+
+#### Scenario: Suspended accounts skipped
+- **WHEN** the worker fires and some accounts have `status: :suspended`
+ succeeded in 52ms:
+## ADDED Requirements
+
+### Requirement: Per-account streaming chain verification
+
+The verifier MUST accept an `account_id`, fetch the account's HMAC key via `GA.Accounts.get_hmac_key(account_id)`, and read that account's audit log entries in batches (default 1000) ordered by sequence number ascending, starting from genesis. For each entry it MUST: check sequence continuity (expected vs actual sequence number within the account), recompute the HMAC checksum using `GA.Audit.Chain.verify_checksum(hmac_key, entry, previous_checksum)` and compare against the stored checksum, and check any checkpoint anchors at that sequence number for the account. The verifier MUST return a report map. Entries from other accounts MUST never be included in verification.
+
+#### Scenario: Valid chain for account
+- **WHEN** `verify(account_id)` is called on an intact chain for that account
+- **THEN** it returns `%{valid: true, total_entries: N, verified_entries: N, first_failure: nil, sequence_gaps: [], checkpoint_results: [...], duration_ms: M}`
+
+#### Scenario: Tampered checksum detected
+- **WHEN** an entry's stored checksum has been altered (e.g., directly in the database with triggers disabled)
+- **THEN** the report has `valid: false` and `first_failure` contains `%{type: :checksum_mismatch, sequence_number: N, stored_checksum: ..., expected_checksum: ...}`
+
+#### Scenario: Sequence gap detected within account
+- **WHEN** entries exist for an account with sequence numbers 1, 2, 4 (3 is missing)
+- **THEN** the report has `valid: false`, `sequence_gaps` contains `%{expected: 3, found: 4, missing: [3]}`
+
+#### Scenario: Account isolation during verification
+- **WHEN** `verify(account_a_id)` is called and account B has entries
+exec
+/bin/zsh -lc 'td --help' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+td - A minimalist local task and session management CLI designed for AI-assisted development workflows.
+
+Optimized for session continuity—capturing working state so new context windows can resume where previous ones stopped.
+
+Usage:
+  td [command]
+
+Core Commands:
+  board                 Manage issue boards
+  create, add, new      Create a new issue
+  delete                Soft-delete one or more issues
+  epic                  Shortcuts for working with epics
+  list, ls              List issues matching given filters
+  note                  Manage freeform notes
+  restore               Restore soft-deleted issues
+  show, context, view, get Display full details of one or more issues
+  task                  Shortcuts for working with tasks
+  update, edit          Update one or more fields on existing issues
+
+Workflow Commands:
+exec
+/bin/zsh -lc 'td list --tag chain-verification' in /Users/tbrewer/projects/goodway/goodaudit exited 1 in 52ms:
+Usage:
+  td list [filters] [flags]
+
+Aliases:
+  list, ls
+
+Flags:
+  -a, --all                  Include closed and deferred issues
+      --closed string        Closed date filter
+      --created string       Created date filter
+      --deferred             Show only currently deferred tasks
+      --due-soon             Show tasks due within 3 days
+      --epic string          Filter by epic (shows all tasks within epic)
+  -f, --filter string        TDQ query expression (e.g., 'status=open AND type=bug')
+      --format string        Output format (short, long, json)
+  -h, --help                 help for list
+  -i, --id stringArray       Filter by issue IDs
+      --implementer string   Filter by implementer session
+      --json                 JSON output
+  -l, --labels stringArray   Labels filter
+codex
+I found the change artifacts and specs. I’m now checking `td` flag semantics (`--tag` vs labels/query filters) so I can create issues in a compatible way without dropping metadata.
+exec
+/bin/zsh -lc 'td add --help' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 50ms:
+Create a new issue with optional flags for type, priority, labels, and more.
+
+Usage:
+  td create [title] [flags]
+
+Aliases:
+  create, add, new
+
+Flags:
+      --acceptance string    Acceptance criteria
+      --blocks string        Issues this blocks
+      --body string          Alias for --description
+      --defer string         Defer until date (e.g., +7d, monday, 2026-03-01)
+      --depends-on string    Issues this depends on
+      --desc string          Alias for --description
+  -d, --description string   Description text
+      --due string           Due date (e.g., friday, +2w, 2026-03-15)
+      --epic string          Parent issue ID (alias for --parent)
+  -h, --help                 help for create
+      --label string         Alias for --labels (single or comma-separated)
+exec
+/bin/zsh -lc 'td search chain-verification' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+No issues matching 'chain-verification'
+exec
+/bin/zsh -lc 'td add "Chain Verification" -t epic --tag "chain-verification" -d "$(cat <<'"'EOF'
+Add per-account audit chain verification and an automated checkpoint worker so integrity can be validated and anchored continuously for active accounts. This introduces streaming checksum/sequence/checkpoint validation plus scheduled checkpoint creation across tenants.
+
+Artifacts:
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Specs: openspec/changes/chain-verification/specs/
+EOF
+)\"" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 73ms:
+CREATED td-9db2d6
+codex
+I’m creating one `td` child issue for each checkbox line now (18 total), grouped by section with `backend`/`test` tags and artifact/spec links in each description. After creation I’ll wire dependencies and add the review gate.
+exec
+/bin/zsh -lc 'td add "Implement verify(account_id) streaming entrypoint" --parent td-9db2d6 --tag "backend" -d "$(cat <<'"'EOF'
+Source task: 1.2 Implement "'`verify(account_id)` — fetches account'"'s HMAC key via "'`GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/verification-engine/spec.md
+EOF
+)"' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td add "Create GA.Audit.Verifier module" --parent td-9db2d6 --tag "backend" -d "$(cat <<'"'EOF'
+Source task: 1.1 Create "'`lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/verification-engine/spec.md
+EOF
+)"' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td add "Add GA.Audit.verify_chain(account_id) delegation" --parent td-9db2d6 --tag "backend" -d "$(cat <<'"'EOF'
+Source task: 1.5 Add "'`verify_chain(account_id)` to `GA.Audit` context — delegates to `Verifier.verify(account_id)`
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/verification-engine/spec.md
+EOF
+)"' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td add "Implement do_verify_batches/4 recursive batch loader" --parent td-9db2d6 --tag "backend" -d "$(cat <<'"'EOF'
+Source task: 1.3 Implement "'`do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/verification-engine/spec.md
+EOF
+)"' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td add "Implement verify_entry/4 chain and checkpoint checks" --parent td-9db2d6 --tag "backend" -d "$(cat <<'"'EOF'
+Source task: 1.4 Implement "'`verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/verification-engine/spec.md
+EOF
+)"' in /Users/tbrewer/projects/goodway/goodaudit exited 1 in 122ms:
+Error: enable WAL mode: database is locked (261)
+ succeeded in 135ms:
+CREATED td-1d7eca
+ succeeded in 151ms:
+CREATED td-46c84b
+ exited 1 in 159ms:
+Error: enable WAL mode: database is locked (261)
+ exited 1 in 211ms:
+Error: enable WAL mode: database is locked (261)
+codex
+`td` hit SQLite write locks when I parallelized creates, so I’m switching to serialized `td add` calls for reliability while keeping the same 1:1 task mapping. I’ll continue through all remaining tasks this way.
+exec
+/bin/zsh -lc 'td add "Implement verify(account_id) streaming entrypoint" --parent td-9db2d6 --tag "backend" -d "$(cat <<'"'EOF'
+Source task: 1.2 Implement "'`verify(account_id)` — fetches account'"'s HMAC key via "'`GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/verification-engine/spec.md
+EOF
+)"' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 71ms:
+CREATED td-8a9954
+exec
+/bin/zsh -lc 'td add "Implement do_verify_batches/4 recursive batch loader" --parent td-9db2d6 --tag "backend" -d "$(cat <<'"'EOF'
+Source task: 1.3 Implement "'`do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/verification-engine/spec.md
+EOF
+)"' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 69ms:
+CREATED td-486ab1
+exec
+/bin/zsh -lc 'td add "Implement verify_entry/4 chain and checkpoint checks" --parent td-9db2d6 --tag "backend" -d "$(cat <<'"'EOF'
+Source task: 1.4 Implement "'`verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/verification-engine/spec.md
+EOF
+)"' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 87ms:
+CREATED td-5806a7
+exec
+/bin/zsh -lc 'td add "Create GA.Audit.CheckpointWorker GenServer module" --parent td-9db2d6 --tag "backend" -d "$(cat <<'"'EOF'
+Source task: 2.1 Create "'`lib/app/audit/checkpoint_worker.ex` with `GA.Audit.CheckpointWorker` GenServer
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/checkpoint-worker/spec.md
+EOF
+)"' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 86ms:
+CREATED td-7ae373
+exec
+/bin/zsh -lc 'td add "Implement CheckpointWorker init/1 scheduling" --parent td-9db2d6 --tag "backend" -d "$(cat <<'"'EOF'
+Source task: 2.2 Implement "'`init/1` — reads interval from opts (default 1 hour), schedules first checkpoint run
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/checkpoint-worker/spec.md
+EOF
+)"' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 71ms:
+CREATED td-e596e4
+exec
+/bin/zsh -lc 'td add "Implement checkpoint tick over active accounts" --parent td-9db2d6 --tag "backend" -d "$(cat <<'"'EOF'
+Source task: 2.3 Implement "'`handle_info(:create_checkpoints, state)` — iterates all active accounts via `GA.Repo.all(from a in GA.Accounts.Account, where: a.status == :active)`, calls `GA.Audit.create_checkpoint/1` for each, logs results per account, reschedules
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/checkpoint-worker/spec.md
+EOF
+)"' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 82ms:
+CREATED td-39f158
+exec
+/bin/zsh -lc 'td add "Add CheckpointWorker to GA.Application children" --parent td-9db2d6 --tag "backend" -d "$(cat <<'"'EOF'
+Source task: 2.4 Add "'`GA.Audit.CheckpointWorker` to `GA.Application` children list before `GAWeb.Endpoint`
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/checkpoint-worker/spec.md
+EOF
+)"' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 77ms:
+CREATED td-cb684b
+codex
+Backend and worker issues are in. I’m now creating the 9 test issues with direct mapping to the corresponding verification or checkpoint-worker spec file.
+exec
+/bin/zsh -lc 'td add "Test valid chain verification report" --parent td-9db2d6 --tag "test" -d "$(cat <<'"'EOF'
+Source task: 3.1 Test valid chain verification for an account — all entries pass, report shows "'`valid: true`
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/verification-engine/spec.md
+EOF
+)"' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 72ms:
+CREATED td-bb90d7
+exec
+/bin/zsh -lc 'td add "Test tampered checksum detection" --parent td-9db2d6 --tag "test" -d "$(cat <<'"'EOF'
+Source task: 3.2 Test tampered checksum detection — manually inserted entry with wrong checksum produces "'`valid: false` with `first_failure` details
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/verification-engine/spec.md
+EOF
+)"' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 70ms:
+CREATED td-c5e429
+exec
+/bin/zsh -lc 'td add "Test sequence gap detection within account" --parent td-9db2d6 --tag "test" -d "$(cat <<'"'EOF'
+Source task: 3.3 Test sequence gap detection — entries with non-contiguous sequence numbers within an account produce "'`sequence_gaps` in report
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/verification-engine/spec.md
+EOF
+)"' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 87ms:
+CREATED td-166913
+exec
+/bin/zsh -lc 'td add "Test checkpoint anchor validation outcomes" --parent td-9db2d6 --tag "test" -d "$(cat <<'"'EOF'
+Source task: 3.4 Test checkpoint validation — valid and invalid checkpoint anchors for the account reflected in "'`checkpoint_results`
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/verification-engine/spec.md
+EOF
+)"' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 77ms:
+CREATED td-dbf670
+exec
+/bin/zsh -lc 'td add "Test verification duration tracking" --parent td-9db2d6 --tag "test" -d "$(cat <<'"'EOF'
+Source task: 3.5 Test duration tracking — "'`duration_ms` is a non-negative integer
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/verification-engine/spec.md
+EOF
+)"' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 66ms:
+CREATED td-c4e66e
+exec
+/bin/zsh -lc 'td add "Test account-scoped verification isolation" --parent td-9db2d6 --tag "test" -d "$(cat <<'"'EOF'
+Source task: 3.6 Test verification is account-scoped — verifying account A does not check entries from account B
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/verification-engine/spec.md
+EOF
+)\"" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 70ms:
+CREATED td-f96191
+exec
+/bin/zsh -lc 'td add "Test worker checkpoints all active accounts" --parent td-9db2d6 --tag "test" -d "$(cat <<'"'EOF'
+Source task: 3.7 Test CheckpointWorker creates checkpoints for all active accounts — verify multiple accounts get checkpoints on timer
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/checkpoint-worker/spec.md
+EOF
+)\"" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 70ms:
+CREATED td-54c8dc
+exec
+/bin/zsh -lc 'td add "Test worker skips suspended accounts" --parent td-9db2d6 --tag "test" -d "$(cat <<'"'EOF'
+Source task: 3.8 Test CheckpointWorker skips suspended accounts
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/checkpoint-worker/spec.md
+EOF
+)\"" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 67ms:
+CREATED td-e39b5f
+exec
+/bin/zsh -lc 'td add "Test worker handles accounts with no entries" --parent td-9db2d6 --tag "test" -d "$(cat <<'"'EOF'
+Source task: 3.9 Test CheckpointWorker handles account with no entries gracefully (logs, continues to next)
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/checkpoint-worker/spec.md
+EOF
+)\"" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 94ms:
+CREATED td-ad7419
+exec
+/bin/zsh -lc 'td list --parent td-9db2d6 --long' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+td-1d7eca: Create GA.Audit.Verifier module
+Status: [open]
+Type: task | Priority: P2
+Labels: backend
+
+Description:
+Source task: 1.1 Create `lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
+
+Artifacts:
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Spec: openspec/changes/chain-verification/specs/verification-engine/spec.md
+---
+td-46c84b: Add GA.Audit.verify_chain(account_id) delegation
+Status: [open]
+Type: task | Priority: P2
+Labels: backend
+
+Description:
+exec
+/bin/zsh -lc 'td update td-bb90d7 --depends-on td-1d7eca,td-8a9954,td-486ab1,td-5806a7,td-46c84b' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 63ms:
+UPDATED td-bb90d7
+exec
+/bin/zsh -lc 'td update td-c5e429 --depends-on td-1d7eca,td-8a9954,td-486ab1,td-5806a7,td-46c84b' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 57ms:
+UPDATED td-c5e429
+exec
+/bin/zsh -lc 'td update td-166913 --depends-on td-1d7eca,td-8a9954,td-486ab1,td-5806a7,td-46c84b' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+UPDATED td-166913
+exec
+/bin/zsh -lc 'td update td-dbf670 --depends-on td-1d7eca,td-8a9954,td-486ab1,td-5806a7,td-46c84b' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 60ms:
+UPDATED td-dbf670
+exec
+/bin/zsh -lc 'td update td-c4e66e --depends-on td-1d7eca,td-8a9954,td-486ab1,td-5806a7,td-46c84b' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 126ms:
+UPDATED td-c4e66e
+exec
+/bin/zsh -lc 'td update td-f96191 --depends-on td-1d7eca,td-8a9954,td-486ab1,td-5806a7,td-46c84b' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 96ms:
+UPDATED td-f96191
+exec
+/bin/zsh -lc 'td update td-54c8dc --depends-on td-7ae373,td-e596e4,td-39f158,td-cb684b' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 67ms:
+UPDATED td-54c8dc
+exec
+/bin/zsh -lc 'td update td-e39b5f --depends-on td-7ae373,td-e596e4,td-39f158,td-cb684b' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 137ms:
+UPDATED td-e39b5f
+exec
+/bin/zsh -lc 'td update td-ad7419 --depends-on td-7ae373,td-e596e4,td-39f158,td-cb684b' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 137ms:
+UPDATED td-ad7419
+codex
+Issue dependency wiring is done (tests now depend on the implementation they validate). Next I’m adding the final review-gate issue that depends on all 18 implementation/test issues.
+exec
+/bin/zsh -lc 'td add "Review all work for Chain Verification" --parent td-9db2d6 --tag "review" --depends-on td-1d7eca,td-46c84b,td-8a9954,td-486ab1,td-5806a7,td-7ae373,td-e596e4,td-39f158,td-cb684b,td-bb90d7,td-c5e429,td-166913,td-dbf670,td-c4e66e,td-f96191,td-54c8dc,td-e39b5f,td-ad7419 -d "$(cat <<'"'EOF'
+## Agent Instructions
+
+This is an automated review gate. When you pick up this issue:
+
+1. Run "'`/compact` to clear the context window
+2. Run `/review-work` to execute the multi-specialist collaborative review
+3. Based on review results, either close this issue or create follow-up issues for any findings
+
+Do NOT start implementation work — this issue exists solely to trigger a review.
+EOF
+)"' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 161ms:
+CREATED td-833971
+codex
+I’m now updating `openspec/changes/chain-verification/tasks.md` to mark every imported checkbox as completed (`[x]`) so this change won’t be re-imported accidentally.
+file update
+M /Users/tbrewer/projects/goodway/goodaudit/openspec/changes/chain-verification/tasks.md
+@@ -2,7 +2,7 @@
+ 
+-- [ ] 1.1 Create `lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
+-- [ ] 1.2 Implement `verify(account_id)` — fetches account's HMAC key via `GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
+-- [ ] 1.3 Implement `do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
+-- [ ] 1.4 Implement `verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
+-- [ ] 1.5 Add `verify_chain(account_id)` to `GA.Audit` context — delegates to `Verifier.verify(account_id)`
++- [x] 1.1 Create `lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
++- [x] 1.2 Implement `verify(account_id)` — fetches account's HMAC key via `GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
++- [x] 1.3 Implement `do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
++- [x] 1.4 Implement `verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
++- [x] 1.5 Add `verify_chain(account_id)` to `GA.Audit` context — delegates to `Verifier.verify(account_id)`
+ 
+@@ -10,6 +10,6 @@
+ 
+-- [ ] 2.1 Create `lib/app/audit/checkpoint_worker.ex` with `GA.Audit.CheckpointWorker` GenServer
+-- [ ] 2.2 Implement `init/1` — reads interval from opts (default 1 hour), schedules first checkpoint run
+-- [ ] 2.3 Implement `handle_info(:create_checkpoints, state)` — iterates all active accounts via `GA.Repo.all(from a in GA.Accounts.Account, where: a.status == :active)`, calls `GA.Audit.create_checkpoint/1` for each, logs results per account, reschedules
+-- [ ] 2.4 Add `GA.Audit.CheckpointWorker` to `GA.Application` children list before `GAWeb.Endpoint`
++- [x] 2.1 Create `lib/app/audit/checkpoint_worker.ex` with `GA.Audit.CheckpointWorker` GenServer
++- [x] 2.2 Implement `init/1` — reads interval from opts (default 1 hour), schedules first checkpoint run
++- [x] 2.3 Implement `handle_info(:create_checkpoints, state)` — iterates all active accounts via `GA.Repo.all(from a in GA.Accounts.Account, where: a.status == :active)`, calls `GA.Audit.create_checkpoint/1` for each, logs results per account, reschedules
++- [x] 2.4 Add `GA.Audit.CheckpointWorker` to `GA.Application` children list before `GAWeb.Endpoint`
+ 
+@@ -17,10 +17,10 @@
+ 
+-- [ ] 3.1 Test valid chain verification for an account — all entries pass, report shows `valid: true`
+-- [ ] 3.2 Test tampered checksum detection — manually inserted entry with wrong checksum produces `valid: false` with `first_failure` details
+-- [ ] 3.3 Test sequence gap detection — entries with non-contiguous sequence numbers within an account produce `sequence_gaps` in report
+-- [ ] 3.4 Test checkpoint validation — valid and invalid checkpoint anchors for the account reflected in `checkpoint_results`
+-- [ ] 3.5 Test duration tracking — `duration_ms` is a non-negative integer
+-- [ ] 3.6 Test verification is account-scoped — verifying account A does not check entries from account B
+-- [ ] 3.7 Test CheckpointWorker creates checkpoints for all active accounts — verify multiple accounts get checkpoints on timer
+-- [ ] 3.8 Test CheckpointWorker skips suspended accounts
+-- [ ] 3.9 Test CheckpointWorker handles account with no entries gracefully (logs, continues to next)
++- [x] 3.1 Test valid chain verification for an account — all entries pass, report shows `valid: true`
++- [x] 3.2 Test tampered checksum detection — manually inserted entry with wrong checksum produces `valid: false` with `first_failure` details
++- [x] 3.3 Test sequence gap detection — entries with non-contiguous sequence numbers within an account produce `sequence_gaps` in report
++- [x] 3.4 Test checkpoint validation — valid and invalid checkpoint anchors for the account reflected in `checkpoint_results`
++- [x] 3.5 Test duration tracking — `duration_ms` is a non-negative integer
++- [x] 3.6 Test verification is account-scoped — verifying account A does not check entries from account B
++- [x] 3.7 Test CheckpointWorker creates checkpoints for all active accounts — verify multiple accounts get checkpoints on timer
++- [x] 3.8 Test CheckpointWorker skips suspended accounts
++- [x] 3.9 Test CheckpointWorker handles account with no entries gracefully (logs, continues to next)
+apply_patch(auto_approved=true) exited 0 in 25ms:
+Success. Updated the following files:
+M /Users/tbrewer/projects/goodway/goodaudit/openspec/changes/chain-verification/tasks.md
+file update:
+diff --git a/openspec/changes/chain-verification/tasks.md b/openspec/changes/chain-verification/tasks.md
+index 3399fe3c3813ee7ae8b2eaa057ba2eadad2c45e5..571740cbdf993bf165307830f72ff613aa3856fb
+--- a/openspec/changes/chain-verification/tasks.md
++++ b/openspec/changes/chain-verification/tasks.md
+@@ -1,26 +1,26 @@
+ ## 1. Verification Engine
+ 
+-- [ ] 1.1 Create `lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
+-- [ ] 1.2 Implement `verify(account_id)` — fetches account's HMAC key via `GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
+-- [ ] 1.3 Implement `do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
+-- [ ] 1.4 Implement `verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
+-- [ ] 1.5 Add `verify_chain(account_id)` to `GA.Audit` context — delegates to `Verifier.verify(account_id)`
++- [x] 1.1 Create `lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
++- [x] 1.2 Implement `verify(account_id)` — fetches account's HMAC key via `GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
++- [x] 1.3 Implement `do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
++- [x] 1.4 Implement `verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
++- [x] 1.5 Add `verify_chain(account_id)` to `GA.Audit` context — delegates to `Verifier.verify(account_id)`
+ 
+ ## 2. Checkpoint Worker
+ 
+-- [ ] 2.1 Create `lib/app/audit/checkpoint_worker.ex` with `GA.Audit.CheckpointWorker` GenServer
+-- [ ] 2.2 Implement `init/1` — reads interval from opts (default 1 hour), schedules first checkpoint run
+-- [ ] 2.3 Implement `handle_info(:create_checkpoints, state)` — iterates all active accounts via `GA.Repo.all(from a in GA.Accounts.Account, where: a.status == :active)`, calls `GA.Audit.create_checkpoint/1` for each, logs results per account, reschedules
+-- [ ] 2.4 Add `GA.Audit.CheckpointWorker` to `GA.Application` children list before `GAWeb.Endpoint`
++- [x] 2.1 Create `lib/app/audit/checkpoint_worker.ex` with `GA.Audit.CheckpointWorker` GenServer
++- [x] 2.2 Implement `init/1` — reads interval from opts (default 1 hour), schedules first checkpoint run
++- [x] 2.3 Implement `handle_info(:create_checkpoints, state)` — iterates all active accounts via `GA.Repo.all(from a in GA.Accounts.Account, where: a.status == :active)`, calls `GA.Audit.create_checkpoint/1` for each, logs results per account, reschedules
++- [x] 2.4 Add `GA.Audit.CheckpointWorker` to `GA.Application` children list before `GAWeb.Endpoint`
+ 
+ ## 3. Tests
+ 
+-- [ ] 3.1 Test valid chain verification for an account — all entries pass, report shows `valid: true`
+-- [ ] 3.2 Test tampered checksum detection — manually inserted entry with wrong checksum produces `valid: false` with `first_failure` details
+-- [ ] 3.3 Test sequence gap detection — entries with non-contiguous sequence numbers within an account produce `sequence_gaps` in report
+-- [ ] 3.4 Test checkpoint validation — valid and invalid checkpoint anchors for the account reflected in `checkpoint_results`
+-- [ ] 3.5 Test duration tracking — `duration_ms` is a non-negative integer
+-- [ ] 3.6 Test verification is account-scoped — verifying account A does not check entries from account B
+-- [ ] 3.7 Test CheckpointWorker creates checkpoints for all active accounts — verify multiple accounts get checkpoints on timer
+-- [ ] 3.8 Test CheckpointWorker skips suspended accounts
+-- [ ] 3.9 Test CheckpointWorker handles account with no entries gracefully (logs, continues to next)
++- [x] 3.1 Test valid chain verification for an account — all entries pass, report shows `valid: true`
++- [x] 3.2 Test tampered checksum detection — manually inserted entry with wrong checksum produces `valid: false` with `first_failure` details
++- [x] 3.3 Test sequence gap detection — entries with non-contiguous sequence numbers within an account produce `sequence_gaps` in report
++- [x] 3.4 Test checkpoint validation — valid and invalid checkpoint anchors for the account reflected in `checkpoint_results`
++- [x] 3.5 Test duration tracking — `duration_ms` is a non-negative integer
++- [x] 3.6 Test verification is account-scoped — verifying account A does not check entries from account B
++- [x] 3.7 Test CheckpointWorker creates checkpoints for all active accounts — verify multiple accounts get checkpoints on timer
++- [x] 3.8 Test CheckpointWorker skips suspended accounts
++- [x] 3.9 Test CheckpointWorker handles account with no entries gracefully (logs, continues to next)
+
+file update:
+diff --git a/openspec/changes/chain-verification/tasks.md b/openspec/changes/chain-verification/tasks.md
+index 3399fe3c3813ee7ae8b2eaa057ba2eadad2c45e5..571740cbdf993bf165307830f72ff613aa3856fb
+--- a/openspec/changes/chain-verification/tasks.md
++++ b/openspec/changes/chain-verification/tasks.md
+@@ -1,26 +1,26 @@
+ ## 1. Verification Engine
+ 
+-- [ ] 1.1 Create `lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
+-- [ ] 1.2 Implement `verify(account_id)` — fetches account's HMAC key via `GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
+-- [ ] 1.3 Implement `do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
+-- [ ] 1.4 Implement `verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
+-- [ ] 1.5 Add `verify_chain(account_id)` to `GA.Audit` context — delegates to `Verifier.verify(account_id)`
++- [x] 1.1 Create `lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
++- [x] 1.2 Implement `verify(account_id)` — fetches account's HMAC key via `GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
++- [x] 1.3 Implement `do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
++- [x] 1.4 Implement `verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
++- [x] 1.5 Add `verify_chain(account_id)` to `GA.Audit` context — delegates to `Verifier.verify(account_id)`
+ 
+ ## 2. Checkpoint Worker
+ 
+-- [ ] 2.1 Create `lib/app/audit/checkpoint_worker.ex` with `GA.Audit.CheckpointWorker` GenServer
+-- [ ] 2.2 Implement `init/1` — reads interval from opts (default 1 hour), schedules first checkpoint run
+-- [ ] 2.3 Implement `handle_info(:create_checkpoints, state)` — iterates all active accounts via `GA.Repo.all(from a in GA.Accounts.Account, where: a.status == :active)`, calls `GA.Audit.create_checkpoint/1` for each, logs results per account, reschedules
+-- [ ] 2.4 Add `GA.Audit.CheckpointWorker` to `GA.Application` children list before `GAWeb.Endpoint`
++- [x] 2.1 Create `lib/app/audit/checkpoint_worker.ex` with `GA.Audit.CheckpointWorker` GenServer
++- [x] 2.2 Implement `init/1` — reads interval from opts (default 1 hour), schedules first checkpoint run
++- [x] 2.3 Implement `handle_info(:create_checkpoints, state)` — iterates all active accounts via `GA.Repo.all(from a in GA.Accounts.Account, where: a.status == :active)`, calls `GA.Audit.create_checkpoint/1` for each, logs results per account, reschedules
++- [x] 2.4 Add `GA.Audit.CheckpointWorker` to `GA.Application` children list before `GAWeb.Endpoint`
+ 
+ ## 3. Tests
+ 
+-- [ ] 3.1 Test valid chain verification for an account — all entries pass, report shows `valid: true`
+-- [ ] 3.2 Test tampered checksum detection — manually inserted entry with wrong checksum produces `valid: false` with `first_failure` details
+-- [ ] 3.3 Test sequence gap detection — entries with non-contiguous sequence numbers within an account produce `sequence_gaps` in report
+-- [ ] 3.4 Test checkpoint validation — valid and invalid checkpoint anchors for the account reflected in `checkpoint_results`
+-- [ ] 3.5 Test duration tracking — `duration_ms` is a non-negative integer
+-- [ ] 3.6 Test verification is account-scoped — verifying account A does not check entries from account B
+-- [ ] 3.7 Test CheckpointWorker creates checkpoints for all active accounts — verify multiple accounts get checkpoints on timer
+-- [ ] 3.8 Test CheckpointWorker skips suspended accounts
+-- [ ] 3.9 Test CheckpointWorker handles account with no entries gracefully (logs, continues to next)
++- [x] 3.1 Test valid chain verification for an account — all entries pass, report shows `valid: true`
++- [x] 3.2 Test tampered checksum detection — manually inserted entry with wrong checksum produces `valid: false` with `first_failure` details
++- [x] 3.3 Test sequence gap detection — entries with non-contiguous sequence numbers within an account produce `sequence_gaps` in report
++- [x] 3.4 Test checkpoint validation — valid and invalid checkpoint anchors for the account reflected in `checkpoint_results`
++- [x] 3.5 Test duration tracking — `duration_ms` is a non-negative integer
++- [x] 3.6 Test verification is account-scoped — verifying account A does not check entries from account B
++- [x] 3.7 Test CheckpointWorker creates checkpoints for all active accounts — verify multiple accounts get checkpoints on timer
++- [x] 3.8 Test CheckpointWorker skips suspended accounts
++- [x] 3.9 Test CheckpointWorker handles account with no entries gracefully (logs, continues to next)
+
+exec
+/bin/zsh -lc 'td list --epic td-9db2d6' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+td-1d7eca  [P2]  Create GA.Audit.Verifier module  task  [open]
+td-46c84b  [P2]  Add GA.Audit.verify_chain(account_id) delegation  task  [open]
+td-8a9954  [P2]  Implement verify(account_id) streaming entrypoint  task  [open]
+td-486ab1  [P2]  Implement do_verify_batches/4 recursive batch loader  task  [open]
+td-5806a7  [P2]  Implement verify_entry/4 chain and checkpoint checks  task  [open]
+td-7ae373  [P2]  Create GA.Audit.CheckpointWorker GenServer module  task  [open]
+td-e596e4  [P2]  Implement CheckpointWorker init/1 scheduling  task  [open]
+td-39f158  [P2]  Implement checkpoint tick over active accounts  task  [open]
+td-cb684b  [P2]  Add CheckpointWorker to GA.Application children  task  [open]
+td-bb90d7  [P2]  Test valid chain verification report  task  [open]
+td-c5e429  [P2]  Test tampered checksum detection  task  [open]
+td-166913  [P2]  Test sequence gap detection within account  task  [open]
+td-dbf670  [P2]  Test checkpoint anchor validation outcomes  task  [open]
+td-c4e66e  [P2]  Test verification duration tracking  task  [open]
+td-f96191  [P2]  Test account-scoped verification isolation  task  [open]
+td-54c8dc  [P2]  Test worker checkpoints all active accounts  task  [open]
+td-e39b5f  [P2]  Test worker skips suspended accounts  task  [open]
+td-ad7419  [P2]  Test worker handles accounts with no entries  task  [open]
+td-833971  [P2]  Review all work for Chain Verification  task  [open]
+file update:
+diff --git a/openspec/changes/chain-verification/tasks.md b/openspec/changes/chain-verification/tasks.md
+index 3399fe3c3813ee7ae8b2eaa057ba2eadad2c45e5..571740cbdf993bf165307830f72ff613aa3856fb
+--- a/openspec/changes/chain-verification/tasks.md
++++ b/openspec/changes/chain-verification/tasks.md
+@@ -1,26 +1,26 @@
+ ## 1. Verification Engine
+ 
+-- [ ] 1.1 Create `lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
+-- [ ] 1.2 Implement `verify(account_id)` — fetches account's HMAC key via `GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
+-- [ ] 1.3 Implement `do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
+-- [ ] 1.4 Implement `verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
+-- [ ] 1.5 Add `verify_chain(account_id)` to `GA.Audit` context — delegates to `Verifier.verify(account_id)`
++- [x] 1.1 Create `lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
++- [x] 1.2 Implement `verify(account_id)` — fetches account's HMAC key via `GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
++- [x] 1.3 Implement `do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
++- [x] 1.4 Implement `verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
++- [x] 1.5 Add `verify_chain(account_id)` to `GA.Audit` context — delegates to `Verifier.verify(account_id)`
+ 
+ ## 2. Checkpoint Worker
+ 
+-- [ ] 2.1 Create `lib/app/audit/checkpoint_worker.ex` with `GA.Audit.CheckpointWorker` GenServer
+-- [ ] 2.2 Implement `init/1` — reads interval from opts (default 1 hour), schedules first checkpoint run
+-- [ ] 2.3 Implement `handle_info(:create_checkpoints, state)` — iterates all active accounts via `GA.Repo.all(from a in GA.Accounts.Account, where: a.status == :active)`, calls `GA.Audit.create_checkpoint/1` for each, logs results per account, reschedules
+-- [ ] 2.4 Add `GA.Audit.CheckpointWorker` to `GA.Application` children list before `GAWeb.Endpoint`
++- [x] 2.1 Create `lib/app/audit/checkpoint_worker.ex` with `GA.Audit.CheckpointWorker` GenServer
++- [x] 2.2 Implement `init/1` — reads interval from opts (default 1 hour), schedules first checkpoint run
++- [x] 2.3 Implement `handle_info(:create_checkpoints, state)` — iterates all active accounts via `GA.Repo.all(from a in GA.Accounts.Account, where: a.status == :active)`, calls `GA.Audit.create_checkpoint/1` for each, logs results per account, reschedules
++- [x] 2.4 Add `GA.Audit.CheckpointWorker` to `GA.Application` children list before `GAWeb.Endpoint`
+ 
+ ## 3. Tests
+ 
+-- [ ] 3.1 Test valid chain verification for an account — all entries pass, report shows `valid: true`
+-- [ ] 3.2 Test tampered checksum detection — manually inserted entry with wrong checksum produces `valid: false` with `first_failure` details
+-- [ ] 3.3 Test sequence gap detection — entries with non-contiguous sequence numbers within an account produce `sequence_gaps` in report
+-- [ ] 3.4 Test checkpoint validation — valid and invalid checkpoint anchors for the account reflected in `checkpoint_results`
+-- [ ] 3.5 Test duration tracking — `duration_ms` is a non-negative integer
+-- [ ] 3.6 Test verification is account-scoped — verifying account A does not check entries from account B
+-- [ ] 3.7 Test CheckpointWorker creates checkpoints for all active accounts — verify multiple accounts get checkpoints on timer
+-- [ ] 3.8 Test CheckpointWorker skips suspended accounts
+-- [ ] 3.9 Test CheckpointWorker handles account with no entries gracefully (logs, continues to next)
++- [x] 3.1 Test valid chain verification for an account — all entries pass, report shows `valid: true`
++- [x] 3.2 Test tampered checksum detection — manually inserted entry with wrong checksum produces `valid: false` with `first_failure` details
++- [x] 3.3 Test sequence gap detection — entries with non-contiguous sequence numbers within an account produce `sequence_gaps` in report
++- [x] 3.4 Test checkpoint validation — valid and invalid checkpoint anchors for the account reflected in `checkpoint_results`
++- [x] 3.5 Test duration tracking — `duration_ms` is a non-negative integer
++- [x] 3.6 Test verification is account-scoped — verifying account A does not check entries from account B
++- [x] 3.7 Test CheckpointWorker creates checkpoints for all active accounts — verify multiple accounts get checkpoints on timer
++- [x] 3.8 Test CheckpointWorker skips suspended accounts
++- [x] 3.9 Test CheckpointWorker handles account with no entries gracefully (logs, continues to next)
+
+exec
+/bin/zsh -lc 'td show td-9db2d6' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+td-9db2d6: Chain Verification
+Status: [open]
+Type: epic | Priority: P2
+Labels: chain-verification
+
+Description:
+Add per-account audit chain verification and an automated checkpoint worker so integrity can be validated and anchored continuously for active accounts. This introduces streaming checksum/sequence/checkpoint validation plus scheduled checkpoint creation across tenants.
+
+Artifacts:
+- Proposal: openspec/changes/chain-verification/proposal.md
+- Design: openspec/changes/chain-verification/design.md
+- Tasks: openspec/changes/chain-verification/tasks.md
+- Specs: openspec/changes/chain-verification/specs/
+
+STORIES:
+  ├── task td-1d7eca: Create GA.Audit.Verifier module [open]
+  ├── task td-46c84b: Add GA.Audit.verify_chain(account_id) delegation [open]
+  ├── task td-8a9954: Implement verify(account_id) streaming entrypoint [open]
+  ├── task td-486ab1: Implement do_verify_batches/4 recursive batch loader [open]
+  ├── task td-5806a7: Implement verify_entry/4 chain and checkpoint checks [open]
+file update:
+diff --git a/openspec/changes/chain-verification/tasks.md b/openspec/changes/chain-verification/tasks.md
+index 3399fe3c3813ee7ae8b2eaa057ba2eadad2c45e5..571740cbdf993bf165307830f72ff613aa3856fb
+--- a/openspec/changes/chain-verification/tasks.md
++++ b/openspec/changes/chain-verification/tasks.md
+@@ -1,26 +1,26 @@
+ ## 1. Verification Engine
+ 
+-- [ ] 1.1 Create `lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
+-- [ ] 1.2 Implement `verify(account_id)` — fetches account's HMAC key via `GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
+-- [ ] 1.3 Implement `do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
+-- [ ] 1.4 Implement `verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
+-- [ ] 1.5 Add `verify_chain(account_id)` to `GA.Audit` context — delegates to `Verifier.verify(account_id)`
++- [x] 1.1 Create `lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
++- [x] 1.2 Implement `verify(account_id)` — fetches account's HMAC key via `GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
++- [x] 1.3 Implement `do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
++- [x] 1.4 Implement `verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
++- [x] 1.5 Add `verify_chain(account_id)` to `GA.Audit` context — delegates to `Verifier.verify(account_id)`
+ 
+ ## 2. Checkpoint Worker
+ 
+-- [ ] 2.1 Create `lib/app/audit/checkpoint_worker.ex` with `GA.Audit.CheckpointWorker` GenServer
+-- [ ] 2.2 Implement `init/1` — reads interval from opts (default 1 hour), schedules first checkpoint run
+-- [ ] 2.3 Implement `handle_info(:create_checkpoints, state)` — iterates all active accounts via `GA.Repo.all(from a in GA.Accounts.Account, where: a.status == :active)`, calls `GA.Audit.create_checkpoint/1` for each, logs results per account, reschedules
+-- [ ] 2.4 Add `GA.Audit.CheckpointWorker` to `GA.Application` children list before `GAWeb.Endpoint`
++- [x] 2.1 Create `lib/app/audit/checkpoint_worker.ex` with `GA.Audit.CheckpointWorker` GenServer
++- [x] 2.2 Implement `init/1` — reads interval from opts (default 1 hour), schedules first checkpoint run
++- [x] 2.3 Implement `handle_info(:create_checkpoints, state)` — iterates all active accounts via `GA.Repo.all(from a in GA.Accounts.Account, where: a.status == :active)`, calls `GA.Audit.create_checkpoint/1` for each, logs results per account, reschedules
++- [x] 2.4 Add `GA.Audit.CheckpointWorker` to `GA.Application` children list before `GAWeb.Endpoint`
+ 
+ ## 3. Tests
+ 
+-- [ ] 3.1 Test valid chain verification for an account — all entries pass, report shows `valid: true`
+-- [ ] 3.2 Test tampered checksum detection — manually inserted entry with wrong checksum produces `valid: false` with `first_failure` details
+-- [ ] 3.3 Test sequence gap detection — entries with non-contiguous sequence numbers within an account produce `sequence_gaps` in report
+-- [ ] 3.4 Test checkpoint validation — valid and invalid checkpoint anchors for the account reflected in `checkpoint_results`
+-- [ ] 3.5 Test duration tracking — `duration_ms` is a non-negative integer
+-- [ ] 3.6 Test verification is account-scoped — verifying account A does not check entries from account B
+-- [ ] 3.7 Test CheckpointWorker creates checkpoints for all active accounts — verify multiple accounts get checkpoints on timer
+-- [ ] 3.8 Test CheckpointWorker skips suspended accounts
+-- [ ] 3.9 Test CheckpointWorker handles account with no entries gracefully (logs, continues to next)
++- [x] 3.1 Test valid chain verification for an account — all entries pass, report shows `valid: true`
++- [x] 3.2 Test tampered checksum detection — manually inserted entry with wrong checksum produces `valid: false` with `first_failure` details
++- [x] 3.3 Test sequence gap detection — entries with non-contiguous sequence numbers within an account produce `sequence_gaps` in report
++- [x] 3.4 Test checkpoint validation — valid and invalid checkpoint anchors for the account reflected in `checkpoint_results`
++- [x] 3.5 Test duration tracking — `duration_ms` is a non-negative integer
++- [x] 3.6 Test verification is account-scoped — verifying account A does not check entries from account B
++- [x] 3.7 Test CheckpointWorker creates checkpoints for all active accounts — verify multiple accounts get checkpoints on timer
++- [x] 3.8 Test CheckpointWorker skips suspended accounts
++- [x] 3.9 Test CheckpointWorker handles account with no entries gracefully (logs, continues to next)
+
+exec
+/bin/zsh -lc 'cat openspec/changes/chain-verification/tasks.md' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+## 1. Verification Engine
+
+- [x] 1.1 Create `lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
+- [x] 1.2 Implement `verify(account_id)` — fetches account's HMAC key via `GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
+- [x] 1.3 Implement `do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
+- [x] 1.4 Implement `verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
+- [x] 1.5 Add `verify_chain(account_id)` to `GA.Audit` context — delegates to `Verifier.verify(account_id)`
+
+## 2. Checkpoint Worker
+
+- [x] 2.1 Create `lib/app/audit/checkpoint_worker.ex` with `GA.Audit.CheckpointWorker` GenServer
+- [x] 2.2 Implement `init/1` — reads interval from opts (default 1 hour), schedules first checkpoint run
+- [x] 2.3 Implement `handle_info(:create_checkpoints, state)` — iterates all active accounts via `GA.Repo.all(from a in GA.Accounts.Account, where: a.status == :active)`, calls `GA.Audit.create_checkpoint/1` for each, logs results per account, reschedules
+- [x] 2.4 Add `GA.Audit.CheckpointWorker` to `GA.Application` children list before `GAWeb.Endpoint`
+
+## 3. Tests
+
+- [x] 3.1 Test valid chain verification for an account — all entries pass, report shows `valid: true`
+- [x] 3.2 Test tampered checksum detection — manually inserted entry with wrong checksum produces `valid: false` with `first_failure` details
+- [x] 3.3 Test sequence gap detection — entries with non-contiguous sequence numbers within an account produce `sequence_gaps` in report
+file update:
+diff --git a/openspec/changes/chain-verification/tasks.md b/openspec/changes/chain-verification/tasks.md
+index 3399fe3c3813ee7ae8b2eaa057ba2eadad2c45e5..571740cbdf993bf165307830f72ff613aa3856fb
+--- a/openspec/changes/chain-verification/tasks.md
++++ b/openspec/changes/chain-verification/tasks.md
+@@ -1,26 +1,26 @@
+ ## 1. Verification Engine
+ 
+-- [ ] 1.1 Create `lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
+-- [ ] 1.2 Implement `verify(account_id)` — fetches account's HMAC key via `GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
+-- [ ] 1.3 Implement `do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
+-- [ ] 1.4 Implement `verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
+-- [ ] 1.5 Add `verify_chain(account_id)` to `GA.Audit` context — delegates to `Verifier.verify(account_id)`
++- [x] 1.1 Create `lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
++- [x] 1.2 Implement `verify(account_id)` — fetches account's HMAC key via `GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
++- [x] 1.3 Implement `do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
++- [x] 1.4 Implement `verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
++- [x] 1.5 Add `verify_chain(account_id)` to `GA.Audit` context — delegates to `Verifier.verify(account_id)`
+ 
+ ## 2. Checkpoint Worker
+ 
+-- [ ] 2.1 Create `lib/app/audit/checkpoint_worker.ex` with `GA.Audit.CheckpointWorker` GenServer
+-- [ ] 2.2 Implement `init/1` — reads interval from opts (default 1 hour), schedules first checkpoint run
+-- [ ] 2.3 Implement `handle_info(:create_checkpoints, state)` — iterates all active accounts via `GA.Repo.all(from a in GA.Accounts.Account, where: a.status == :active)`, calls `GA.Audit.create_checkpoint/1` for each, logs results per account, reschedules
+-- [ ] 2.4 Add `GA.Audit.CheckpointWorker` to `GA.Application` children list before `GAWeb.Endpoint`
++- [x] 2.1 Create `lib/app/audit/checkpoint_worker.ex` with `GA.Audit.CheckpointWorker` GenServer
++- [x] 2.2 Implement `init/1` — reads interval from opts (default 1 hour), schedules first checkpoint run
++- [x] 2.3 Implement `handle_info(:create_checkpoints, state)` — iterates all active accounts via `GA.Repo.all(from a in GA.Accounts.Account, where: a.status == :active)`, calls `GA.Audit.create_checkpoint/1` for each, logs results per account, reschedules
++- [x] 2.4 Add `GA.Audit.CheckpointWorker` to `GA.Application` children list before `GAWeb.Endpoint`
+ 
+ ## 3. Tests
+ 
+-- [ ] 3.1 Test valid chain verification for an account — all entries pass, report shows `valid: true`
+-- [ ] 3.2 Test tampered checksum detection — manually inserted entry with wrong checksum produces `valid: false` with `first_failure` details
+-- [ ] 3.3 Test sequence gap detection — entries with non-contiguous sequence numbers within an account produce `sequence_gaps` in report
+-- [ ] 3.4 Test checkpoint validation — valid and invalid checkpoint anchors for the account reflected in `checkpoint_results`
+-- [ ] 3.5 Test duration tracking — `duration_ms` is a non-negative integer
+-- [ ] 3.6 Test verification is account-scoped — verifying account A does not check entries from account B
+-- [ ] 3.7 Test CheckpointWorker creates checkpoints for all active accounts — verify multiple accounts get checkpoints on timer
+-- [ ] 3.8 Test CheckpointWorker skips suspended accounts
+-- [ ] 3.9 Test CheckpointWorker handles account with no entries gracefully (logs, continues to next)
++- [x] 3.1 Test valid chain verification for an account — all entries pass, report shows `valid: true`
++- [x] 3.2 Test tampered checksum detection — manually inserted entry with wrong checksum produces `valid: false` with `first_failure` details
++- [x] 3.3 Test sequence gap detection — entries with non-contiguous sequence numbers within an account produce `sequence_gaps` in report
++- [x] 3.4 Test checkpoint validation — valid and invalid checkpoint anchors for the account reflected in `checkpoint_results`
++- [x] 3.5 Test duration tracking — `duration_ms` is a non-negative integer
++- [x] 3.6 Test verification is account-scoped — verifying account A does not check entries from account B
++- [x] 3.7 Test CheckpointWorker creates checkpoints for all active accounts — verify multiple accounts get checkpoints on timer
++- [x] 3.8 Test CheckpointWorker skips suspended accounts
++- [x] 3.9 Test CheckpointWorker handles account with no entries gracefully (logs, continues to next)
+
+codex
+I’ve completed the import workflow and I’m doing a final sanity pass (`td show/list` plus git status) to report exactly what was created and what changed on disk.
+exec
+/bin/zsh -lc 'git status --short' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+ M .autopilot-logs/audit-context/phase-5-commit.log
+ M .autopilot-logs/pipeline.log
+ M openspec/changes/chain-verification/tasks.md
+?? .autopilot-logs/chain-verification/
+file update:
+diff --git a/openspec/changes/chain-verification/tasks.md b/openspec/changes/chain-verification/tasks.md
+index 3399fe3c3813ee7ae8b2eaa057ba2eadad2c45e5..571740cbdf993bf165307830f72ff613aa3856fb
+--- a/openspec/changes/chain-verification/tasks.md
++++ b/openspec/changes/chain-verification/tasks.md
+@@ -1,26 +1,26 @@
+ ## 1. Verification Engine
+ 
+-- [ ] 1.1 Create `lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
+-- [ ] 1.2 Implement `verify(account_id)` — fetches account's HMAC key via `GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
+-- [ ] 1.3 Implement `do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
+-- [ ] 1.4 Implement `verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
+-- [ ] 1.5 Add `verify_chain(account_id)` to `GA.Audit` context — delegates to `Verifier.verify(account_id)`
++- [x] 1.1 Create `lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
++- [x] 1.2 Implement `verify(account_id)` — fetches account's HMAC key via `GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
++- [x] 1.3 Implement `do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
++- [x] 1.4 Implement `verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
++- [x] 1.5 Add `verify_chain(account_id)` to `GA.Audit` context — delegates to `Verifier.verify(account_id)`
+ 
+ ## 2. Checkpoint Worker
+ 
+-- [ ] 2.1 Create `lib/app/audit/checkpoint_worker.ex` with `GA.Audit.CheckpointWorker` GenServer
+-- [ ] 2.2 Implement `init/1` — reads interval from opts (default 1 hour), schedules first checkpoint run
+-- [ ] 2.3 Implement `handle_info(:create_checkpoints, state)` — iterates all active accounts via `GA.Repo.all(from a in GA.Accounts.Account, where: a.status == :active)`, calls `GA.Audit.create_checkpoint/1` for each, logs results per account, reschedules
+-- [ ] 2.4 Add `GA.Audit.CheckpointWorker` to `GA.Application` children list before `GAWeb.Endpoint`
++- [x] 2.1 Create `lib/app/audit/checkpoint_worker.ex` with `GA.Audit.CheckpointWorker` GenServer
++- [x] 2.2 Implement `init/1` — reads interval from opts (default 1 hour), schedules first checkpoint run
++- [x] 2.3 Implement `handle_info(:create_checkpoints, state)` — iterates all active accounts via `GA.Repo.all(from a in GA.Accounts.Account, where: a.status == :active)`, calls `GA.Audit.create_checkpoint/1` for each, logs results per account, reschedules
++- [x] 2.4 Add `GA.Audit.CheckpointWorker` to `GA.Application` children list before `GAWeb.Endpoint`
+ 
+ ## 3. Tests
+ 
+-- [ ] 3.1 Test valid chain verification for an account — all entries pass, report shows `valid: true`
+-- [ ] 3.2 Test tampered checksum detection — manually inserted entry with wrong checksum produces `valid: false` with `first_failure` details
+-- [ ] 3.3 Test sequence gap detection — entries with non-contiguous sequence numbers within an account produce `sequence_gaps` in report
+-- [ ] 3.4 Test checkpoint validation — valid and invalid checkpoint anchors for the account reflected in `checkpoint_results`
+-- [ ] 3.5 Test duration tracking — `duration_ms` is a non-negative integer
+-- [ ] 3.6 Test verification is account-scoped — verifying account A does not check entries from account B
+-- [ ] 3.7 Test CheckpointWorker creates checkpoints for all active accounts — verify multiple accounts get checkpoints on timer
+-- [ ] 3.8 Test CheckpointWorker skips suspended accounts
+-- [ ] 3.9 Test CheckpointWorker handles account with no entries gracefully (logs, continues to next)
++- [x] 3.1 Test valid chain verification for an account — all entries pass, report shows `valid: true`
++- [x] 3.2 Test tampered checksum detection — manually inserted entry with wrong checksum produces `valid: false` with `first_failure` details
++- [x] 3.3 Test sequence gap detection — entries with non-contiguous sequence numbers within an account produce `sequence_gaps` in report
++- [x] 3.4 Test checkpoint validation — valid and invalid checkpoint anchors for the account reflected in `checkpoint_results`
++- [x] 3.5 Test duration tracking — `duration_ms` is a non-negative integer
++- [x] 3.6 Test verification is account-scoped — verifying account A does not check entries from account B
++- [x] 3.7 Test CheckpointWorker creates checkpoints for all active accounts — verify multiple accounts get checkpoints on timer
++- [x] 3.8 Test CheckpointWorker skips suspended accounts
++- [x] 3.9 Test CheckpointWorker handles account with no entries gracefully (logs, continues to next)
+
+exec
+/bin/zsh -lc 'td show td-833971' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+td-833971: Review all work for Chain Verification
+Status: [open]
+Type: task | Priority: P2
+Labels: review
+
+Description:
+## Agent Instructions
+
+This is an automated review gate. When you pick up this issue:
+
+1. Run `/compact` to clear the context window
+2. Run `/review-work` to execute the multi-specialist collaborative review
+3. Based on review results, either close this issue or create follow-up issues for any findings
+
+Do NOT start implementation work — this issue exists solely to trigger a review.
+
+BLOCKED BY:
+  td-166913 "Test sequence gap detection within account" [open]
+  td-1d7eca "Create GA.Audit.Verifier module" [open]
+  td-39f158 "Implement checkpoint tick over active accounts" [open]
+file update:
+diff --git a/openspec/changes/chain-verification/tasks.md b/openspec/changes/chain-verification/tasks.md
+index 3399fe3c3813ee7ae8b2eaa057ba2eadad2c45e5..571740cbdf993bf165307830f72ff613aa3856fb
+--- a/openspec/changes/chain-verification/tasks.md
++++ b/openspec/changes/chain-verification/tasks.md
+@@ -1,26 +1,26 @@
+ ## 1. Verification Engine
+ 
+-- [ ] 1.1 Create `lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
+-- [ ] 1.2 Implement `verify(account_id)` — fetches account's HMAC key via `GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
+-- [ ] 1.3 Implement `do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
+-- [ ] 1.4 Implement `verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
+-- [ ] 1.5 Add `verify_chain(account_id)` to `GA.Audit` context — delegates to `Verifier.verify(account_id)`
++- [x] 1.1 Create `lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
++- [x] 1.2 Implement `verify(account_id)` — fetches account's HMAC key via `GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
++- [x] 1.3 Implement `do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
++- [x] 1.4 Implement `verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
++- [x] 1.5 Add `verify_chain(account_id)` to `GA.Audit` context — delegates to `Verifier.verify(account_id)`
+ 
+ ## 2. Checkpoint Worker
+ 
+-- [ ] 2.1 Create `lib/app/audit/checkpoint_worker.ex` with `GA.Audit.CheckpointWorker` GenServer
+-- [ ] 2.2 Implement `init/1` — reads interval from opts (default 1 hour), schedules first checkpoint run
+-- [ ] 2.3 Implement `handle_info(:create_checkpoints, state)` — iterates all active accounts via `GA.Repo.all(from a in GA.Accounts.Account, where: a.status == :active)`, calls `GA.Audit.create_checkpoint/1` for each, logs results per account, reschedules
+-- [ ] 2.4 Add `GA.Audit.CheckpointWorker` to `GA.Application` children list before `GAWeb.Endpoint`
++- [x] 2.1 Create `lib/app/audit/checkpoint_worker.ex` with `GA.Audit.CheckpointWorker` GenServer
++- [x] 2.2 Implement `init/1` — reads interval from opts (default 1 hour), schedules first checkpoint run
++- [x] 2.3 Implement `handle_info(:create_checkpoints, state)` — iterates all active accounts via `GA.Repo.all(from a in GA.Accounts.Account, where: a.status == :active)`, calls `GA.Audit.create_checkpoint/1` for each, logs results per account, reschedules
++- [x] 2.4 Add `GA.Audit.CheckpointWorker` to `GA.Application` children list before `GAWeb.Endpoint`
+ 
+ ## 3. Tests
+ 
+-- [ ] 3.1 Test valid chain verification for an account — all entries pass, report shows `valid: true`
+-- [ ] 3.2 Test tampered checksum detection — manually inserted entry with wrong checksum produces `valid: false` with `first_failure` details
+-- [ ] 3.3 Test sequence gap detection — entries with non-contiguous sequence numbers within an account produce `sequence_gaps` in report
+-- [ ] 3.4 Test checkpoint validation — valid and invalid checkpoint anchors for the account reflected in `checkpoint_results`
+-- [ ] 3.5 Test duration tracking — `duration_ms` is a non-negative integer
+-- [ ] 3.6 Test verification is account-scoped — verifying account A does not check entries from account B
+-- [ ] 3.7 Test CheckpointWorker creates checkpoints for all active accounts — verify multiple accounts get checkpoints on timer
+-- [ ] 3.8 Test CheckpointWorker skips suspended accounts
+-- [ ] 3.9 Test CheckpointWorker handles account with no entries gracefully (logs, continues to next)
++- [x] 3.1 Test valid chain verification for an account — all entries pass, report shows `valid: true`
++- [x] 3.2 Test tampered checksum detection — manually inserted entry with wrong checksum produces `valid: false` with `first_failure` details
++- [x] 3.3 Test sequence gap detection — entries with non-contiguous sequence numbers within an account produce `sequence_gaps` in report
++- [x] 3.4 Test checkpoint validation — valid and invalid checkpoint anchors for the account reflected in `checkpoint_results`
++- [x] 3.5 Test duration tracking — `duration_ms` is a non-negative integer
++- [x] 3.6 Test verification is account-scoped — verifying account A does not check entries from account B
++- [x] 3.7 Test CheckpointWorker creates checkpoints for all active accounts — verify multiple accounts get checkpoints on timer
++- [x] 3.8 Test CheckpointWorker skips suspended accounts
++- [x] 3.9 Test CheckpointWorker handles account with no entries gracefully (logs, continues to next)
+
+codex
+Executed `/prepare-for-takeoff` for `chain-verification` using the skill workflow.
+
+- Created epic: `td-9db2d6` (`Chain Verification`, label `chain-verification`)
+- Created 18 child issues (1:1 from every checkbox in `tasks.md`)
+- Added review gate issue: `td-833971` (`Review all work for Chain Verification`)
+- Wired dependencies:
+1. Verification tests (`3.1`–`3.6`) depend on verifier implementation tasks (`1.1`–`1.5`)
+2. Checkpoint worker tests (`3.7`–`3.9`) depend on worker implementation tasks (`2.1`–`2.4`)
+3. Review gate depends on all 18 implementation/test issues
+
+Updated tasks transfer state:
+- Marked all checkboxes in [tasks.md](/Users/tbrewer/projects/goodway/goodaudit/openspec/changes/chain-verification/tasks.md) as `[x]`.
+
+Final `td list --epic td-9db2d6` shows all 19 child issues open under the epic, including the review gate.
+file update:
+diff --git a/openspec/changes/chain-verification/tasks.md b/openspec/changes/chain-verification/tasks.md
+index 3399fe3c3813ee7ae8b2eaa057ba2eadad2c45e5..571740cbdf993bf165307830f72ff613aa3856fb
+--- a/openspec/changes/chain-verification/tasks.md
++++ b/openspec/changes/chain-verification/tasks.md
+@@ -1,26 +1,26 @@
+ ## 1. Verification Engine
+ 
+-- [ ] 1.1 Create `lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
+-- [ ] 1.2 Implement `verify(account_id)` — fetches account's HMAC key via `GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
+-- [ ] 1.3 Implement `do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
+-- [ ] 1.4 Implement `verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
+-- [ ] 1.5 Add `verify_chain(account_id)` to `GA.Audit` context — delegates to `Verifier.verify(account_id)`
++- [x] 1.1 Create `lib/app/audit/verifier.ex` with `GA.Audit.Verifier` module
++- [x] 1.2 Implement `verify(account_id)` — fetches account's HMAC key via `GA.Accounts.get_hmac_key(account_id)`, loads checkpoints for the account into a map, calls `stream_and_verify/3` scoped to account with key, measures duration
++- [x] 1.3 Implement `do_verify_batches/4` — recursive batch loading (1000 entries per batch via `WHERE account_id = ? AND sequence_number > ? ORDER BY sequence_number ASC LIMIT 1000`), reduces over `verify_entry/3`
++- [x] 1.4 Implement `verify_entry/4` — checks sequence continuity within account, recomputes checksum via `Chain.verify_checksum(hmac_key, entry, previous_checksum)`, checks checkpoint anchors, updates accumulator state
++- [x] 1.5 Add `verify_chain(account_id)` to `GA.Audit` context — delegates to `Verifier.verify(account_id)`
+ 
+ ## 2. Checkpoint Worker
+ 
+-- [ ] 2.1 Create `lib/app/audit/checkpoint_worker.ex` with `GA.Audit.CheckpointWorker` GenServer
+-- [ ] 2.2 Implement `init/1` — reads interval from opts (default 1 hour), schedules first checkpoint run
+-- [ ] 2.3 Implement `handle_info(:create_checkpoints, state)` — iterates all active accounts via `GA.Repo.all(from a in GA.Accounts.Account, where: a.status == :active)`, calls `GA.Audit.create_checkpoint/1` for each, logs results per account, reschedules
+-- [ ] 2.4 Add `GA.Audit.CheckpointWorker` to `GA.Application` children list before `GAWeb.Endpoint`
++- [x] 2.1 Create `lib/app/audit/checkpoint_worker.ex` with `GA.Audit.CheckpointWorker` GenServer
++- [x] 2.2 Implement `init/1` — reads interval from opts (default 1 hour), schedules first checkpoint run
++- [x] 2.3 Implement `handle_info(:create_checkpoints, state)` — iterates all active accounts via `GA.Repo.all(from a in GA.Accounts.Account, where: a.status == :active)`, calls `GA.Audit.create_checkpoint/1` for each, logs results per account, reschedules
++- [x] 2.4 Add `GA.Audit.CheckpointWorker` to `GA.Application` children list before `GAWeb.Endpoint`
+ 
+ ## 3. Tests
+ 
+-- [ ] 3.1 Test valid chain verification for an account — all entries pass, report shows `valid: true`
+-- [ ] 3.2 Test tampered checksum detection — manually inserted entry with wrong checksum produces `valid: false` with `first_failure` details
+-- [ ] 3.3 Test sequence gap detection — entries with non-contiguous sequence numbers within an account produce `sequence_gaps` in report
+-- [ ] 3.4 Test checkpoint validation — valid and invalid checkpoint anchors for the account reflected in `checkpoint_results`
+-- [ ] 3.5 Test duration tracking — `duration_ms` is a non-negative integer
+-- [ ] 3.6 Test verification is account-scoped — verifying account A does not check entries from account B
+-- [ ] 3.7 Test CheckpointWorker creates checkpoints for all active accounts — verify multiple accounts get checkpoints on timer
+-- [ ] 3.8 Test CheckpointWorker skips suspended accounts
+-- [ ] 3.9 Test CheckpointWorker handles account with no entries gracefully (logs, continues to next)
++- [x] 3.1 Test valid chain verification for an account — all entries pass, report shows `valid: true`
++- [x] 3.2 Test tampered checksum detection — manually inserted entry with wrong checksum produces `valid: false` with `first_failure` details
++- [x] 3.3 Test sequence gap detection — entries with non-contiguous sequence numbers within an account produce `sequence_gaps` in report
++- [x] 3.4 Test checkpoint validation — valid and invalid checkpoint anchors for the account reflected in `checkpoint_results`
++- [x] 3.5 Test duration tracking — `duration_ms` is a non-negative integer
++- [x] 3.6 Test verification is account-scoped — verifying account A does not check entries from account B
++- [x] 3.7 Test CheckpointWorker creates checkpoints for all active accounts — verify multiple accounts get checkpoints on timer
++- [x] 3.8 Test CheckpointWorker skips suspended accounts
++- [x] 3.9 Test CheckpointWorker handles account with no entries gracefully (logs, continues to next)
+
+tokens used
+46,959
+Executed `/prepare-for-takeoff` for `chain-verification` using the skill workflow.
+
+- Created epic: `td-9db2d6` (`Chain Verification`, label `chain-verification`)
+- Created 18 child issues (1:1 from every checkbox in `tasks.md`)
+- Added review gate issue: `td-833971` (`Review all work for Chain Verification`)
+- Wired dependencies:
+1. Verification tests (`3.1`–`3.6`) depend on verifier implementation tasks (`1.1`–`1.5`)
+2. Checkpoint worker tests (`3.7`–`3.9`) depend on worker implementation tasks (`2.1`–`2.4`)
+3. Review gate depends on all 18 implementation/test issues
+
+Updated tasks transfer state:
+- Marked all checkboxes in [tasks.md](/Users/tbrewer/projects/goodway/goodaudit/openspec/changes/chain-verification/tasks.md) as `[x]`.
+
+Final `td list --epic td-9db2d6` shows all 19 child issues open under the epic, including the review gate.
