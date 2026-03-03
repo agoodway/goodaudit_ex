@@ -75,9 +75,15 @@ defmodule GA.Audit do
   Fetches a single audit log entry scoped to an account.
   """
   def get_log(account_id, id) when is_binary(account_id) and is_binary(id) do
-    case Repo.get_by(Log, id: id, account_id: account_id) do
-      nil -> {:error, :not_found}
-      log -> {:ok, log}
+    case Ecto.UUID.cast(id) do
+      {:ok, uuid} ->
+        case Repo.get_by(Log, id: uuid, account_id: account_id) do
+          nil -> {:error, :not_found}
+          log -> {:ok, log}
+        end
+
+      :error ->
+        {:error, :not_found}
     end
   end
 

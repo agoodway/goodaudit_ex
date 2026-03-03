@@ -222,6 +222,15 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
       |> get("/api/v1/audit-logs/#{other_log.id}")
       |> json_response(404)
     end
+
+    test "returns 404 for malformed id", %{conn: conn} do
+      %{public_token: public_token} = account_api_context()
+
+      conn
+      |> api_key_conn(public_token)
+      |> get("/api/v1/audit-logs/not-a-uuid")
+      |> json_response(404)
+    end
   end
 
   describe "auth enforcement" do
