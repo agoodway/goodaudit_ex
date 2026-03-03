@@ -59,16 +59,39 @@ defmodule GA.Audit.ChainTest do
 
   test "single-field sensitivity changes checksum" do
     attrs = base_attrs()
-    original = Chain.compute_checksum(@key_1, attrs, nil)
-    mutated = Chain.compute_checksum(@key_1, %{attrs | action: "write"}, nil)
+    baseline = Chain.compute_checksum(@key_1, attrs, nil)
 
-    refute original == mutated
+    mutated_checksums =
+      [
+        {:account_id, Map.put(attrs, :account_id, "acct_999")},
+        {:sequence_number, Map.put(attrs, :sequence_number, attrs.sequence_number + 1)},
+        {:timestamp, Map.put(attrs, :timestamp, DateTime.add(attrs.timestamp, 1, :second))},
+        {:user_id, Map.put(attrs, :user_id, "user_2")},
+        {:user_role, Map.put(attrs, :user_role, "staff")},
+        {:session_id, Map.put(attrs, :session_id, "sess_2")},
+        {:action, Map.put(attrs, :action, "write")},
+        {:resource_type, Map.put(attrs, :resource_type, "encounter")},
+        {:resource_id, Map.put(attrs, :resource_id, "pt_2")},
+        {:outcome, Map.put(attrs, :outcome, "failure")},
+        {:failure_reason, Map.put(attrs, :failure_reason, "denied")},
+        {:phi_accessed, Map.put(attrs, :phi_accessed, false)},
+        {:source_ip, Map.put(attrs, :source_ip, "10.0.0.1")},
+        {:user_agent, Map.put(attrs, :user_agent, "curl/8.6.0")},
+        {:metadata, Map.put(attrs, :metadata, %{"alpha" => 1, "zeta" => 3})}
+      ]
+      |> Enum.map(fn {field, mutated_attrs} ->
+        {field, Chain.compute_checksum(@key_1, mutated_attrs, nil)}
+      end)
+
+    Enum.each(mutated_checksums, fn {field, checksum} ->
+      refute checksum == baseline, "expected #{field} mutation to change checksum"
+    end)
   end
 
   test "previous_checksum sensitivity changes checksum" do
     attrs = base_attrs()
-    checksum_1 = Chain.compute_checksum(@key_1, attrs, "prev_a")
-    checksum_2 = Chain.compute_checksum(@key_1, attrs, "prev_b")
+    checksum_1 = Chain.compute_checksum(@key_1, attrs, String.duplicate("a", 64))
+    checksum_2 = Chain.compute_checksum(@key_1, attrs, String.duplicate("b", 64))
 
     refute checksum_1 == checksum_2
   end
@@ -146,6 +169,54 @@ defmodule GA.Audit.ChainTest do
     refute checksum_1 == checksum_2
   end
 
+  test "compute_checksum rejects invalid key values" do
+    attrs = base_attrs()
+
+    assert_raise ArgumentError, ~r/key must be a non-empty binary/, fn ->
+      Chain.compute_checksum("", attrs, nil)
+    end
+
+    assert_raise ArgumentError, ~r/key must be a non-empty binary/, fn ->
+      Chain.compute_checksum(nil, attrs, nil)
+    end
+  end
+
+  test "compute_checksum rejects invalid previous_checksum values" do
+    attrs = base_attrs()
+
+    assert_raise ArgumentError,
+                 ~r/previous_checksum must be nil or a 64-character lowercase hex checksum/,
+                 fn ->
+                   Chain.compute_checksum(@key_1, attrs, "not-a-checksum")
+                 end
+
+    assert_raise ArgumentError,
+                 ~r/previous_checksum must be nil or a 64-character lowercase hex checksum/,
+                 fn ->
+                   Chain.compute_checksum(@key_1, attrs, 123)
+                 end
+  end
+
+  test "canonical payload rejects pipe delimiters in canonical fields" do
+    attrs_a =
+      base_attrs()
+      |> Map.put(:user_id, "user|admin")
+      |> Map.put(:user_role, "clinician")
+
+    attrs_b =
+      base_attrs()
+      |> Map.put(:user_id, "user")
+      |> Map.put(:user_role, "admin|clinician")
+
+    assert_raise ArgumentError, ~r/must not contain the pipe delimiter/, fn ->
+      Chain.compute_checksum(@key_1, attrs_a, nil)
+    end
+
+    assert_raise ArgumentError, ~r/must not contain the pipe delimiter/, fn ->
+      Chain.compute_checksum(@key_1, attrs_b, nil)
+    end
+  end
+
   test "verify_checksum returns true for valid entry" do
     attrs = base_attrs()
     checksum = Chain.compute_checksum(@key_1, attrs, nil)
@@ -169,5 +240,12 @@ defmodule GA.Audit.ChainTest do
     entry = struct(AuditLog, Map.put(attrs, :checksum, checksum))
 
     refute Chain.verify_checksum(@key_2, entry, nil)
+  end
+
+  test "verify_checksum returns false for malformed stored checksum" do
+    attrs = base_attrs()
+    entry = struct(AuditLog, Map.put(attrs, :checksum, "invalid"))
+
+    refute Chain.verify_checksum(@key_1, entry, nil)
   end
 end
