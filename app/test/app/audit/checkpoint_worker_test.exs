@@ -59,6 +59,32 @@ defmodule GA.Audit.CheckpointWorkerTest do
       assert log =~ empty_account.id
       assert Audit.list_checkpoints(empty_account.id) == []
     end
+
+    test "logs non-no_entries failures and continues processing other accounts" do
+      failing_account = account_fixture()
+      healthy_account = account_fixture()
+      add_log(failing_account.id, "failing")
+      add_log(healthy_account.id, "healthy")
+
+      # Prime a checkpoint so the next insert for this account returns a non-:no_entries error.
+      assert {:ok, _checkpoint} = Audit.create_checkpoint(failing_account.id)
+
+      worker = start_worker()
+
+      log =
+        capture_log([level: :error], fn ->
+          send(worker, :create_checkpoints)
+
+          assert_eventually(fn ->
+            length(Audit.list_checkpoints(healthy_account.id)) == 1
+          end)
+        end)
+
+      assert log =~ "checkpoint_worker failed"
+      assert log =~ failing_account.id
+      assert length(Audit.list_checkpoints(failing_account.id)) == 1
+      assert length(Audit.list_checkpoints(healthy_account.id)) == 1
+    end
   end
 
   defp start_worker do

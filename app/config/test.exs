@@ -26,6 +26,9 @@ config :app, GAWeb.Endpoint,
 # In test we don't send emails
 config :app, GA.Mailer, adapter: Swoosh.Adapters.Test
 
+# Keep application-started checkpoint worker deterministic in tests unless overridden.
+config :app, GA.Audit.CheckpointWorker, interval_ms: :timer.hours(24)
+
 # Disable swoosh api client as it is only required for production adapters
 config :swoosh, :api_client, false
 

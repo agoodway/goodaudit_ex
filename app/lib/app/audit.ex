@@ -12,13 +12,14 @@ defmodule GA.Audit do
 
   @default_limit 50
   @max_limit 1000
+  @reserved_chain_keys [:account_id, :sequence_number, :checksum, :previous_checksum]
 
   @doc """
   Creates a new audit log entry with per-account chain fields in a single transaction.
   """
   def create_log_entry(account_id, attrs)
       when is_binary(account_id) and (is_map(attrs) or is_list(attrs)) do
-    attrs = attrs |> normalize_attrs() |> put_default_timestamp()
+    attrs = attrs |> normalize_attrs() |> drop_reserved_chain_keys() |> put_default_timestamp()
 
     Repo.transaction(fn ->
       with :ok <- lock_account(account_id),
@@ -290,6 +291,14 @@ defmodule GA.Audit do
 
   defp normalize_attrs(attrs) when is_map(attrs), do: attrs
   defp normalize_attrs(attrs) when is_list(attrs), do: Map.new(attrs)
+
+  defp drop_reserved_chain_keys(attrs) do
+    Enum.reduce(@reserved_chain_keys, attrs, fn key, acc ->
+      acc
+      |> Map.delete(key)
+      |> Map.delete(Atom.to_string(key))
+    end)
+  end
 
   defp unwrap_tx_result({:ok, result}), do: {:ok, result}
   defp unwrap_tx_result({:error, reason}), do: {:error, reason}

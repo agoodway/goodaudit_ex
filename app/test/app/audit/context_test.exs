@@ -34,6 +34,36 @@ defmodule GA.Audit.ContextTest do
       assert Chain.verify_checksum(hmac_key, second, first.checksum)
     end
 
+    test "ignores caller-provided chain fields before checksum generation" do
+      account = account_fixture()
+
+      poisoned_attrs =
+        valid_attrs(%{resource_id: "reserved-keys"})
+        |> Map.merge(%{
+          account_id: Ecto.UUID.generate(),
+          sequence_number: 999,
+          previous_checksum: String.duplicate("a", 64),
+          checksum: String.duplicate("f", 64),
+          "account_id" => Ecto.UUID.generate(),
+          "sequence_number" => 555,
+          "previous_checksum" => String.duplicate("b", 64),
+          "checksum" => String.duplicate("e", 64)
+        })
+
+      assert {:ok, first} = Audit.create_log_entry(account.id, poisoned_attrs)
+      assert {:ok, _second} = Audit.create_log_entry(account.id, valid_attrs(%{resource_id: "follow-up"}))
+
+      assert first.account_id == account.id
+      assert first.sequence_number == 1
+      assert is_nil(first.previous_checksum)
+      refute first.checksum == String.duplicate("f", 64)
+      refute first.checksum == String.duplicate("e", 64)
+
+      report = Audit.verify_chain(account.id)
+      assert report.valid == true
+      assert report.first_failure == nil
+    end
+
     test "defaults timestamp when missing" do
       account = account_fixture()
       attrs = valid_attrs() |> Map.delete(:timestamp)

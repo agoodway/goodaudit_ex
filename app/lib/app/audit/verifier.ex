@@ -10,6 +10,7 @@ defmodule GA.Audit.Verifier do
   alias GA.Repo
 
   @batch_size 1000
+  @max_missing_sample 100
 
   @doc """
   Verifies an account's audit chain and returns a report map.
@@ -69,17 +70,15 @@ defmodule GA.Audit.Verifier do
     if found_sequence == expected_sequence do
       %{acc | expected_sequence: expected_sequence + 1}
     else
-      missing =
-        if found_sequence > expected_sequence do
-          Enum.to_list(expected_sequence..(found_sequence - 1))
-        else
-          []
-        end
+      missing_details = build_missing_sequence_details(expected_sequence, found_sequence)
 
       gap = %{
         expected: expected_sequence,
         found: found_sequence,
-        missing: missing
+        missing: missing_details.missing,
+        missing_count: missing_details.missing_count,
+        missing_truncated: missing_details.missing_truncated,
+        missing_range: missing_details.missing_range
       }
 
       acc
@@ -87,7 +86,10 @@ defmodule GA.Audit.Verifier do
         type: :sequence_gap,
         expected: expected_sequence,
         found: found_sequence,
-        missing: missing
+        missing: missing_details.missing,
+        missing_count: missing_details.missing_count,
+        missing_truncated: missing_details.missing_truncated,
+        missing_range: missing_details.missing_range
       })
       |> Map.update!(:sequence_gaps, &[gap | &1])
       |> Map.put(:expected_sequence, max(found_sequence, expected_sequence) + 1)
@@ -199,5 +201,23 @@ defmodule GA.Audit.Verifier do
     System.monotonic_time(:millisecond)
     |> Kernel.-(started_at)
     |> max(0)
+  end
+
+  defp build_missing_sequence_details(expected_sequence, found_sequence)
+       when found_sequence > expected_sequence do
+    missing_count = found_sequence - expected_sequence
+    sample_size = min(missing_count, @max_missing_sample)
+    sample_end = expected_sequence + sample_size - 1
+
+    %{
+      missing: Enum.to_list(expected_sequence..sample_end),
+      missing_count: missing_count,
+      missing_truncated: missing_count > sample_size,
+      missing_range: %{from: expected_sequence, to: found_sequence - 1}
+    }
+  end
+
+  defp build_missing_sequence_details(_expected_sequence, _found_sequence) do
+    %{missing: [], missing_count: 0, missing_truncated: false, missing_range: nil}
   end
 end

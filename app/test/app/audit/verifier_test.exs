@@ -73,7 +73,46 @@ defmodule GA.Audit.VerifierTest do
 
       assert report.valid == false
       assert report.first_failure.type == :sequence_gap
+      assert report.first_failure.missing_count == 1
+      assert report.first_failure.missing_truncated == false
+      assert report.first_failure.missing_range == %{from: 3, to: 3}
       assert [%{expected: 3, found: 4, missing: [3]}] = report.sequence_gaps
+    end
+
+    test "caps missing sequence samples for very large gaps" do
+      account = account_fixture()
+      assert {:ok, _first} = Audit.create_log_entry(account.id, valid_attrs(%{resource_id: "large-gap-1"}))
+      assert {:ok, second} = Audit.create_log_entry(account.id, valid_attrs(%{resource_id: "large-gap-2"}))
+      assert {:ok, hmac_key} = Accounts.get_hmac_key(account.id)
+
+      far_sequence = 250_000
+
+      checksum =
+        checksum_for_sequence(
+          account.id,
+          hmac_key,
+          far_sequence,
+          second.checksum,
+          %{resource_id: "large-gap-far"}
+        )
+
+      insert_raw_log(account.id, %{
+        sequence_number: far_sequence,
+        previous_checksum: second.checksum,
+        checksum: checksum,
+        resource_id: "large-gap-far"
+      })
+
+      report = Audit.verify_chain(account.id)
+
+      assert report.valid == false
+      assert report.first_failure.type == :sequence_gap
+      assert report.first_failure.missing_count == far_sequence - 3
+      assert report.first_failure.missing_truncated == true
+      assert report.first_failure.missing_range == %{from: 3, to: far_sequence - 1}
+      assert length(report.first_failure.missing) == 100
+      assert hd(report.first_failure.missing) == 3
+      assert List.last(report.first_failure.missing) == 102
     end
 
     test "validates checkpoint anchors and reports invalid anchors" do
