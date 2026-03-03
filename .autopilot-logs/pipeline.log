@@ -941,3 +941,21 @@
 2026/03/03 16:52:56.102761 exec: codex exec --model gpt-5.3-codex --full-auto
 2026/03/03 16:52:56.102764 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/audit-endpoints/phase-2-commit.log
 2026/03/03 16:52:56.104382 exec: process started pid=60698
+2026/03/03 16:53:37.143156 exec: process pid=60698 exited successfully
+2026/03/03 16:53:37.143305 [audit-endpoints] phase 2: commit completed in 41s
+2026/03/03 16:53:37.143336 [audit-endpoints] phase 2 completed in 9m 0s
+2026/03/03 16:53:37.143348 [audit-endpoints] phase 3 (pre-landing-check) starting
+2026/03/03 16:53:37.143391 [audit-endpoints] phase 3: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/audit-endpoints/phase-3-pre-landing-check.log
+2026/03/03 16:53:37.143397 [audit-endpoints] phase 3: prompt=Run /pre-landing-check for the change named "audit-endpoints" located at openspec/changes/audit-endpoints/. Do not ask me any questions — use your best judgment for any decisions.
+2026/03/03 16:53:37.143402 [audit-endpoints] phase 3: launching codex session
+2026/03/03 16:53:37.143435 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/03 16:53:37.143439 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/audit-endpoints/phase-3-pre-landing-check.log
+2026/03/03 16:53:37.144904 exec: process started pid=62313
+2026/03/03 16:56:50.253768 exec: process pid=62313 exited successfully
+2026/03/03 16:56:50.254124 [audit-endpoints] phase 3: codex session completed in 3m 13s
+2026/03/03 16:56:50.254205 [audit-endpoints] phase 3: running intermediate commit
+2026/03/03 16:56:50.254229 [audit-endpoints] commit phase 3: launching codex session
+2026/03/03 16:56:50.254234 [audit-endpoints] commit phase 3: prompt=Run /git commit with the message "chore(audit-endpoints): code review findings". Do not ask me any questions.
+2026/03/03 16:56:50.254261 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/03 16:56:50.254265 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/audit-endpoints/phase-3-commit.log
+2026/03/03 16:56:50.256003 exec: process started pid=73228
