@@ -87,9 +87,9 @@ defmodule GAWeb.Router do
   scope "/api/v1", GAWeb.Api.V1, as: :api_v1 do
     pipe_through :api_authenticated
 
-    # Add your read-only routes here
-    # get "/resources", ResourceController, :index
-    # get "/resources/:id", ResourceController, :show
+    resources "/audit-logs", AuditLogController, only: [:index, :show]
+    resources "/checkpoints", CheckpointController, only: [:index]
+    post "/verify", VerificationController, :create
   end
 
   # ============================================
@@ -98,10 +98,8 @@ defmodule GAWeb.Router do
   scope "/api/v1", GAWeb.Api.V1, as: :api_v1 do
     pipe_through :api_write
 
-    # Add your write routes here
-    # post "/resources", ResourceController, :create
-    # patch "/resources/:id", ResourceController, :update
-    # delete "/resources/:id", ResourceController, :delete
+    resources "/audit-logs", AuditLogController, only: [:create]
+    resources "/checkpoints", CheckpointController, only: [:create]
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

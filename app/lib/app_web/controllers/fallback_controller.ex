@@ -25,6 +25,15 @@ defmodule GAWeb.FallbackController do
     |> render(:"401")
   end
 
+  def call(conn, {:error, :no_entries}) do
+    conn
+    |> put_status(:unprocessable_entity)
+    |> json(%{
+      status: 422,
+      message: "No audit entries exist yet"
+    })
+  end
+
   def call(conn, {:error, %Ecto.Changeset{} = changeset}) do
     conn
     |> put_status(:unprocessable_entity)
