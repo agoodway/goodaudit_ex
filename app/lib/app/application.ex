@@ -14,6 +14,7 @@ defmodule GA.Application do
       {Phoenix.PubSub, name: GA.PubSub},
       # Start a worker by calling: GA.Worker.start_link(arg)
       # {GA.Worker, arg},
+      {GA.Audit.CheckpointWorker, checkpoint_worker_opts()},
       # Start to serve requests, typically the last entry
       GAWeb.Endpoint
     ]
@@ -30,5 +31,9 @@ defmodule GA.Application do
   def config_change(changed, _new, removed) do
     GAWeb.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  defp checkpoint_worker_opts do
+    Application.get_env(:app, GA.Audit.CheckpointWorker, [])
   end
 end

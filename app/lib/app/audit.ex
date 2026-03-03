@@ -7,7 +7,7 @@ defmodule GA.Audit do
   import Ecto.Query, warn: false
 
   alias GA.Accounts
-  alias GA.Audit.{Chain, Checkpoint, Log}
+  alias GA.Audit.{Chain, Checkpoint, Log, Verifier}
   alias GA.Repo
 
   @default_limit 50
@@ -113,6 +113,12 @@ defmodule GA.Audit do
   end
 
   def list_checkpoints(_), do: []
+
+  @doc """
+  Verifies chain integrity for a single account.
+  """
+  def verify_chain(account_id) when is_binary(account_id), do: Verifier.verify(account_id)
+  def verify_chain(_), do: {:error, :invalid_id}
 
   defp lock_account(account_id) do
     {key_a, key_b} = account_lock_keys(account_id)
