@@ -339,17 +339,26 @@ defmodule GA.Accounts do
   end
 
   @doc "Fetches only the hmac key for an account."
-  def get_hmac_key(account_id) do
+  def get_hmac_key(account_id) when is_binary(account_id) do
+    with {:ok, uuid} <- Ecto.UUID.cast(account_id),
+         hmac_key when not is_nil(hmac_key) <- fetch_hmac_key(uuid) do
+      {:ok, hmac_key}
+    else
+      :error -> {:error, :invalid_id}
+      nil -> {:error, :not_found}
+    end
+  end
+
+  def get_hmac_key(_), do: {:error, :invalid_id}
+
+  defp fetch_hmac_key(account_id) do
     query =
       from(a in Account,
         where: a.id == ^account_id,
         select: a.hmac_key
       )
 
-    case Repo.one(query) do
-      nil -> {:error, :not_found}
-      hmac_key -> {:ok, hmac_key}
-    end
+    Repo.one(query)
   end
 
   @doc "Creates an account user membership."

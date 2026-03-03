@@ -14,7 +14,7 @@ defmodule GA.Accounts.Account do
     field :name, :string
     field :slug, :string
     field :status, Ecto.Enum, values: [:active, :suspended], default: :active
-    field :hmac_key, :binary, redact: true
+    field :hmac_key, :binary, redact: true, load_in_query: false
 
     has_many :account_users, GA.Accounts.AccountUser
     has_many :users, through: [:account_users, :user]

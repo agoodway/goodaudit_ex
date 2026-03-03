@@ -29,6 +29,25 @@ defmodule GA.Accounts.HmacKeyTest do
       assert {:error, :not_found} = Accounts.get_hmac_key(Ecto.UUID.generate())
     end
 
+    test "get_hmac_key/1 returns {:error, :invalid_id} for malformed id" do
+      assert {:error, :invalid_id} = Accounts.get_hmac_key("not-a-uuid")
+      assert {:error, :invalid_id} = Accounts.get_hmac_key(nil)
+    end
+
+    test "default account loads do not include hmac_key" do
+      user = user_fixture()
+      {:ok, created} = Accounts.create_account(user, %{name: "Wayne #{System.unique_integer()}"})
+
+      assert is_binary(created.hmac_key)
+      loaded = Accounts.get_account(created.id)
+      assert loaded
+      assert is_nil(loaded.hmac_key)
+      assert [{listed, :owner}] = Accounts.list_user_accounts(user)
+      assert is_nil(listed.hmac_key)
+      assert {:ok, hmac_key} = Accounts.get_hmac_key(created.id)
+      assert hmac_key == created.hmac_key
+    end
+
     test "each account gets a unique key" do
       user = user_fixture()
       {:ok, first} = Accounts.create_account(user, %{name: "Initech #{System.unique_integer()}"})
