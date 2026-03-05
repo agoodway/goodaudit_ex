@@ -6,6 +6,7 @@ defmodule GA.Audit.ContextTest do
   alias GA.Accounts
   alias GA.Audit
   alias GA.Audit.{Chain, Checkpoint, Log}
+  alias GA.Compliance
   alias GA.Repo
 
   describe "create_log_entry/2" do
@@ -25,7 +26,9 @@ defmodule GA.Audit.ContextTest do
       account = account_fixture()
 
       assert {:ok, first} = Audit.create_log_entry(account.id, valid_attrs(%{resource_id: "r-1"}))
-      assert {:ok, second} = Audit.create_log_entry(account.id, valid_attrs(%{resource_id: "r-2"}))
+
+      assert {:ok, second} =
+               Audit.create_log_entry(account.id, valid_attrs(%{resource_id: "r-2"}))
 
       assert second.sequence_number == first.sequence_number + 1
       assert second.previous_checksum == first.checksum
@@ -40,10 +43,10 @@ defmodule GA.Audit.ContextTest do
       poisoned_attrs =
         valid_attrs(%{resource_id: "reserved-keys"})
         |> Map.merge(%{
-          account_id: Ecto.UUID.generate(),
-          sequence_number: 999,
-          previous_checksum: String.duplicate("a", 64),
-          checksum: String.duplicate("f", 64),
+          :account_id => Ecto.UUID.generate(),
+          :sequence_number => 999,
+          :previous_checksum => String.duplicate("a", 64),
+          :checksum => String.duplicate("f", 64),
           "account_id" => Ecto.UUID.generate(),
           "sequence_number" => 555,
           "previous_checksum" => String.duplicate("b", 64),
@@ -51,7 +54,9 @@ defmodule GA.Audit.ContextTest do
         })
 
       assert {:ok, first} = Audit.create_log_entry(account.id, poisoned_attrs)
-      assert {:ok, _second} = Audit.create_log_entry(account.id, valid_attrs(%{resource_id: "follow-up"}))
+
+      assert {:ok, _second} =
+               Audit.create_log_entry(account.id, valid_attrs(%{resource_id: "follow-up"}))
 
       assert first.account_id == account.id
       assert first.sequence_number == 1
@@ -98,16 +103,22 @@ defmodule GA.Audit.ContextTest do
       assert {"invalid checksum payload: canonical payload fields must not contain the pipe delimiter",
               []} in Keyword.get_values(changeset.errors, :base)
 
-      assert {:ok, log} = Audit.create_log_entry(account.id, valid_attrs(%{resource_id: "patient-123"}))
+      assert {:ok, log} =
+               Audit.create_log_entry(account.id, valid_attrs(%{resource_id: "patient-123"}))
+
       assert log.sequence_number == 1
     end
 
     test "does not consume sequence numbers when a write rolls back" do
       account = account_fixture()
 
-      assert {:ok, first} = Audit.create_log_entry(account.id, valid_attrs(%{resource_id: "seq-1"}))
+      assert {:ok, first} =
+               Audit.create_log_entry(account.id, valid_attrs(%{resource_id: "seq-1"}))
+
       assert {:error, _changeset} = Audit.create_log_entry(account.id, %{action: "read"})
-      assert {:ok, second} = Audit.create_log_entry(account.id, valid_attrs(%{resource_id: "seq-2"}))
+
+      assert {:ok, second} =
+               Audit.create_log_entry(account.id, valid_attrs(%{resource_id: "seq-2"}))
 
       assert second.sequence_number == first.sequence_number + 1
       assert sequence_numbers_for(account.id) == [1, 2]
@@ -178,6 +189,106 @@ defmodule GA.Audit.ContextTest do
 
       assert sequence_numbers_for(account_a.id) == Enum.to_list(1..10)
       assert sequence_numbers_for(account_b.id) == Enum.to_list(1..10)
+    end
+  end
+
+  describe "framework-aware validation" do
+    test "records frameworks on entries when account has active frameworks" do
+      account = account_fixture()
+      assert {:ok, _association} = Compliance.activate_framework(account.id, "hipaa")
+
+      assert {:ok, log} = Audit.create_log_entry(account.id, valid_attrs())
+      assert log.frameworks == ["hipaa"]
+    end
+
+    test "returns framework-attributed validation errors for single framework requirements" do
+      account = account_fixture()
+      assert {:ok, _association} = Compliance.activate_framework(account.id, "hipaa")
+
+      attrs = valid_attrs() |> Map.delete(:phi_accessed)
+      assert {:error, changeset} = Audit.create_log_entry(account.id, attrs)
+      assert "required by HIPAA" in errors_on(changeset).phi_accessed
+    end
+
+    test "returns framework-attributed validation errors for multi-framework requirements" do
+      account = account_fixture()
+      assert {:ok, _hipaa} = Compliance.activate_framework(account.id, "hipaa")
+      assert {:ok, _soc2} = Compliance.activate_framework(account.id, "soc2")
+
+      attrs = valid_attrs() |> Map.delete(:source_ip)
+
+      assert {:error, changeset} = Audit.create_log_entry(account.id, attrs)
+
+      assert "required by HIPAA" in errors_on(changeset).source_ip
+      assert "required by SOC 2 Type II" in errors_on(changeset).source_ip
+    end
+
+    test "validates additional_required_fields from config overrides" do
+      account = account_fixture()
+
+      assert {:ok, _hipaa} =
+               Compliance.activate_framework(account.id, "hipaa",
+                 config_overrides: %{"additional_required_fields" => ["department"]}
+               )
+
+      assert {:error, changeset} = Audit.create_log_entry(account.id, valid_attrs())
+      assert "required by HIPAA" in errors_on(changeset).department
+
+      attrs_with_department = valid_attrs(%{"department" => "billing"})
+      assert {:ok, log} = Audit.create_log_entry(account.id, attrs_with_department)
+      assert log.frameworks == ["hipaa"]
+    end
+
+    test "treats absent and nil as missing, but accepts empty string and false values" do
+      account = account_fixture()
+      assert {:ok, _association} = Compliance.activate_framework(account.id, "hipaa")
+
+      assert {:error, absent_changeset} =
+               Audit.create_log_entry(account.id, valid_attrs() |> Map.delete(:phi_accessed))
+
+      assert "required by HIPAA" in errors_on(absent_changeset).phi_accessed
+
+      assert {:error, nil_changeset} =
+               Audit.create_log_entry(account.id, valid_attrs(%{phi_accessed: nil}))
+
+      assert "required by HIPAA" in errors_on(nil_changeset).phi_accessed
+
+      attrs = valid_attrs(%{phi_accessed: false, source_ip: ""})
+      assert {:ok, _log} = Audit.create_log_entry(account.id, attrs)
+    end
+
+    test "returns framework validation errors without waiting on advisory lock" do
+      account = account_fixture()
+      assert {:ok, _association} = Compliance.activate_framework(account.id, "hipaa")
+      parent = self()
+
+      locker_task =
+        Task.async(fn ->
+          Repo.transaction(fn ->
+            {key_a, key_b} = account_lock_keys(account.id)
+            {:ok, _} = Repo.query("SELECT pg_advisory_xact_lock($1, $2)", [key_a, key_b])
+            send(parent, :framework_lock_acquired)
+
+            receive do
+              :release_framework_lock -> :ok
+            after
+              5_000 -> raise "timed out waiting to release framework lock"
+            end
+          end)
+        end)
+
+      assert_receive :framework_lock_acquired, 5_000
+      started_ms = System.monotonic_time(:millisecond)
+
+      assert {:error, changeset} =
+               Audit.create_log_entry(account.id, valid_attrs() |> Map.delete(:phi_accessed))
+
+      elapsed_ms = System.monotonic_time(:millisecond) - started_ms
+      assert elapsed_ms < 1_000
+      assert "required by HIPAA" in errors_on(changeset).phi_accessed
+
+      send(locker_task.pid, :release_framework_lock)
+      assert {:ok, :ok} = Task.await(locker_task, 5_000)
     end
   end
 
@@ -357,7 +468,9 @@ defmodule GA.Audit.ContextTest do
     test "create_checkpoint/1 creates checkpoint at account chain head" do
       account = account_fixture()
       assert {:ok, _} = Audit.create_log_entry(account.id, valid_attrs(%{resource_id: "first"}))
-      assert {:ok, head} = Audit.create_log_entry(account.id, valid_attrs(%{resource_id: "second"}))
+
+      assert {:ok, head} =
+               Audit.create_log_entry(account.id, valid_attrs(%{resource_id: "second"}))
 
       assert {:ok, checkpoint} = Audit.create_checkpoint(account.id)
       assert checkpoint.account_id == account.id

@@ -6,7 +6,7 @@ checksum.dev (a separate service we operate) solves this by acting as an externa
 
 ## What Changes
 
-1. **Optional dependency** — Add `checksum_dev` Elixir client library to `mix.exs` as an optional dep. The feature is inert when not configured.
+1. **Optional dependency** — Add `checksum_ex` Elixir client library from `https://github.com/agoodway/checksum_ex` to `mix.exs` as an optional dep. The feature is inert when not configured.
 
 2. **`GA.Audit.Anchoring` module** — Handles communication with checksum.dev. Submits checkpoints for anchoring, stores receipts, supports retroactive anchoring of missed checkpoints, and handles 409/429 semantics from checksum.dev. Derives an environment-namespaced per-account `chain_id`.
 
@@ -51,7 +51,7 @@ One checksum.dev account serves all GoodAudit tenants. Per-tenant isolation is v
 
 ## Impact
 
-- **Modified file**: `mix.exs` — add optional `checksum_dev` dep
+- **Modified file**: `mix.exs` — add optional `checksum_ex` dep from GitHub (`agoodway/checksum_ex`)
 - **New file**: `lib/app/audit/anchoring.ex` — `GA.Audit.Anchoring` module
 - **Modified file**: `lib/app/audit/checkpoint_worker.ex` — add anchoring step after checkpoint creation
 - **Modified file**: `lib/app/audit/verifier.ex` — add anchor validation to report

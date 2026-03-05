@@ -19,7 +19,8 @@ defmodule GA.Audit.Chain do
     "failure_reason",
     "phi_accessed",
     "source_ip",
-    "user_agent"
+    "user_agent",
+    "frameworks"
   ]
 
   @doc """
@@ -49,8 +50,10 @@ defmodule GA.Audit.Chain do
     expected = compute_checksum(validated_key, entry_to_attrs(entry), validated_previous_checksum)
 
     case get_value(entry, "checksum") do
-      checksum when valid_checksum?(checksum) ->
-        Plug.Crypto.secure_compare(expected, checksum)
+      checksum when is_binary(checksum) ->
+        if valid_checksum?(checksum),
+          do: Plug.Crypto.secure_compare(expected, checksum),
+          else: false
 
       _ ->
         false
@@ -74,7 +77,7 @@ defmodule GA.Audit.Chain do
     previous = validated_previous_checksum || @genesis_previous
     metadata = canonical_metadata(get_value(normalized_attrs, "metadata"))
 
-    [Enum.at(fields, 0), Enum.at(fields, 1), previous] ++ Enum.drop(fields, 2) ++ [metadata]
+    ([Enum.at(fields, 0), Enum.at(fields, 1), previous] ++ Enum.drop(fields, 2) ++ [metadata])
     |> Enum.map(&reject_payload_delimiter!/1)
     |> Enum.join("|")
   end
@@ -105,6 +108,10 @@ defmodule GA.Audit.Chain do
   end
 
   defp render_value(%DateTime{} = timestamp), do: DateTime.to_iso8601(timestamp)
+
+  defp render_value(value) when is_list(value),
+    do: value |> Enum.map(&to_string/1) |> Enum.sort() |> Enum.join(",")
+
   defp render_value(nil), do: ""
   defp render_value(value), do: to_string(value)
 
@@ -141,7 +148,10 @@ defmodule GA.Audit.Chain do
   end
 
   defp validate_key!(key) when is_binary(key) and byte_size(key) > 0, do: key
-  defp validate_key!(key) when is_binary(key), do: raise(ArgumentError, "key must be a non-empty binary")
+
+  defp validate_key!(key) when is_binary(key),
+    do: raise(ArgumentError, "key must be a non-empty binary")
+
   defp validate_key!(_key), do: raise(ArgumentError, "key must be a non-empty binary")
 
   defp validate_previous_checksum!(nil), do: nil
@@ -150,7 +160,8 @@ defmodule GA.Audit.Chain do
     if valid_checksum?(checksum) do
       checksum
     else
-      raise ArgumentError, "previous_checksum must be nil or a 64-character lowercase hex checksum"
+      raise ArgumentError,
+            "previous_checksum must be nil or a 64-character lowercase hex checksum"
     end
   end
 
@@ -158,7 +169,9 @@ defmodule GA.Audit.Chain do
     raise ArgumentError, "previous_checksum must be nil or a 64-character lowercase hex checksum"
   end
 
-  defp valid_checksum?(checksum) when is_binary(checksum), do: String.match?(checksum, @checksum_pattern)
+  defp valid_checksum?(checksum) when is_binary(checksum),
+    do: String.match?(checksum, @checksum_pattern)
+
   defp valid_checksum?(_checksum), do: false
 
   defp to_existing_atom(key) do

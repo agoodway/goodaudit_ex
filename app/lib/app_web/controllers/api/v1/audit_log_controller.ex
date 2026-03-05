@@ -25,7 +25,9 @@ defmodule GAWeb.Api.V1.AuditLogController do
     request_body: {"Audit log payload", "application/json", AuditLogRequest, required: true},
     responses: [
       created: {"Audit log entry", "application/json", AuditLogResponse},
-      unprocessable_entity: {"Validation error", "application/json", ErrorResponse},
+      unprocessable_entity:
+        {"Validation error (framework attribution example: {\"errors\": {\"source_ip\": [\"required by HIPAA\"]}})",
+         "application/json", ErrorResponse},
       unauthorized: {"Unauthorized", "application/json", ErrorResponse},
       forbidden: {"Forbidden", "application/json", ErrorResponse}
     ]
@@ -45,16 +47,24 @@ defmodule GAWeb.Api.V1.AuditLogController do
   operation(:index,
     summary: "List audit log entries",
     parameters: [
-      after_sequence: [in: :query, type: :integer, required: false],
-      limit: [in: :query, type: :integer, required: false],
-      user_id: [in: :query, type: :string, required: false],
-      action: [in: :query, type: :string, required: false],
-      resource_type: [in: :query, type: :string, required: false],
-      resource_id: [in: :query, type: :string, required: false],
-      outcome: [in: :query, type: :string, required: false],
-      phi_accessed: [in: :query, type: :boolean, required: false],
-      from: [in: :query, type: :string, format: :"date-time", required: false],
-      to: [in: :query, type: :string, format: :"date-time", required: false]
+      after_sequence: [in: :query, schema: %OpenApiSpex.Schema{type: :integer}, required: false],
+      limit: [in: :query, schema: %OpenApiSpex.Schema{type: :integer}, required: false],
+      user_id: [in: :query, schema: %OpenApiSpex.Schema{type: :string}, required: false],
+      action: [in: :query, schema: %OpenApiSpex.Schema{type: :string}, required: false],
+      resource_type: [in: :query, schema: %OpenApiSpex.Schema{type: :string}, required: false],
+      resource_id: [in: :query, schema: %OpenApiSpex.Schema{type: :string}, required: false],
+      outcome: [in: :query, schema: %OpenApiSpex.Schema{type: :string}, required: false],
+      phi_accessed: [in: :query, schema: %OpenApiSpex.Schema{type: :boolean}, required: false],
+      from: [
+        in: :query,
+        schema: %OpenApiSpex.Schema{type: :string, format: :"date-time"},
+        required: false
+      ],
+      to: [
+        in: :query,
+        schema: %OpenApiSpex.Schema{type: :string, format: :"date-time"},
+        required: false
+      ]
     ],
     responses: [
       ok: {"Audit log list", "application/json", AuditLogListResponse},
@@ -75,7 +85,7 @@ defmodule GAWeb.Api.V1.AuditLogController do
   operation(:show,
     summary: "Get a single audit log entry",
     parameters: [
-      id: [in: :path, type: :string, format: :uuid, required: true]
+      id: [in: :path, schema: %OpenApiSpex.Schema{type: :string, format: :uuid}, required: true]
     ],
     responses: [
       ok: {"Audit log entry", "application/json", AuditLogResponse},

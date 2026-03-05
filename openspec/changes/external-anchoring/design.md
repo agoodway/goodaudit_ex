@@ -1,6 +1,6 @@
 ## Context
 
-GoodAudit has per-account HMAC chains with checkpoints. checksum.dev is a separate service (also operated by Goodway) that provides Ed25519-signed receipts for chain checkpoints. The `checksum_dev` Elixir client library handles HTTP communication, retry logic, and offline signature verification.
+GoodAudit has per-account HMAC chains with checkpoints. checksum.dev is a separate service (also operated by Goodway) that provides Ed25519-signed receipts for chain checkpoints. The `checksum_ex` Elixir client library handles HTTP communication, retry logic, and offline signature verification.
 
 ## Goals / Non-Goals
 
@@ -20,7 +20,7 @@ GoodAudit has per-account HMAC chains with checkpoints. checksum.dev is a separa
 ## Decisions
 
 ### Optional dependency with runtime feature flag
-`checksum_dev` is an optional dep in mix.exs. `GA.Audit.Anchoring.enabled?/0` checks whether the library is loaded AND configured. All anchoring call sites check this before proceeding. When disabled, the system behaves exactly as before — checkpoints created without signatures.
+`checksum_ex` is an optional dep in mix.exs (installed from `https://github.com/agoodway/checksum_ex`). `GA.Audit.Anchoring.enabled?/0` checks whether the library is loaded AND configured. All anchoring call sites check this before proceeding. When disabled, the system behaves exactly as before — checkpoints created without signatures.
 
 ### One checksum.dev account, per-tenant chain_ids
 Rather than each GoodAudit account configuring its own checksum.dev credentials (complex key management), a single checksum.dev account is used for the whole GoodAudit deployment. Per-tenant isolation comes from the `chain_id` field: each GoodAudit account gets `ga-{env}-{account_id}` as its chain identifier. Within checksum.dev, anchors are unique on `(account_id, chain_id, sequence_number)`, so chains never collide.
@@ -35,7 +35,7 @@ Anchoring happens after the checkpoint is committed to the database. If checksum
 Receipt lineage is stored on checkpoints: `signature` (base64 Ed25519 signature), `verified_at` (checksum.dev `anchored_at`), and `signing_key_id` (the checksum.dev key that signed the receipt). `signing_key_id` is required so verification remains deterministic across key rotations/revocations.
 
 ### Offline verification preferred
-The verifier uses `ChecksumDev.verify_receipt/1` for local Ed25519 signature verification (reconstructs canonical payload, checks signature against cached public key). No network call to checksum.dev during chain verification. Key discovery follows checksum.dev key lifecycle semantics (active/rotated/revoked), with cache refresh on unknown `signing_key_id` or failed verification attributable to stale key cache.
+The verifier uses `ChecksumEx.verify_receipt/1` for local Ed25519 signature verification (reconstructs canonical payload, checks signature against cached public key). No network call to checksum.dev during chain verification. Key discovery follows checksum.dev key lifecycle semantics (active/rotated/revoked), with cache refresh on unknown `signing_key_id` or failed verification attributable to stale key cache.
 
 ### Explicit checksum.dev HTTP semantics
 - `201 Created` means new anchor stored; checkpoint receipt fields are persisted.
@@ -56,5 +56,5 @@ If checksum.dev is down for hours, many checkpoints accumulate without signature
 ### Public key caching and rotation
 The checksum.dev client caches account JWKS in ETS. If checksum.dev rotates or revokes signing keys, historical receipts still include `signing_key_id`. The client refreshes key material on unknown key IDs or verification failures that may indicate stale key cache.
 
-### checksum_dev library must be available
-If the hex package isn't published or the dep can't be fetched, the feature simply isn't available. The optional dependency pattern means compilation succeeds without it. `Code.ensure_loaded?(ChecksumDev)` gates all usage.
+### checksum_ex library must be available
+If the GitHub dependency can't be fetched, the feature simply isn't available. The optional dependency pattern means compilation succeeds without it. `Code.ensure_loaded?(ChecksumEx)` gates all usage.

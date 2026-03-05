@@ -17,6 +17,7 @@ defmodule GA.Audit.LogTest do
       outcome: "success",
       failure_reason: nil,
       phi_accessed: true,
+      frameworks: ["hipaa"],
       metadata: %{"source" => "test"}
     }
   end

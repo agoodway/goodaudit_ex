@@ -29,6 +29,7 @@ defmodule GAWeb.Schemas.AuditLogResponse do
           outcome: %Schema{type: :string},
           failure_reason: %Schema{type: :string, nullable: true},
           phi_accessed: %Schema{type: :boolean},
+          frameworks: %Schema{type: :array, items: %Schema{type: :string}},
           metadata: %Schema{type: :object, additionalProperties: true},
           inserted_at: %Schema{type: :string, format: :"date-time"},
           updated_at: %Schema{type: :string, format: :"date-time"}
@@ -46,6 +47,7 @@ defmodule GAWeb.Schemas.AuditLogResponse do
           :timestamp,
           :outcome,
           :phi_accessed,
+          :frameworks,
           :metadata,
           :inserted_at,
           :updated_at

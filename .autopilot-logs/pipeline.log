@@ -959,3 +959,120 @@
 2026/03/03 16:56:50.254261 exec: codex exec --model gpt-5.3-codex --full-auto
 2026/03/03 16:56:50.254265 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/audit-endpoints/phase-3-commit.log
 2026/03/03 16:56:50.256003 exec: process started pid=73228
+2026/03/03 16:57:27.262561 exec: process pid=73228 exited successfully
+2026/03/03 16:57:27.262668 [audit-endpoints] phase 3: commit completed in 37s
+2026/03/03 16:57:27.262687 [audit-endpoints] phase 3 completed in 3m 13s
+2026/03/03 16:57:27.262700 [audit-endpoints] phase 4 (prepare-for-landing) starting
+2026/03/03 16:57:27.262748 [audit-endpoints] phase 4: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/audit-endpoints/phase-4-prepare-for-landing.log
+2026/03/03 16:57:27.262752 [audit-endpoints] phase 4: prompt=Run /prepare-for-landing for the change named "audit-endpoints" located at openspec/changes/audit-endpoints/. Do not ask me any questions — use your best judgment for any decisions.
+2026/03/03 16:57:27.262763 [audit-endpoints] phase 4: launching codex session
+2026/03/03 16:57:27.262777 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/03 16:57:27.262779 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/audit-endpoints/phase-4-prepare-for-landing.log
+2026/03/03 16:57:27.264213 exec: process started pid=75125
+2026/03/03 16:59:27.468300 exec: process pid=75125 exited successfully
+2026/03/03 16:59:27.468591 [audit-endpoints] phase 4: codex session completed in 2m 0s
+2026/03/03 16:59:27.468608 [audit-endpoints] phase 4: running intermediate commit
+2026/03/03 16:59:27.468624 [audit-endpoints] commit phase 4: launching codex session
+2026/03/03 16:59:27.468629 [audit-endpoints] commit phase 4: prompt=Run /git commit with the message "fix(audit-endpoints): address review findings". Do not ask me any questions.
+2026/03/03 16:59:27.468639 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/03 16:59:27.468643 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/audit-endpoints/phase-4-commit.log
+2026/03/03 16:59:27.470079 exec: process started pid=78690
+2026/03/03 16:59:55.922141 exec: process pid=78690 exited successfully
+2026/03/03 16:59:55.922277 [audit-endpoints] phase 4: commit completed in 28s
+2026/03/03 16:59:55.922298 [audit-endpoints] phase 4 completed in 2m 0s
+2026/03/03 16:59:55.922309 [audit-endpoints] phase 5 (land-the-plane) starting
+2026/03/03 16:59:55.922346 [audit-endpoints] phase 5: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/audit-endpoints/phase-5-land-the-plane.log
+2026/03/03 16:59:55.922357 [audit-endpoints] phase 5: prompt=Run /land-the-plane for the change named "audit-endpoints" located at openspec/changes/audit-endpoints/. Do not ask me any questions — use your best judgment for any decisions.
+2026/03/03 16:59:55.922369 [audit-endpoints] phase 5: launching codex session
+2026/03/03 16:59:55.922398 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/03 16:59:55.922401 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/audit-endpoints/phase-5-land-the-plane.log
+2026/03/03 16:59:55.924053 exec: process started pid=80028
+2026/03/03 17:04:07.360453 exec: process pid=80028 exited successfully
+2026/03/03 17:04:07.360772 [audit-endpoints] phase 5: codex session completed in 4m 11s
+2026/03/03 17:04:07.360807 [audit-endpoints] phase 5 completed in 4m 11s
+2026/03/03 17:04:07.360817 change "audit-endpoints" succeeded in 25m 11s
+2026/03/03 17:04:07.360859 all changes completed in 174m 24s
+2026/03/03 17:04:07.360978 === Pipeline finished ===
+2026/03/05 13:26:04.286504 === Pipeline started ===
+2026/03/05 13:26:04.286830   project_dir=/Users/tbrewer/projects/goodway/goodaudit
+2026/03/05 13:26:04.286835   log_dir=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs
+2026/03/05 13:26:04.286838   changes=[compliance-framework-profiles extensible-event-schema regulatory-event-taxonomies]
+2026/03/05 13:26:04.286844   backend=codex model=gpt-5.3-codex start_phase=1
+2026/03/05 13:26:04.286848   phase_timeout=45m0s
+2026/03/05 13:26:04.286852   auto_approve=true dry_run=false no_commit=false show_output=true
+2026/03/05 13:26:04.286872 preflight: starting health check
+2026/03/05 13:26:04.286900 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 13:26:04.286903 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/preflight.log
+2026/03/05 13:26:04.288173 exec: process started pid=98353
+2026/03/05 13:26:08.830843 exec: process pid=98353 exited successfully
+2026/03/05 13:26:08.830936 preflight: passed
+2026/03/05 13:26:08.830954 --- Change 1/3: compliance-framework-profiles (start_phase=1) ---
+2026/03/05 13:26:08.830972 [compliance-framework-profiles] phase 1 (prepare-for-takeoff) starting
+2026/03/05 13:26:08.831071 [compliance-framework-profiles] phase 1: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/compliance-framework-profiles/phase-1-prepare-for-takeoff.log
+2026/03/05 13:26:08.831080 [compliance-framework-profiles] phase 1: prompt=Run /prepare-for-takeoff for the change named "compliance-framework-profiles" located at openspec/changes/compliance-framework-profiles/. Do not ask me any questions — use your best judgment for any decisions.
+2026/03/05 13:26:08.831083 [compliance-framework-profiles] phase 1: launching codex session
+2026/03/05 13:26:08.831097 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 13:26:08.831100 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/compliance-framework-profiles/phase-1-prepare-for-takeoff.log
+2026/03/05 13:26:08.832303 exec: process started pid=98897
+2026/03/05 13:35:20.367753 exec: process pid=98897 exited successfully
+2026/03/05 13:35:20.368047 [compliance-framework-profiles] phase 1: codex session completed in 9m 12s
+2026/03/05 13:35:20.368068 [compliance-framework-profiles] phase 1: running intermediate commit
+2026/03/05 13:35:20.368085 [compliance-framework-profiles] commit phase 1: launching codex session
+2026/03/05 13:35:20.368090 [compliance-framework-profiles] commit phase 1: prompt=Run /git commit with the message "chore(openspec): import tasks for compliance-framework-profiles". Do not ask me any questions.
+2026/03/05 13:35:20.368113 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 13:35:20.368117 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/compliance-framework-profiles/phase-1-commit.log
+2026/03/05 13:35:20.369739 exec: process started pid=21868
+2026/03/05 13:36:39.518929 exec: process pid=21868 exited successfully
+2026/03/05 13:36:39.519264 [compliance-framework-profiles] phase 1: commit completed in 1m 19s
+2026/03/05 13:36:39.519294 [compliance-framework-profiles] phase 1 completed in 9m 12s
+2026/03/05 13:36:39.519308 [compliance-framework-profiles] phase 2 (takeoff) starting
+2026/03/05 13:36:39.519356 [compliance-framework-profiles] phase 2: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/compliance-framework-profiles/phase-2-takeoff.log
+2026/03/05 13:36:39.519363 [compliance-framework-profiles] phase 2: prompt=Run /takeoff for the change named "compliance-framework-profiles" located at openspec/changes/compliance-framework-profiles/. Do not ask me any questions — use your best judgment for any decisions.
+2026/03/05 13:36:39.519377 [compliance-framework-profiles] phase 2: launching codex session
+2026/03/05 13:36:39.519393 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 13:36:39.519396 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/compliance-framework-profiles/phase-2-takeoff.log
+2026/03/05 13:36:39.520819 exec: process started pid=25588
+2026/03/05 13:41:34.770459 exec: process pid=25588 exited successfully
+2026/03/05 13:41:34.770775 [compliance-framework-profiles] phase 2: codex session completed in 4m 55s
+2026/03/05 13:41:34.770803 [compliance-framework-profiles] phase 2: running intermediate commit
+2026/03/05 13:41:34.770814 [compliance-framework-profiles] commit phase 2: launching codex session
+2026/03/05 13:41:34.770818 [compliance-framework-profiles] commit phase 2: prompt=Run /git commit with the message "feat(compliance-framework-profiles): implement changes". Do not ask me any questions.
+2026/03/05 13:41:34.770837 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 13:41:34.770841 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/compliance-framework-profiles/phase-2-commit.log
+2026/03/05 13:41:34.772285 exec: process started pid=38071
+2026/03/05 13:42:27.754845 exec: process pid=38071 exited successfully
+2026/03/05 13:42:27.754936 [compliance-framework-profiles] phase 2: commit completed in 53s
+2026/03/05 13:42:27.754957 [compliance-framework-profiles] phase 2 completed in 4m 55s
+2026/03/05 13:42:27.754970 [compliance-framework-profiles] phase 3 (pre-landing-check) starting
+2026/03/05 13:42:27.755006 [compliance-framework-profiles] phase 3: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/compliance-framework-profiles/phase-3-pre-landing-check.log
+2026/03/05 13:42:27.755011 [compliance-framework-profiles] phase 3: prompt=Run /pre-landing-check for the change named "compliance-framework-profiles" located at openspec/changes/compliance-framework-profiles/. Do not ask me any questions — use your best judgment for any decisions.
+2026/03/05 13:42:27.755015 [compliance-framework-profiles] phase 3: launching codex session
+2026/03/05 13:42:27.755032 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 13:42:27.755035 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/compliance-framework-profiles/phase-3-pre-landing-check.log
+2026/03/05 13:42:27.756453 exec: process started pid=39597
+2026/03/05 13:46:32.108053 exec: process pid=39597 exited successfully
+2026/03/05 13:46:32.108360 [compliance-framework-profiles] phase 3: codex session completed in 4m 4s
+2026/03/05 13:46:32.108379 [compliance-framework-profiles] phase 3: running intermediate commit
+2026/03/05 13:46:32.108396 [compliance-framework-profiles] commit phase 3: launching codex session
+2026/03/05 13:46:32.108401 [compliance-framework-profiles] commit phase 3: prompt=Run /git commit with the message "chore(compliance-framework-profiles): code review findings". Do not ask me any questions.
+2026/03/05 13:46:32.108414 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 13:46:32.108418 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/compliance-framework-profiles/phase-3-commit.log
+2026/03/05 13:46:32.109942 exec: process started pid=46068
+2026/03/05 13:47:48.086484 exec: process pid=46068 exited successfully
+2026/03/05 13:47:48.086756 [compliance-framework-profiles] phase 3: commit completed in 1m 16s
+2026/03/05 13:47:48.086814 [compliance-framework-profiles] phase 3 completed in 4m 4s
+2026/03/05 13:47:48.086838 [compliance-framework-profiles] phase 4 (prepare-for-landing) starting
+2026/03/05 13:47:48.086875 [compliance-framework-profiles] phase 4: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/compliance-framework-profiles/phase-4-prepare-for-landing.log
+2026/03/05 13:47:48.086880 [compliance-framework-profiles] phase 4: prompt=Run /prepare-for-landing for the change named "compliance-framework-profiles" located at openspec/changes/compliance-framework-profiles/. Do not ask me any questions — use your best judgment for any decisions.
+2026/03/05 13:47:48.086883 [compliance-framework-profiles] phase 4: launching codex session
+2026/03/05 13:47:48.086911 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 13:47:48.086915 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/compliance-framework-profiles/phase-4-prepare-for-landing.log
+2026/03/05 13:47:48.089109 exec: process started pid=48021
+2026/03/05 16:09:38.965667 exec: process pid=48021 exited successfully
+2026/03/05 16:09:38.965870 [compliance-framework-profiles] phase 4: codex session completed in 31m 55s
+2026/03/05 16:09:38.965885 [compliance-framework-profiles] phase 4: running intermediate commit
+2026/03/05 16:09:38.965905 [compliance-framework-profiles] commit phase 4: launching codex session
+2026/03/05 16:09:38.965909 [compliance-framework-profiles] commit phase 4: prompt=Run /git commit with the message "fix(compliance-framework-profiles): address review findings". Do not ask me any questions.
+2026/03/05 16:09:38.965925 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 16:09:38.965928 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/compliance-framework-profiles/phase-4-commit.log
+2026/03/05 16:09:38.967301 exec: process started pid=53669

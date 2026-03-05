@@ -68,6 +68,9 @@ defmodule GA.MixProject do
       # HTTP Client (always use Req, never HTTPoison/Tesla)
       {:req, "~> 0.5"},
 
+      # External Anchoring Client
+      {:checksum_ex, github: "agoodway/checksum_ex", optional: true},
+
       # Email
       {:swoosh, "~> 1.16"},
 

@@ -1,19 +1,19 @@
 ## ADDED Requirements
 
-### Requirement: Optional checksum_dev dependency
+### Requirement: Optional checksum_ex dependency
 
-The `checksum_dev` Elixir client library MUST be an optional dependency. When not installed or not configured, all anchoring features MUST be inert — no errors, no log noise, no behavioral changes.
+The `checksum_ex` Elixir client library (installed from `https://github.com/agoodway/checksum_ex`) MUST be an optional dependency. When not installed or not configured, all anchoring features MUST be inert — no errors, no log noise, no behavioral changes.
 
 #### Scenario: Anchoring enabled
-- **WHEN** `checksum_dev` is installed and `CHECKSUM_DEV_URL` + `CHECKSUM_DEV_API_KEY` are set
+- **WHEN** `checksum_ex` is installed and `CHECKSUM_DEV_URL` + `CHECKSUM_DEV_API_KEY` are set
 - **THEN** `GA.Audit.Anchoring.enabled?/0` returns `true`
 
 #### Scenario: Anchoring disabled (no dep)
-- **WHEN** `checksum_dev` is not installed
+- **WHEN** `checksum_ex` is not installed
 - **THEN** `GA.Audit.Anchoring.enabled?/0` returns `false` and no anchoring code is called
 
 #### Scenario: Anchoring disabled (no config)
-- **WHEN** `checksum_dev` is installed but env vars are not set
+- **WHEN** `checksum_ex` is installed but env vars are not set
 - **THEN** `GA.Audit.Anchoring.enabled?/0` returns `false`
 
 ### Requirement: Per-account chain_id derivation
@@ -26,7 +26,7 @@ Each GoodAudit account MUST have a deterministic, unique `chain_id` for use with
 
 ### Requirement: Checkpoint anchoring
 
-`anchor_checkpoint(account_id, checkpoint)` MUST call `ChecksumDev.anchor(chain_id, sequence_number, checksum)` and store receipt fields: `signature` (base64), `anchored_at` (`verified_at`), and `signing_key_id`. It MUST return `{:ok, updated_checkpoint}` when a new anchor is stored, `{:ok, checkpoint}` for idempotent already-anchored checkpoints, or `{:error, reason}` on service/network failure without modifying the checkpoint.
+`anchor_checkpoint(account_id, checkpoint)` MUST call `ChecksumEx.anchor(chain_id, sequence_number, checksum)` and store receipt fields: `signature` (base64), `anchored_at` (`verified_at`), and `signing_key_id`. It MUST return `{:ok, updated_checkpoint}` when a new anchor is stored, `{:ok, checkpoint}` for idempotent already-anchored checkpoints, or `{:error, reason}` on service/network failure without modifying the checkpoint.
 
 #### Scenario: Successful anchoring
 - **WHEN** `anchor_checkpoint/2` is called and checksum.dev responds with a signed receipt
@@ -78,7 +78,7 @@ After creating a checkpoint for an account, the `CheckpointWorker` MUST attempt 
 
 ### Requirement: Anchor verification (offline)
 
-`verify_anchor(checkpoint)` MUST reconstruct a `%ChecksumDev.Receipt{}` from the checkpoint's stored fields (`chain_id_for_account(checkpoint.account_id)`, `sequence_number`, `checksum`, `signature`, `verified_at`, `signing_key_id`) and call `ChecksumDev.verify_receipt/1` for local Ed25519 signature verification. No network call to checksum.dev.
+`verify_anchor(checkpoint)` MUST reconstruct a `%ChecksumEx.Receipt{}` from the checkpoint's stored fields (`chain_id_for_account(checkpoint.account_id)`, `sequence_number`, `checksum`, `signature`, `verified_at`, `signing_key_id`) and call `ChecksumEx.verify_receipt/1` for local Ed25519 signature verification. No network call to checksum.dev.
 
 #### Scenario: Valid anchor
 - **WHEN** `verify_anchor/1` is called on a checkpoint with a valid signature
@@ -117,7 +117,7 @@ The following endpoints MUST be added to the existing router using existing auth
 - **THEN** the checkpoint is anchored and the updated checkpoint is returned in `{"data": {...}}` with `signature`, `verified_at`, and `signing_key_id` populated
 
 #### Scenario: Anchoring not configured
-- **WHEN** any anchoring endpoint is called but checksum_dev is not enabled
+- **WHEN** any anchoring endpoint is called but checksum_ex is not enabled
 - **THEN** the response is HTTP 503 with `{"status": 503, "message": "External anchoring is not configured"}`
 
 #### Scenario: Anchor status

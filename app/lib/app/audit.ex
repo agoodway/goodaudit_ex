@@ -3,11 +3,12 @@ defmodule GA.Audit do
   Business logic for account-scoped append-only audit logs and checkpoints.
   """
 
-  import Ecto.Changeset, only: [put_change: 3]
+  import Ecto.Changeset, only: [add_error: 3, put_change: 3]
   import Ecto.Query, warn: false
 
   alias GA.Accounts
   alias GA.Audit.{Chain, Checkpoint, Log, Verifier}
+  alias GA.Compliance
   alias GA.Repo
 
   @default_limit 50
@@ -20,34 +21,39 @@ defmodule GA.Audit do
   def create_log_entry(account_id, attrs)
       when is_binary(account_id) and (is_map(attrs) or is_list(attrs)) do
     attrs = attrs |> normalize_attrs() |> drop_reserved_chain_keys() |> put_default_timestamp()
+    framework_ids = account_id |> Compliance.active_framework_ids() |> Enum.sort()
 
-    Repo.transaction(fn ->
-      with :ok <- lock_account(account_id),
-           {:ok, hmac_key} <- Accounts.get_hmac_key(account_id),
-           sequence_number <- next_sequence_number(account_id),
-           previous_checksum <- get_previous_checksum(account_id, sequence_number),
-           {:ok, checksum} <-
-             compute_checksum(
-               hmac_key,
-               attrs,
-               account_id,
-               sequence_number,
-               previous_checksum
-             ),
-           changeset <-
-             Log.changeset(%Log{}, attrs)
-             |> apply_chain_fields(account_id, %{
-               sequence_number: sequence_number,
-               checksum: checksum,
-               previous_checksum: previous_checksum
-             }),
-           {:ok, log} <- Repo.insert(changeset) do
-        log
-      else
-        {:error, reason} -> Repo.rollback(reason)
-      end
-    end)
-    |> unwrap_tx_result()
+    with {:ok, framework_ids} <- validate_framework_fields(account_id, attrs, framework_ids) do
+      attrs = Map.put(attrs, :frameworks, framework_ids)
+
+      Repo.transaction(fn ->
+        with :ok <- lock_account(account_id),
+             {:ok, hmac_key} <- Accounts.get_hmac_key(account_id),
+             sequence_number <- next_sequence_number(account_id),
+             previous_checksum <- get_previous_checksum(account_id, sequence_number),
+             {:ok, checksum} <-
+               compute_checksum(
+                 hmac_key,
+                 attrs,
+                 account_id,
+                 sequence_number,
+                 previous_checksum
+               ),
+             changeset <-
+               Log.changeset(%Log{}, attrs)
+               |> apply_chain_fields(account_id, %{
+                 sequence_number: sequence_number,
+                 checksum: checksum,
+                 previous_checksum: previous_checksum
+               }),
+             {:ok, log} <- Repo.insert(changeset) do
+          log
+        else
+          {:error, reason} -> Repo.rollback(reason)
+        end
+      end)
+      |> unwrap_tx_result()
+    end
   end
 
   def create_log_entry(_, _), do: {:error, :invalid_arguments}
@@ -308,4 +314,118 @@ defmodule GA.Audit do
 
   defp unwrap_tx_result({:ok, result}), do: {:ok, result}
   defp unwrap_tx_result({:error, reason}), do: {:error, reason}
+
+  defp validate_framework_fields(_account_id, _attrs, []), do: {:ok, []}
+
+  defp validate_framework_fields(account_id, attrs, framework_ids) do
+    required_fields_by_framework =
+      required_framework_fields(account_id, framework_ids)
+      |> Enum.reduce(%{}, fn {framework_name, fields}, acc ->
+        Enum.reduce(fields, acc, fn field, fields_map ->
+          normalized_field = normalize_required_field(field)
+
+          Map.update(fields_map, normalized_field, [framework_name], fn names ->
+            if framework_name in names, do: names, else: names ++ [framework_name]
+          end)
+        end)
+      end)
+
+    missing_fields =
+      Enum.reduce(required_fields_by_framework, %{}, fn {field, framework_names}, acc ->
+        if missing_framework_field?(attrs, field) do
+          Map.put(acc, field, framework_names)
+        else
+          acc
+        end
+      end)
+
+    if map_size(missing_fields) == 0 do
+      {:ok, framework_ids}
+    else
+      {:error, framework_validation_changeset(attrs, missing_fields)}
+    end
+  end
+
+  defp required_framework_fields(account_id, framework_ids) do
+    associations_by_framework_id =
+      account_id
+      |> Compliance.list_active_frameworks()
+      |> Map.new(fn association -> {association.framework_id, association} end)
+
+    Enum.reduce(framework_ids, [], fn framework_id, acc ->
+      with {:ok, module} <- Compliance.get_framework(framework_id) do
+        additional_required_fields =
+          associations_by_framework_id
+          |> Map.get(framework_id)
+          |> additional_required_fields()
+
+        acc ++ [{module.name(), module.required_fields() ++ additional_required_fields}]
+      else
+        _ -> acc
+      end
+    end)
+  end
+
+  defp additional_required_fields(nil), do: []
+
+  defp additional_required_fields(association) do
+    association.config_overrides
+    |> Map.get("additional_required_fields", [])
+    |> Enum.map(&to_string/1)
+  end
+
+  defp normalize_required_field(field) when is_atom(field), do: Atom.to_string(field)
+  defp normalize_required_field(field) when is_binary(field), do: field
+  defp normalize_required_field(field), do: to_string(field)
+
+  defp missing_framework_field?(attrs, field) when is_atom(field) do
+    missing_framework_field?(attrs, Atom.to_string(field))
+  end
+
+  defp missing_framework_field?(attrs, field) when is_binary(field) do
+    case fetch_attr(attrs, field) do
+      :error -> true
+      {:ok, nil} -> true
+      {:ok, _value} -> false
+    end
+  end
+
+  defp fetch_attr(attrs, field) when is_binary(field) do
+    cond do
+      Map.has_key?(attrs, field) ->
+        {:ok, Map.get(attrs, field)}
+
+      true ->
+        case to_existing_atom(field) do
+          nil -> :error
+          atom -> if Map.has_key?(attrs, atom), do: {:ok, Map.get(attrs, atom)}, else: :error
+        end
+    end
+  end
+
+  defp framework_validation_changeset(attrs, missing_fields) do
+    Enum.reduce(missing_fields, Log.changeset(%Log{}, attrs), fn {field, framework_names},
+                                                                 changeset ->
+      field_atom = field |> to_string() |> to_error_atom()
+
+      Enum.reduce(framework_names, changeset, fn framework_name, inner_changeset ->
+        add_error(inner_changeset, field_atom, "required by #{framework_name}")
+      end)
+    end)
+  end
+
+  defp to_error_atom(field) when is_binary(field) do
+    case to_existing_atom(field) do
+      nil -> String.to_atom(field)
+      atom -> atom
+    end
+  end
+
+  defp to_existing_atom(field) when is_binary(field) do
+    try do
+      String.to_existing_atom(field)
+    rescue
+      ArgumentError -> nil
+    end
+  end
 end

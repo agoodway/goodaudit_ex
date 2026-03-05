@@ -34,6 +34,7 @@ defmodule GAWeb.Api.V1.AuditLogJSON do
       outcome: log.outcome,
       failure_reason: log.failure_reason,
       phi_accessed: log.phi_accessed,
+      frameworks: Enum.sort(log.frameworks || []),
       metadata: log.metadata || %{},
       inserted_at: iso8601(log.inserted_at),
       updated_at: iso8601(log.updated_at)

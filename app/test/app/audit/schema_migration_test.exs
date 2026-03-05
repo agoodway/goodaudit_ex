@@ -113,6 +113,41 @@ defmodule GA.Audit.SchemaMigrationTest do
     )
   end
 
+  defp insert_account_framework(attrs) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    defaults = %{
+      id: Ecto.UUID.generate(),
+      framework_id: "hipaa",
+      activated_at: now,
+      config_overrides: %{},
+      inserted_at: now,
+      updated_at: now
+    }
+
+    attrs = Map.merge(defaults, attrs)
+
+    SQL.query(
+      Repo,
+      """
+      INSERT INTO account_compliance_frameworks (
+        id, account_id, framework_id, activated_at, config_overrides, inserted_at, updated_at
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7
+      )
+      """,
+      [
+        attrs.id,
+        attrs.account_id,
+        attrs.framework_id,
+        attrs.activated_at,
+        attrs.config_overrides,
+        attrs.inserted_at,
+        attrs.updated_at
+      ]
+    )
+  end
+
   test "audit tables exist with account_id foreign keys" do
     assert {:ok, %{rows: [[1]]}} =
              SQL.query(
@@ -125,6 +160,13 @@ defmodule GA.Audit.SchemaMigrationTest do
              SQL.query(
                Repo,
                "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'audit_checkpoints'",
+               []
+             )
+
+    assert {:ok, %{rows: [[1]]}} =
+             SQL.query(
+               Repo,
+               "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'account_compliance_frameworks'",
                []
              )
 
@@ -165,6 +207,28 @@ defmodule GA.Audit.SchemaMigrationTest do
                WHERE tc.constraint_type = 'FOREIGN KEY'
                  AND tc.table_schema = 'public'
                  AND tc.table_name = 'audit_checkpoints'
+                 AND kcu.column_name = 'account_id'
+                 AND ccu.table_name = 'accounts'
+               LIMIT 1
+               """,
+               []
+             )
+
+    assert {:ok, %{rows: [[1]]}} =
+             SQL.query(
+               Repo,
+               """
+               SELECT 1
+               FROM information_schema.table_constraints tc
+               JOIN information_schema.key_column_usage kcu
+                 ON tc.constraint_name = kcu.constraint_name
+                 AND tc.table_schema = kcu.table_schema
+               JOIN information_schema.constraint_column_usage ccu
+                 ON tc.constraint_name = ccu.constraint_name
+                 AND tc.table_schema = ccu.table_schema
+               WHERE tc.constraint_type = 'FOREIGN KEY'
+                 AND tc.table_schema = 'public'
+                 AND tc.table_name = 'account_compliance_frameworks'
                  AND kcu.column_name = 'account_id'
                  AND ccu.table_name = 'accounts'
                LIMIT 1
@@ -268,6 +332,49 @@ defmodule GA.Audit.SchemaMigrationTest do
              insert_audit_log(%{
                account_id: account.id,
                outcome: "partial"
+             })
+  end
+
+  test "audit_logs frameworks column defaults to empty array" do
+    account = account_fixture()
+    id = Ecto.UUID.generate()
+
+    assert {:ok, _result} =
+             insert_audit_log(%{
+               id: id,
+               account_id: account.id
+             })
+
+    assert {:ok, %{rows: [[frameworks]]}} =
+             SQL.query(
+               Repo,
+               "SELECT frameworks FROM audit_logs WHERE id = $1",
+               [id]
+             )
+
+    assert frameworks == []
+  end
+
+  test "duplicate [account_id, framework_id] in account_compliance_frameworks is rejected" do
+    account = account_fixture()
+
+    assert {:ok, _result} =
+             insert_account_framework(%{
+               account_id: account.id,
+               framework_id: "hipaa"
+             })
+
+    assert {:error, %Postgrex.Error{postgres: %{code: :unique_violation}}} =
+             insert_account_framework(%{
+               account_id: account.id,
+               framework_id: "hipaa"
+             })
+  end
+
+  test "account_compliance_frameworks rejects non-existent account_id foreign key" do
+    assert {:error, %Postgrex.Error{postgres: %{code: :foreign_key_violation}}} =
+             insert_account_framework(%{
+               account_id: Ecto.UUID.generate()
              })
   end
 

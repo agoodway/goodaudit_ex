@@ -5,10 +5,13 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
 
   alias GA.Accounts
   alias GA.Audit
+  alias GA.Compliance
 
   describe "POST /api/v1/audit-logs" do
     test "returns 201 for valid payload with private key", %{conn: conn} do
       %{account: account, private_token: private_token} = account_api_context()
+
+      assert {:ok, _association} = Compliance.activate_framework(account.id, "hipaa")
 
       payload =
         valid_audit_payload(%{
@@ -27,6 +30,7 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
       assert data["sequence_number"] == 1
       assert is_binary(data["checksum"])
       assert String.length(data["checksum"]) == 64
+      assert data["frameworks"] == ["hipaa"]
     end
 
     test "returns 422 for invalid payload", %{conn: conn} do
@@ -40,6 +44,27 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
 
       assert is_map(response["errors"])
       assert response["errors"]["user_id"] == ["can't be blank"]
+    end
+
+    test "returns framework-attributed 422 errors for missing framework-required fields", %{
+      conn: conn
+    } do
+      %{account: account, private_token: private_token} = account_api_context()
+      assert {:ok, _hipaa} = Compliance.activate_framework(account.id, "hipaa")
+      assert {:ok, _soc2} = Compliance.activate_framework(account.id, "soc2")
+
+      payload =
+        valid_audit_payload()
+        |> Map.delete("source_ip")
+
+      response =
+        conn
+        |> api_key_conn(private_token)
+        |> post("/api/v1/audit-logs", payload)
+        |> json_response(422)
+
+      assert "required by HIPAA" in response["errors"]["source_ip"]
+      assert "required by SOC 2 Type II" in response["errors"]["source_ip"]
     end
 
     test "returns 401 without token", %{conn: conn} do
@@ -82,6 +107,7 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
       assert response["meta"]["count"] == 2
       assert response["meta"]["next_cursor"] == 2
       assert Enum.all?(response["data"], &(&1["account_id"] == account.id))
+      assert Enum.all?(response["data"], &is_list(&1["frameworks"]))
     end
 
     test "applies query filters with typed parameter parsing", %{conn: conn} do
@@ -252,6 +278,48 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
     end
   end
 
+  describe "GET /api/v1/openapi" do
+    test "includes frameworks field on audit responses and framework-attributed 422 docs", %{
+      conn: conn
+    } do
+      spec =
+        conn
+        |> put_req_header("accept", "application/json")
+        |> get("/api/v1/openapi")
+        |> json_response(200)
+
+      response_fields =
+        get_in(spec, [
+          "components",
+          "schemas",
+          "AuditLogResponse",
+          "properties",
+          "data",
+          "properties"
+        ])
+
+      list_fields =
+        get_in(spec, [
+          "components",
+          "schemas",
+          "AuditLogListResponse",
+          "properties",
+          "data",
+          "items",
+          "properties"
+        ])
+
+      post_422_description =
+        get_in(spec, ["paths", "/api/v1/audit-logs", "post", "responses", "422", "description"])
+
+      assert is_map(response_fields)
+      assert is_map(list_fields)
+      assert Map.has_key?(response_fields, "frameworks")
+      assert Map.has_key?(list_fields, "frameworks")
+      assert post_422_description =~ "required by HIPAA"
+    end
+  end
+
   defp account_api_context(user \\ nil) do
     user = user || user_fixture()
 
@@ -286,7 +354,7 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
     |> Enum.into(%{}, fn {key, value} -> {to_string(key), value} end)
   end
 
-  defp valid_audit_attrs(overrides \\ %{}) do
+  defp valid_audit_attrs(overrides) do
     defaults = %{
       user_id: Ecto.UUID.generate(),
       user_role: "admin",

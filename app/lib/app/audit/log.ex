@@ -29,6 +29,7 @@ defmodule GA.Audit.Log do
     field(:outcome, :string)
     field(:failure_reason, :string)
     field(:phi_accessed, :boolean, default: false)
+    field(:frameworks, {:array, :string}, default: [])
     field(:metadata, :map, default: %{})
 
     timestamps(type: :utc_datetime_usec)
@@ -56,6 +57,7 @@ defmodule GA.Audit.Log do
       :outcome,
       :failure_reason,
       :phi_accessed,
+      :frameworks,
       :metadata
     ])
     |> validate_required([

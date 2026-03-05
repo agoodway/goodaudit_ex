@@ -19,6 +19,7 @@ defmodule GA.Audit.ChainTest do
       :phi_accessed,
       :source_ip,
       :user_agent,
+      :frameworks,
       :metadata,
       :checksum
     ]
@@ -43,6 +44,7 @@ defmodule GA.Audit.ChainTest do
       phi_accessed: true,
       source_ip: "127.0.0.1",
       user_agent: "Mozilla/5.0",
+      frameworks: [],
       metadata: %{"zeta" => 2, "alpha" => 1}
     }
   end
@@ -77,6 +79,7 @@ defmodule GA.Audit.ChainTest do
         {:phi_accessed, Map.put(attrs, :phi_accessed, false)},
         {:source_ip, Map.put(attrs, :source_ip, "10.0.0.1")},
         {:user_agent, Map.put(attrs, :user_agent, "curl/8.6.0")},
+        {:frameworks, Map.put(attrs, :frameworks, ["hipaa"])},
         {:metadata, Map.put(attrs, :metadata, %{"alpha" => 1, "zeta" => 3})}
       ]
       |> Enum.map(fn {field, mutated_attrs} ->
@@ -114,10 +117,26 @@ defmodule GA.Audit.ChainTest do
     payload = Chain.canonical_payload(attrs, nil)
     parts = String.split(payload, "|")
 
-    assert Enum.at(parts, 5) == ""
-    assert Enum.at(parts, 10) == ""
-    assert Enum.at(parts, 12) == ""
+    assert Enum.at(parts, 6) == ""
+    assert Enum.at(parts, 11) == ""
     assert Enum.at(parts, 13) == ""
+    assert Enum.at(parts, 14) == ""
+  end
+
+  test "frameworks segment is canonicalized as sorted comma-joined values" do
+    payload =
+      base_attrs()
+      |> Map.put(:frameworks, ["soc2", "hipaa"])
+      |> Chain.canonical_payload(nil)
+
+    parts = String.split(payload, "|")
+    assert Enum.at(parts, 15) == "hipaa,soc2"
+  end
+
+  test "empty frameworks serialize as empty canonical segment" do
+    payload = Chain.canonical_payload(base_attrs(), nil)
+    parts = String.split(payload, "|")
+    assert Enum.at(parts, 15) == ""
   end
 
   test "metadata key ordering independence yields same checksum" do
@@ -247,5 +266,14 @@ defmodule GA.Audit.ChainTest do
     entry = struct(AuditLog, Map.put(attrs, :checksum, "invalid"))
 
     refute Chain.verify_checksum(@key_1, entry, nil)
+  end
+
+  test "verify_checksum returns false when frameworks are tampered" do
+    attrs = base_attrs() |> Map.put(:frameworks, ["hipaa"])
+    checksum = Chain.compute_checksum(@key_1, attrs, nil)
+    entry = struct(AuditLog, Map.put(attrs, :checksum, checksum))
+    tampered = %{entry | frameworks: ["hipaa", "soc2"]}
+
+    refute Chain.verify_checksum(@key_1, tampered, nil)
   end
 end

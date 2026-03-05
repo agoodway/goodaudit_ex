@@ -4,7 +4,7 @@ Current API access is split by read (`pk_*`) and write (`sk_*`) only. Lead distr
 
 ## What Changes
 
-1. **Scope model for API keys** - Introduce explicit scopes (for example: ingest, query, verify, checkpoint, anchor, admin).
+1. **Scope model for API keys** - Introduce explicit scopes (for example: ingest, query, verify, checkpoint, anchor, admin) with support for core and profile capability namespaces.
 2. **Resource constraints** - Add optional scope constraints by source, buyer, campaign, or namespace.
 3. **Environment isolation** - Support environment-level scoping to prevent cross-environment credential misuse.
 4. **Least-privilege key lifecycle** - Add key issuance/review/revocation flows with scope metadata and audit requirements.

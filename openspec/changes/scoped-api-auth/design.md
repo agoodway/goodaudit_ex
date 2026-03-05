@@ -20,6 +20,9 @@ API authorization currently distinguishes only read (`pk_*`) vs write (`sk_*`). 
 ### Extend API keys with scope grants
 Persist structured scope grants per key and resolve grants at auth time in `ApiAuth`.
 
+### Support core and profile scope namespaces
+Scope grants can target core capabilities and optional domain profile capabilities (for example `query:core`, `query:lead`).
+
 ### Keep authn and authz separate in plug flow
 Authentication resolves key/account/user context first; authorization checks required scopes per route/controller action.
 
