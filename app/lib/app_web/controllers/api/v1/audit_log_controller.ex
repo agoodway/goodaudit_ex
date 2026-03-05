@@ -26,7 +26,7 @@ defmodule GAWeb.Api.V1.AuditLogController do
     responses: [
       created: {"Audit log entry", "application/json", AuditLogResponse},
       unprocessable_entity:
-        {"Validation error (framework attribution example: {\"errors\": {\"source_ip\": [\"required by HIPAA\"]}})",
+        {"Validation error (example: {\"errors\": {\"extensions\": [\"hipaa.user_role is required\"]}})",
          "application/json", ErrorResponse},
       unauthorized: {"Unauthorized", "application/json", ErrorResponse},
       forbidden: {"Forbidden", "application/json", ErrorResponse}
@@ -49,12 +49,17 @@ defmodule GAWeb.Api.V1.AuditLogController do
     parameters: [
       after_sequence: [in: :query, schema: %OpenApiSpex.Schema{type: :integer}, required: false],
       limit: [in: :query, schema: %OpenApiSpex.Schema{type: :integer}, required: false],
-      user_id: [in: :query, schema: %OpenApiSpex.Schema{type: :string}, required: false],
+      actor_id: [in: :query, schema: %OpenApiSpex.Schema{type: :string}, required: false],
       action: [in: :query, schema: %OpenApiSpex.Schema{type: :string}, required: false],
       resource_type: [in: :query, schema: %OpenApiSpex.Schema{type: :string}, required: false],
       resource_id: [in: :query, schema: %OpenApiSpex.Schema{type: :string}, required: false],
       outcome: [in: :query, schema: %OpenApiSpex.Schema{type: :string}, required: false],
-      phi_accessed: [in: :query, schema: %OpenApiSpex.Schema{type: :boolean}, required: false],
+      extensions: [
+        in: :query,
+        schema: %OpenApiSpex.Schema{type: :string},
+        required: false,
+        description: "JSON object for extensions containment filtering"
+      ],
       from: [
         in: :query,
         schema: %OpenApiSpex.Schema{type: :string, format: :"date-time"},
@@ -108,12 +113,12 @@ defmodule GAWeb.Api.V1.AuditLogController do
     [
       {:after_sequence, parse_integer(params["after_sequence"])},
       {:limit, parse_integer(params["limit"])},
-      {:user_id, present_string(params["user_id"])},
+      {:actor_id, present_string(params["actor_id"])},
       {:action, present_string(params["action"])},
       {:resource_type, present_string(params["resource_type"])},
       {:resource_id, present_string(params["resource_id"])},
       {:outcome, present_string(params["outcome"])},
-      {:phi_accessed, parse_boolean(params["phi_accessed"])},
+      {:extensions, parse_extensions(params["extensions"])},
       {:from, parse_datetime(params["from"])},
       {:to, parse_datetime(params["to"])}
     ]
@@ -131,10 +136,16 @@ defmodule GAWeb.Api.V1.AuditLogController do
 
   defp parse_integer(_), do: nil
 
-  defp parse_boolean(value) when is_boolean(value), do: value
-  defp parse_boolean("true"), do: true
-  defp parse_boolean("false"), do: false
-  defp parse_boolean(_), do: nil
+  defp parse_extensions(%{} = extensions), do: extensions
+
+  defp parse_extensions(value) when is_binary(value) do
+    case Jason.decode(value) do
+      {:ok, %{} = extensions} -> extensions
+      _ -> nil
+    end
+  end
+
+  defp parse_extensions(_), do: nil
 
   defp parse_datetime(%DateTime{} = datetime), do: datetime
 

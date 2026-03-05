@@ -171,6 +171,7 @@ defmodule GA.Audit.VerifierTest do
 
   defp valid_attrs(overrides \\ %{}) do
     defaults = %{
+      actor_id: Ecto.UUID.generate(),
       user_id: Ecto.UUID.generate(),
       user_role: "admin",
       session_id: "session-#{System.unique_integer([:positive])}",

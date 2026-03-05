@@ -15,7 +15,8 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
 
       payload =
         valid_audit_payload(%{
-          "resource_id" => "patient-123"
+          "resource_id" => "patient-123",
+          "extensions" => %{"hipaa" => %{"phi_accessed" => true, "user_role" => "admin"}}
         })
 
       response =
@@ -43,7 +44,7 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
         |> json_response(422)
 
       assert is_map(response["errors"])
-      assert response["errors"]["user_id"] == ["can't be blank"]
+      assert response["errors"]["actor_id"] == ["can't be blank"]
     end
 
     test "returns framework-attributed 422 errors for missing framework-required fields", %{
@@ -55,7 +56,7 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
 
       payload =
         valid_audit_payload()
-        |> Map.delete("source_ip")
+        |> Map.put("extensions", %{"hipaa" => %{"phi_accessed" => true}})
 
       response =
         conn
@@ -63,8 +64,7 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
         |> post("/api/v1/audit-logs", payload)
         |> json_response(422)
 
-      assert "required by HIPAA" in response["errors"]["source_ip"]
-      assert "required by SOC 2 Type II" in response["errors"]["source_ip"]
+      assert "hipaa.user_role is required" in response["errors"]["extensions"]
     end
 
     test "returns 401 without token", %{conn: conn} do
@@ -112,6 +112,7 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
 
     test "applies query filters with typed parameter parsing", %{conn: conn} do
       %{account: account, public_token: public_token} = account_api_context()
+      assert {:ok, _association} = Compliance.activate_framework(account.id, "hipaa")
 
       in_window = ~U[2026-03-03 10:00:00Z]
       out_of_window = ~U[2026-03-01 10:00:00Z]
@@ -120,9 +121,9 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
                Audit.create_log_entry(
                  account.id,
                  valid_audit_attrs(%{
-                   user_id: "user-1",
+                   actor_id: "actor-1",
                    action: "read",
-                   phi_accessed: true,
+                   extensions: %{"hipaa" => %{"phi_accessed" => true, "user_role" => "admin"}},
                    timestamp: in_window,
                    resource_id: "first-match"
                  })
@@ -132,9 +133,9 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
                Audit.create_log_entry(
                  account.id,
                  valid_audit_attrs(%{
-                   user_id: "user-1",
+                   actor_id: "actor-1",
                    action: "read",
-                   phi_accessed: true,
+                   extensions: %{"hipaa" => %{"phi_accessed" => true, "user_role" => "admin"}},
                    timestamp: in_window,
                    resource_id: "second-match"
                  })
@@ -144,9 +145,9 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
                Audit.create_log_entry(
                  account.id,
                  valid_audit_attrs(%{
-                   user_id: "user-1",
+                   actor_id: "actor-1",
                    action: "read",
-                   phi_accessed: false,
+                   extensions: %{"hipaa" => %{"phi_accessed" => false, "user_role" => "admin"}},
                    timestamp: in_window,
                    resource_id: "wrong-phi"
                  })
@@ -156,9 +157,9 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
                Audit.create_log_entry(
                  account.id,
                  valid_audit_attrs(%{
-                   user_id: "user-2",
+                   actor_id: "actor-2",
                    action: "read",
-                   phi_accessed: true,
+                   extensions: %{"hipaa" => %{"phi_accessed" => true, "user_role" => "admin"}},
                    timestamp: in_window,
                    resource_id: "wrong-user"
                  })
@@ -168,9 +169,9 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
                Audit.create_log_entry(
                  account.id,
                  valid_audit_attrs(%{
-                   user_id: "user-1",
+                   actor_id: "actor-1",
                    action: "read",
-                   phi_accessed: true,
+                   extensions: %{"hipaa" => %{"phi_accessed" => true, "user_role" => "admin"}},
                    timestamp: out_of_window,
                    resource_id: "wrong-time"
                  })
@@ -182,9 +183,9 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
         |> get("/api/v1/audit-logs", %{
           "after_sequence" => "1",
           "limit" => "1",
-          "user_id" => "user-1",
+          "actor_id" => "actor-1",
           "action" => "read",
-          "phi_accessed" => "true",
+          "extensions" => Jason.encode!(%{"hipaa" => %{"phi_accessed" => true}}),
           "from" => DateTime.to_iso8601(~U[2026-03-03 00:00:00Z]),
           "to" => DateTime.to_iso8601(~U[2026-03-03 23:59:59Z])
         })
@@ -279,7 +280,7 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
   end
 
   describe "GET /api/v1/openapi" do
-    test "includes frameworks field on audit responses and framework-attributed 422 docs", %{
+    test "includes actor_id and extensions fields on audit responses and 422 docs", %{
       conn: conn
     } do
       spec =
@@ -314,9 +315,13 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
 
       assert is_map(response_fields)
       assert is_map(list_fields)
+      assert Map.has_key?(response_fields, "actor_id")
+      assert Map.has_key?(response_fields, "extensions")
+      assert Map.has_key?(list_fields, "actor_id")
+      assert Map.has_key?(list_fields, "extensions")
       assert Map.has_key?(response_fields, "frameworks")
       assert Map.has_key?(list_fields, "frameworks")
-      assert post_422_description =~ "required by HIPAA"
+      assert post_422_description =~ "hipaa.user_role is required"
     end
   end
 
@@ -356,18 +361,13 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
 
   defp valid_audit_attrs(overrides) do
     defaults = %{
-      user_id: Ecto.UUID.generate(),
-      user_role: "admin",
-      session_id: "session-#{System.unique_integer([:positive])}",
+      actor_id: Ecto.UUID.generate(),
       action: "read",
       resource_type: "patient",
       resource_id: Ecto.UUID.generate(),
       timestamp: ~U[2026-03-03 16:00:00Z],
-      source_ip: "127.0.0.1",
-      user_agent: "ExUnit",
       outcome: "success",
-      failure_reason: nil,
-      phi_accessed: false,
+      extensions: %{},
       metadata: %{"source" => "audit_log_controller_test"}
     }
 

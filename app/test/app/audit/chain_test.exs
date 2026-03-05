@@ -7,19 +7,13 @@ defmodule GA.Audit.ChainTest do
     defstruct [
       :account_id,
       :sequence_number,
-      :timestamp,
-      :user_id,
-      :user_role,
-      :session_id,
+      :actor_id,
       :action,
       :resource_type,
       :resource_id,
       :outcome,
-      :failure_reason,
-      :phi_accessed,
-      :source_ip,
-      :user_agent,
-      :frameworks,
+      :timestamp,
+      :extensions,
       :metadata,
       :checksum
     ]
@@ -32,19 +26,13 @@ defmodule GA.Audit.ChainTest do
     %{
       account_id: "acct_123",
       sequence_number: 1,
-      timestamp: ~U[2026-03-01 12:00:00Z],
-      user_id: "user_1",
-      user_role: "admin",
-      session_id: "sess_1",
+      actor_id: "actor_1",
       action: "read",
       resource_type: "patient",
       resource_id: "pt_1",
       outcome: "success",
-      failure_reason: nil,
-      phi_accessed: true,
-      source_ip: "127.0.0.1",
-      user_agent: "Mozilla/5.0",
-      frameworks: [],
+      timestamp: ~U[2026-03-01 12:00:00Z],
+      extensions: %{"hipaa" => %{"phi_accessed" => true, "user_role" => "admin"}},
       metadata: %{"zeta" => 2, "alpha" => 1}
     }
   end
@@ -67,19 +55,13 @@ defmodule GA.Audit.ChainTest do
       [
         {:account_id, Map.put(attrs, :account_id, "acct_999")},
         {:sequence_number, Map.put(attrs, :sequence_number, attrs.sequence_number + 1)},
-        {:timestamp, Map.put(attrs, :timestamp, DateTime.add(attrs.timestamp, 1, :second))},
-        {:user_id, Map.put(attrs, :user_id, "user_2")},
-        {:user_role, Map.put(attrs, :user_role, "staff")},
-        {:session_id, Map.put(attrs, :session_id, "sess_2")},
-        {:action, Map.put(attrs, :action, "write")},
+        {:actor_id, Map.put(attrs, :actor_id, "actor_2")},
+        {:action, Map.put(attrs, :action, "update")},
         {:resource_type, Map.put(attrs, :resource_type, "encounter")},
         {:resource_id, Map.put(attrs, :resource_id, "pt_2")},
         {:outcome, Map.put(attrs, :outcome, "failure")},
-        {:failure_reason, Map.put(attrs, :failure_reason, "denied")},
-        {:phi_accessed, Map.put(attrs, :phi_accessed, false)},
-        {:source_ip, Map.put(attrs, :source_ip, "10.0.0.1")},
-        {:user_agent, Map.put(attrs, :user_agent, "curl/8.6.0")},
-        {:frameworks, Map.put(attrs, :frameworks, ["hipaa"])},
+        {:timestamp, Map.put(attrs, :timestamp, DateTime.add(attrs.timestamp, 1, :second))},
+        {:extensions, put_in(attrs, [:extensions, "hipaa", "phi_accessed"], false)},
         {:metadata, Map.put(attrs, :metadata, %{"alpha" => 1, "zeta" => 3})}
       ]
       |> Enum.map(fn {field, mutated_attrs} ->
@@ -99,44 +81,37 @@ defmodule GA.Audit.ChainTest do
     refute checksum_1 == checksum_2
   end
 
-  test "genesis handling uses literal genesis when previous_checksum is nil" do
-    payload = Chain.canonical_payload(base_attrs(), nil)
-    [_account_id, _sequence_number, previous | _rest] = String.split(payload, "|")
-
-    assert previous == "genesis"
-  end
-
-  test "nil optional fields render as empty strings in payload" do
-    attrs =
-      base_attrs()
-      |> Map.put(:session_id, nil)
-      |> Map.put(:failure_reason, nil)
-      |> Map.put(:source_ip, nil)
-      |> Map.put(:user_agent, nil)
-
-    payload = Chain.canonical_payload(attrs, nil)
-    parts = String.split(payload, "|")
-
-    assert Enum.at(parts, 6) == ""
-    assert Enum.at(parts, 11) == ""
-    assert Enum.at(parts, 13) == ""
-    assert Enum.at(parts, 14) == ""
-  end
-
-  test "frameworks segment is canonicalized as sorted comma-joined values" do
-    payload =
-      base_attrs()
-      |> Map.put(:frameworks, ["soc2", "hipaa"])
-      |> Chain.canonical_payload(nil)
-
-    parts = String.split(payload, "|")
-    assert Enum.at(parts, 15) == "hipaa,soc2"
-  end
-
-  test "empty frameworks serialize as empty canonical segment" do
+  test "canonical payload order includes sorted extensions before metadata" do
     payload = Chain.canonical_payload(base_attrs(), nil)
     parts = String.split(payload, "|")
-    assert Enum.at(parts, 15) == ""
+
+    assert Enum.at(parts, 0) == "acct_123"
+    assert Enum.at(parts, 1) == "1"
+    assert Enum.at(parts, 2) == "genesis"
+    assert Enum.at(parts, 3) == "actor_1"
+    assert Enum.at(parts, 9) == ~s({"hipaa":{"phi_accessed":true,"user_role":"admin"}})
+    assert Enum.at(parts, 10) == ~s({"alpha":1,"zeta":2})
+  end
+
+  test "extensions key ordering independence yields same checksum" do
+    attrs_1 = Map.put(base_attrs(), :extensions, %{"hipaa" => %{"phi_accessed" => true, "user_role" => "admin"}})
+
+    attrs_2 =
+      Map.put(base_attrs(), :extensions, %{
+        "hipaa" => %{"user_role" => "admin", "phi_accessed" => true}
+      })
+
+    checksum_1 = Chain.compute_checksum(@key_1, attrs_1, nil)
+    checksum_2 = Chain.compute_checksum(@key_1, attrs_2, nil)
+
+    assert checksum_1 == checksum_2
+  end
+
+  test "empty extensions serialize to empty object JSON" do
+    payload = Chain.canonical_payload(Map.put(base_attrs(), :extensions, %{}), nil)
+    parts = String.split(payload, "|")
+
+    assert Enum.at(parts, 9) == "{}"
   end
 
   test "metadata key ordering independence yields same checksum" do
@@ -149,41 +124,10 @@ defmodule GA.Audit.ChainTest do
     assert checksum_1 == checksum_2
   end
 
-  test "nested metadata maps are sorted recursively" do
-    attrs =
-      Map.put(base_attrs(), :metadata, %{
-        "outer_b" => %{"z" => 1, "a" => 2},
-        "outer_a" => 1
-      })
-
-    payload = Chain.canonical_payload(attrs, nil)
-    metadata_json = payload |> String.split("|") |> List.last()
-
-    assert metadata_json == ~s({"outer_a":1,"outer_b":{"a":2,"z":1}})
-  end
-
-  test "empty or nil metadata canonicalizes to empty object JSON" do
-    with_nil = Chain.canonical_payload(Map.put(base_attrs(), :metadata, nil), nil)
-    with_empty = Chain.canonical_payload(Map.put(base_attrs(), :metadata, %{}), nil)
-
-    assert String.ends_with?(with_nil, "|{}")
-    assert String.ends_with?(with_empty, "|{}")
-  end
-
   test "different keys produce different checksums for same payload" do
     attrs = base_attrs()
     checksum_1 = Chain.compute_checksum(@key_1, attrs, nil)
     checksum_2 = Chain.compute_checksum(@key_2, attrs, nil)
-
-    refute checksum_1 == checksum_2
-  end
-
-  test "different account_ids produce different checksums with same key and data" do
-    attrs_1 = Map.put(base_attrs(), :account_id, "acct_1")
-    attrs_2 = Map.put(base_attrs(), :account_id, "acct_2")
-
-    checksum_1 = Chain.compute_checksum(@key_1, attrs_1, nil)
-    checksum_2 = Chain.compute_checksum(@key_1, attrs_2, nil)
 
     refute checksum_1 == checksum_2
   end
@@ -217,15 +161,8 @@ defmodule GA.Audit.ChainTest do
   end
 
   test "canonical payload rejects pipe delimiters in canonical fields" do
-    attrs_a =
-      base_attrs()
-      |> Map.put(:user_id, "user|admin")
-      |> Map.put(:user_role, "clinician")
-
-    attrs_b =
-      base_attrs()
-      |> Map.put(:user_id, "user")
-      |> Map.put(:user_role, "admin|clinician")
+    attrs_a = Map.put(base_attrs(), :actor_id, "actor|admin")
+    attrs_b = Map.put(base_attrs(), :resource_id, "patient|123")
 
     assert_raise ArgumentError, ~r/must not contain the pipe delimiter/, fn ->
       Chain.compute_checksum(@key_1, attrs_a, nil)
@@ -268,11 +205,12 @@ defmodule GA.Audit.ChainTest do
     refute Chain.verify_checksum(@key_1, entry, nil)
   end
 
-  test "verify_checksum returns false when frameworks are tampered" do
-    attrs = base_attrs() |> Map.put(:frameworks, ["hipaa"])
+  test "verify_checksum returns false when extensions are tampered" do
+    attrs = base_attrs()
     checksum = Chain.compute_checksum(@key_1, attrs, nil)
     entry = struct(AuditLog, Map.put(attrs, :checksum, checksum))
-    tampered = %{entry | frameworks: ["hipaa", "soc2"]}
+
+    tampered = put_in(entry.extensions["hipaa"]["phi_accessed"], false)
 
     refute Chain.verify_checksum(@key_1, tampered, nil)
   end

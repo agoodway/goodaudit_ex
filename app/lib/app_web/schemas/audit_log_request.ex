@@ -9,9 +9,7 @@ defmodule GAWeb.Schemas.AuditLogRequest do
     title: "AuditLogRequest",
     type: :object,
     properties: %{
-      user_id: %Schema{type: :string, format: :uuid},
-      user_role: %Schema{type: :string},
-      session_id: %Schema{type: :string, nullable: true},
+      actor_id: %Schema{type: :string},
       action: %Schema{
         type: :string,
         enum: GA.Audit.Log.valid_actions()
@@ -19,16 +17,13 @@ defmodule GAWeb.Schemas.AuditLogRequest do
       resource_type: %Schema{type: :string},
       resource_id: %Schema{type: :string},
       timestamp: %Schema{type: :string, format: :"date-time", nullable: true},
-      source_ip: %Schema{type: :string, nullable: true},
-      user_agent: %Schema{type: :string, nullable: true},
       outcome: %Schema{
         type: :string,
         enum: GA.Audit.Log.valid_outcomes()
       },
-      failure_reason: %Schema{type: :string, nullable: true},
-      phi_accessed: %Schema{type: :boolean},
+      extensions: %Schema{type: :object, additionalProperties: true},
       metadata: %Schema{type: :object, additionalProperties: true}
     },
-    required: [:user_id, :user_role, :action, :resource_type, :resource_id, :outcome]
+    required: [:actor_id, :action, :resource_type, :resource_id, :outcome]
   })
 end

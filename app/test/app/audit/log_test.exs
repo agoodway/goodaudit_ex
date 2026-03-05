@@ -5,18 +5,13 @@ defmodule GA.Audit.LogTest do
 
   defp valid_attrs do
     %{
-      user_id: Ecto.UUID.generate(),
-      user_role: "admin",
-      session_id: "sess_123",
+      actor_id: Ecto.UUID.generate(),
       action: "read",
       resource_type: "patient",
       resource_id: Ecto.UUID.generate(),
       timestamp: ~U[2026-03-03 15:00:00Z],
-      source_ip: "127.0.0.1",
-      user_agent: "ExUnit",
       outcome: "success",
-      failure_reason: nil,
-      phi_accessed: true,
+      extensions: %{"hipaa" => %{"phi_accessed" => true}},
       frameworks: ["hipaa"],
       metadata: %{"source" => "test"}
     }
@@ -32,8 +27,7 @@ defmodule GA.Audit.LogTest do
     changeset = Log.changeset(%Log{}, %{})
     errors = errors_on(changeset)
 
-    assert "can't be blank" in errors.user_id
-    assert "can't be blank" in errors.user_role
+    assert "can't be blank" in errors.actor_id
     assert "can't be blank" in errors.action
     assert "can't be blank" in errors.resource_type
     assert "can't be blank" in errors.resource_id
@@ -83,5 +77,21 @@ defmodule GA.Audit.LogTest do
     refute Map.has_key?(changeset.changes, :sequence_number)
     refute Map.has_key?(changeset.changes, :checksum)
     refute Map.has_key?(changeset.changes, :previous_checksum)
+  end
+
+  test "changeset casts actor_id and extensions" do
+    attrs = valid_attrs()
+    changeset = Log.changeset(%Log{}, attrs)
+
+    assert changeset.changes.actor_id == attrs.actor_id
+    assert changeset.changes.extensions == attrs.extensions
+  end
+
+  test "changeset requires actor_id" do
+    attrs = Map.delete(valid_attrs(), :actor_id)
+    changeset = Log.changeset(%Log{}, attrs)
+
+    refute changeset.valid?
+    assert "can't be blank" in errors_on(changeset).actor_id
   end
 end

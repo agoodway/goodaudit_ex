@@ -20,6 +20,7 @@ defmodule GA.Audit.SchemaMigrationTest do
       sequence_number: 1,
       checksum: String.duplicate("a", 64),
       previous_checksum: nil,
+      actor_id: Ecto.UUID.generate(),
       user_id: Ecto.UUID.generate(),
       user_role: "admin",
       session_id: "session_1",
@@ -43,12 +44,12 @@ defmodule GA.Audit.SchemaMigrationTest do
       Repo,
       """
       INSERT INTO audit_logs (
-        id, account_id, sequence_number, checksum, previous_checksum, user_id, user_role,
+        id, account_id, sequence_number, checksum, previous_checksum, actor_id, user_id, user_role,
         session_id, action, resource_type, resource_id, "timestamp", source_ip, user_agent,
         outcome, failure_reason, phi_accessed, metadata, inserted_at, updated_at
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-        $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
+        $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21
       )
       """,
       [
@@ -57,6 +58,7 @@ defmodule GA.Audit.SchemaMigrationTest do
         attrs.sequence_number,
         attrs.checksum,
         attrs.previous_checksum,
+        attrs.actor_id,
         attrs.user_id,
         attrs.user_role,
         attrs.session_id,
@@ -353,6 +355,71 @@ defmodule GA.Audit.SchemaMigrationTest do
              )
 
     assert frameworks == []
+  end
+
+  test "audit_logs extensions column defaults to empty object" do
+    account = account_fixture()
+    id = Ecto.UUID.generate()
+
+    assert {:ok, _result} =
+             insert_audit_log(%{
+               id: id,
+               account_id: account.id
+             })
+
+    assert {:ok, %{rows: [[extensions]]}} =
+             SQL.query(
+               Repo,
+               "SELECT extensions FROM audit_logs WHERE id = $1",
+               [id]
+             )
+
+    assert extensions == %{}
+  end
+
+  test "audit_logs actor_id column is required" do
+    account = account_fixture()
+
+    assert {:error, %Postgrex.Error{postgres: %{code: :not_null_violation}}} =
+             insert_audit_log(%{
+               account_id: account.id,
+               actor_id: nil
+             })
+  end
+
+  test "audit_logs has GIN index on extensions" do
+    assert {:ok, %{rows: [[index_def]]}} =
+             SQL.query(
+               Repo,
+               """
+               SELECT indexdef
+               FROM pg_indexes
+               WHERE schemaname = 'public'
+                 AND tablename = 'audit_logs'
+                 AND indexname = 'audit_logs_extensions_gin_index'
+               """,
+               []
+             )
+
+    assert index_def =~ "USING gin (extensions)"
+  end
+
+  test "audit_logs has HIPAA phi_accessed partial expression index" do
+    assert {:ok, %{rows: [[index_def]]}} =
+             SQL.query(
+               Repo,
+               """
+               SELECT indexdef
+               FROM pg_indexes
+               WHERE schemaname = 'public'
+                 AND tablename = 'audit_logs'
+                 AND indexname = 'audit_logs_hipaa_phi_accessed_index'
+               """,
+               []
+             )
+
+    assert index_def =~ "(extensions -> 'hipaa'::text) ->> 'phi_accessed'::text"
+    assert index_def =~ "WHERE ((extensions -> 'hipaa'::text) IS NOT NULL)"
   end
 
   test "duplicate [account_id, framework_id] in account_compliance_frameworks is rejected" do

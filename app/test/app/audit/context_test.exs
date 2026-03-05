@@ -85,7 +85,7 @@ defmodule GA.Audit.ContextTest do
       account = account_fixture()
 
       assert {:error, changeset} = Audit.create_log_entry(account.id, %{action: "read"})
-      assert "can't be blank" in errors_on(changeset).user_id
+      assert "can't be blank" in errors_on(changeset).actor_id
 
       count =
         from(log in Log, where: log.account_id == ^account.id)
@@ -197,7 +197,9 @@ defmodule GA.Audit.ContextTest do
       account = account_fixture()
       assert {:ok, _association} = Compliance.activate_framework(account.id, "hipaa")
 
-      assert {:ok, log} = Audit.create_log_entry(account.id, valid_attrs())
+      assert {:ok, log} =
+               Audit.create_log_entry(account.id, valid_attrs(%{extensions: hipaa_extensions()}))
+
       assert log.frameworks == ["hipaa"]
     end
 
@@ -205,9 +207,9 @@ defmodule GA.Audit.ContextTest do
       account = account_fixture()
       assert {:ok, _association} = Compliance.activate_framework(account.id, "hipaa")
 
-      attrs = valid_attrs() |> Map.delete(:phi_accessed)
+      attrs = valid_attrs(%{extensions: %{"hipaa" => %{"phi_accessed" => true}}})
       assert {:error, changeset} = Audit.create_log_entry(account.id, attrs)
-      assert "required by HIPAA" in errors_on(changeset).phi_accessed
+      assert "hipaa.user_role is required" in errors_on(changeset).extensions
     end
 
     test "returns framework-attributed validation errors for multi-framework requirements" do
@@ -215,12 +217,10 @@ defmodule GA.Audit.ContextTest do
       assert {:ok, _hipaa} = Compliance.activate_framework(account.id, "hipaa")
       assert {:ok, _soc2} = Compliance.activate_framework(account.id, "soc2")
 
-      attrs = valid_attrs() |> Map.delete(:source_ip)
+      attrs = valid_attrs(%{extensions: %{"hipaa" => %{"phi_accessed" => true}, "soc2" => %{}}})
 
       assert {:error, changeset} = Audit.create_log_entry(account.id, attrs)
-
-      assert "required by HIPAA" in errors_on(changeset).source_ip
-      assert "required by SOC 2 Type II" in errors_on(changeset).source_ip
+      assert "hipaa.user_role is required" in errors_on(changeset).extensions
     end
 
     test "validates additional_required_fields from config overrides" do
@@ -231,10 +231,19 @@ defmodule GA.Audit.ContextTest do
                  config_overrides: %{"additional_required_fields" => ["department"]}
                )
 
-      assert {:error, changeset} = Audit.create_log_entry(account.id, valid_attrs())
-      assert "required by HIPAA" in errors_on(changeset).department
+      assert {:error, changeset} =
+               Audit.create_log_entry(account.id, valid_attrs(%{extensions: hipaa_extensions()}))
 
-      attrs_with_department = valid_attrs(%{"department" => "billing"})
+      assert "hipaa.department is required" in errors_on(changeset).extensions
+
+      attrs_with_department =
+        valid_attrs(%{
+          extensions:
+            Map.update!(hipaa_extensions(), "hipaa", fn values ->
+              Map.put(values, "department", "billing")
+            end)
+        })
+
       assert {:ok, log} = Audit.create_log_entry(account.id, attrs_with_department)
       assert log.frameworks == ["hipaa"]
     end
@@ -244,16 +253,24 @@ defmodule GA.Audit.ContextTest do
       assert {:ok, _association} = Compliance.activate_framework(account.id, "hipaa")
 
       assert {:error, absent_changeset} =
-               Audit.create_log_entry(account.id, valid_attrs() |> Map.delete(:phi_accessed))
+               Audit.create_log_entry(
+                 account.id,
+                 valid_attrs(%{extensions: %{"hipaa" => %{"user_role" => "admin"}}})
+               )
 
-      assert "required by HIPAA" in errors_on(absent_changeset).phi_accessed
+      assert "hipaa.phi_accessed is required" in errors_on(absent_changeset).extensions
 
       assert {:error, nil_changeset} =
-               Audit.create_log_entry(account.id, valid_attrs(%{phi_accessed: nil}))
+               Audit.create_log_entry(
+                 account.id,
+                 valid_attrs(%{
+                   extensions: %{"hipaa" => %{"phi_accessed" => nil, "user_role" => "admin"}}
+                 })
+               )
 
-      assert "required by HIPAA" in errors_on(nil_changeset).phi_accessed
+      assert "hipaa.phi_accessed is required" in errors_on(nil_changeset).extensions
 
-      attrs = valid_attrs(%{phi_accessed: false, source_ip: ""})
+      attrs = valid_attrs(%{extensions: %{"hipaa" => %{"phi_accessed" => false, "user_role" => "admin"}}})
       assert {:ok, _log} = Audit.create_log_entry(account.id, attrs)
     end
 
@@ -281,11 +298,14 @@ defmodule GA.Audit.ContextTest do
       started_ms = System.monotonic_time(:millisecond)
 
       assert {:error, changeset} =
-               Audit.create_log_entry(account.id, valid_attrs() |> Map.delete(:phi_accessed))
+               Audit.create_log_entry(
+                 account.id,
+                 valid_attrs(%{extensions: %{"hipaa" => %{"user_role" => "admin"}}})
+               )
 
       elapsed_ms = System.monotonic_time(:millisecond) - started_ms
       assert elapsed_ms < 1_000
-      assert "required by HIPAA" in errors_on(changeset).phi_accessed
+      assert "hipaa.phi_accessed is required" in errors_on(changeset).extensions
 
       send(locker_task.pid, :release_framework_lock)
       assert {:ok, :ok} = Task.await(locker_task, 5_000)
@@ -367,6 +387,8 @@ defmodule GA.Audit.ContextTest do
     test "supports field filters and combined date-range filters within account scope" do
       account = account_fixture()
       other_account = account_fixture()
+      assert {:ok, _association} = Compliance.activate_framework(account.id, "hipaa")
+      assert {:ok, _association} = Compliance.activate_framework(other_account.id, "hipaa")
 
       in_window = ~U[2026-01-20 11:30:00Z]
       before_window = ~U[2025-12-30 10:00:00Z]
@@ -375,9 +397,9 @@ defmodule GA.Audit.ContextTest do
                Audit.create_log_entry(
                  account.id,
                  valid_attrs(%{
-                   user_id: "user-1",
+                   actor_id: "actor-1",
                    action: "read",
-                   phi_accessed: true,
+                   extensions: %{"hipaa" => %{"phi_accessed" => true, "user_role" => "admin"}},
                    resource_id: "target",
                    timestamp: in_window
                  })
@@ -387,9 +409,9 @@ defmodule GA.Audit.ContextTest do
                Audit.create_log_entry(
                  account.id,
                  valid_attrs(%{
-                   user_id: "user-2",
+                   actor_id: "actor-2",
                    action: "read",
-                   phi_accessed: true,
+                   extensions: %{"hipaa" => %{"phi_accessed" => true, "user_role" => "admin"}},
                    resource_id: "wrong-user",
                    timestamp: in_window
                  })
@@ -399,9 +421,9 @@ defmodule GA.Audit.ContextTest do
                Audit.create_log_entry(
                  account.id,
                  valid_attrs(%{
-                   user_id: "user-1",
+                   actor_id: "actor-1",
                    action: "update",
-                   phi_accessed: true,
+                   extensions: %{"hipaa" => %{"phi_accessed" => true, "user_role" => "admin"}},
                    resource_id: "wrong-action",
                    timestamp: in_window
                  })
@@ -411,9 +433,9 @@ defmodule GA.Audit.ContextTest do
                Audit.create_log_entry(
                  account.id,
                  valid_attrs(%{
-                   user_id: "user-1",
+                   actor_id: "actor-1",
                    action: "read",
-                   phi_accessed: true,
+                   extensions: %{"hipaa" => %{"phi_accessed" => true, "user_role" => "admin"}},
                    resource_id: "wrong-time",
                    timestamp: before_window
                  })
@@ -423,23 +445,23 @@ defmodule GA.Audit.ContextTest do
                Audit.create_log_entry(
                  other_account.id,
                  valid_attrs(%{
-                   user_id: "user-1",
+                   actor_id: "actor-1",
                    action: "read",
-                   phi_accessed: true,
+                   extensions: %{"hipaa" => %{"phi_accessed" => true, "user_role" => "admin"}},
                    resource_id: "other-account",
                    timestamp: in_window
                  })
                )
 
-      {single_filter_entries, _} = Audit.list_logs(account.id, user_id: "user-1")
-      assert Enum.all?(single_filter_entries, &(&1.user_id == "user-1"))
+      {single_filter_entries, _} = Audit.list_logs(account.id, actor_id: "actor-1")
+      assert Enum.all?(single_filter_entries, &(&1.actor_id == "actor-1"))
 
       {filtered_entries, _} =
         Audit.list_logs(
           account.id,
-          user_id: "user-1",
+          actor_id: "actor-1",
           action: "read",
-          phi_accessed: true,
+          extensions: %{"hipaa" => %{"phi_accessed" => true}},
           from: ~U[2026-01-01 00:00:00Z],
           to: ~U[2026-01-31 23:59:59Z]
         )
@@ -562,18 +584,13 @@ defmodule GA.Audit.ContextTest do
 
   defp valid_attrs(overrides \\ %{}) do
     defaults = %{
-      user_id: Ecto.UUID.generate(),
-      user_role: "admin",
-      session_id: "session-#{System.unique_integer([:positive])}",
+      actor_id: Ecto.UUID.generate(),
       action: "read",
       resource_type: "patient",
       resource_id: Ecto.UUID.generate(),
       timestamp: ~U[2026-03-03 16:00:00Z],
-      source_ip: "127.0.0.1",
-      user_agent: "ExUnit",
       outcome: "success",
-      failure_reason: nil,
-      phi_accessed: false,
+      extensions: %{},
       metadata: %{"source" => "context_test"}
     }
 
@@ -613,6 +630,7 @@ defmodule GA.Audit.ContextTest do
           sequence_number: sequence,
           checksum: sequence |> Integer.to_string(16) |> String.pad_leading(64, "0"),
           previous_checksum: nil,
+          actor_id: "bulk-actor",
           user_id: "bulk-user",
           user_role: "admin",
           session_id: "bulk-session-#{sequence}",
@@ -625,6 +643,8 @@ defmodule GA.Audit.ContextTest do
           outcome: "success",
           failure_reason: nil,
           phi_accessed: false,
+          extensions: %{},
+          frameworks: [],
           metadata: %{},
           inserted_at: now,
           updated_at: now
@@ -633,5 +653,15 @@ defmodule GA.Audit.ContextTest do
 
     {inserted, _} = Repo.insert_all(Log, rows)
     inserted
+  end
+
+  defp hipaa_extensions do
+    %{
+      "hipaa" => %{
+        "phi_accessed" => true,
+        "user_role" => "admin",
+        "source_ip" => "127.0.0.1"
+      }
+    }
   end
 end

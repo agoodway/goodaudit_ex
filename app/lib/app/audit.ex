@@ -3,12 +3,13 @@ defmodule GA.Audit do
   Business logic for account-scoped append-only audit logs and checkpoints.
   """
 
-  import Ecto.Changeset, only: [add_error: 3, put_change: 3]
+  import Ecto.Changeset, only: [put_change: 3]
   import Ecto.Query, warn: false
 
   alias GA.Accounts
   alias GA.Audit.{Chain, Checkpoint, Log, Verifier}
   alias GA.Compliance
+  alias GA.Compliance.ExtensionSchema
   alias GA.Repo
 
   @default_limit 50
@@ -21,10 +22,28 @@ defmodule GA.Audit do
   def create_log_entry(account_id, attrs)
       when is_binary(account_id) and (is_map(attrs) or is_list(attrs)) do
     attrs = attrs |> normalize_attrs() |> drop_reserved_chain_keys() |> put_default_timestamp()
-    framework_ids = account_id |> Compliance.active_framework_ids() |> Enum.sort()
+    active_frameworks = Compliance.list_active_frameworks(account_id)
 
-    with {:ok, framework_ids} <- validate_framework_fields(account_id, attrs, framework_ids) do
-      attrs = Map.put(attrs, :frameworks, framework_ids)
+    framework_ids =
+      active_frameworks
+      |> Enum.map(& &1.framework_id)
+      |> Enum.sort()
+
+    additional_required_by_framework = additional_required_fields_by_framework(active_frameworks)
+
+    with {:ok, validated_extensions} <-
+           ExtensionSchema.validate(
+             framework_ids,
+             get_opt(attrs, :extensions),
+             additional_required_by_framework
+           ) do
+      attrs =
+        attrs
+        |> Map.delete("extensions")
+        |> Map.delete("frameworks")
+        |> Map.put(:extensions, validated_extensions)
+        |> Map.put(:frameworks, framework_ids)
+        |> hydrate_legacy_fields()
 
       Repo.transaction(fn ->
         with :ok <- lock_account(account_id),
@@ -233,8 +252,8 @@ defmodule GA.Audit do
     |> maybe_filter(get_opt(opts, :after_sequence), fn q, value ->
       where(q, [log], log.sequence_number > ^value)
     end)
-    |> maybe_filter(get_opt(opts, :user_id), fn q, value ->
-      where(q, [log], log.user_id == ^value)
+    |> maybe_filter(get_opt(opts, :actor_id), fn q, value ->
+      where(q, [log], log.actor_id == ^value)
     end)
     |> maybe_filter(get_opt(opts, :action), fn q, value ->
       where(q, [log], log.action == ^value)
@@ -248,8 +267,8 @@ defmodule GA.Audit do
     |> maybe_filter(get_opt(opts, :outcome), fn q, value ->
       where(q, [log], log.outcome == ^value)
     end)
-    |> maybe_filter(get_opt(opts, :phi_accessed), fn q, value ->
-      where(q, [log], log.phi_accessed == ^value)
+    |> maybe_filter(normalize_extensions_filter(get_opt(opts, :extensions)), fn q, value ->
+      where(q, [log], fragment("? @> ?", log.extensions, type(^value, :map)))
     end)
     |> maybe_filter(get_opt(opts, :from), fn q, value ->
       where(q, [log], log.timestamp >= ^value)
@@ -315,117 +334,78 @@ defmodule GA.Audit do
   defp unwrap_tx_result({:ok, result}), do: {:ok, result}
   defp unwrap_tx_result({:error, reason}), do: {:error, reason}
 
-  defp validate_framework_fields(_account_id, _attrs, []), do: {:ok, []}
-
-  defp validate_framework_fields(account_id, attrs, framework_ids) do
-    required_fields_by_framework =
-      required_framework_fields(account_id, framework_ids)
-      |> Enum.reduce(%{}, fn {framework_name, fields}, acc ->
-        Enum.reduce(fields, acc, fn field, fields_map ->
-          normalized_field = normalize_required_field(field)
-
-          Map.update(fields_map, normalized_field, [framework_name], fn names ->
-            if framework_name in names, do: names, else: names ++ [framework_name]
-          end)
-        end)
-      end)
-
-    missing_fields =
-      Enum.reduce(required_fields_by_framework, %{}, fn {field, framework_names}, acc ->
-        if missing_framework_field?(attrs, field) do
-          Map.put(acc, field, framework_names)
-        else
-          acc
-        end
-      end)
-
-    if map_size(missing_fields) == 0 do
-      {:ok, framework_ids}
-    else
-      {:error, framework_validation_changeset(attrs, missing_fields)}
-    end
-  end
-
-  defp required_framework_fields(account_id, framework_ids) do
-    associations_by_framework_id =
-      account_id
-      |> Compliance.list_active_frameworks()
-      |> Map.new(fn association -> {association.framework_id, association} end)
-
-    Enum.reduce(framework_ids, [], fn framework_id, acc ->
-      with {:ok, module} <- Compliance.get_framework(framework_id) do
-        additional_required_fields =
-          associations_by_framework_id
-          |> Map.get(framework_id)
-          |> additional_required_fields()
-
-        acc ++ [{module.name(), module.required_fields() ++ additional_required_fields}]
-      else
-        _ -> acc
-      end
-    end)
-  end
+  defp normalize_extensions_filter(%{} = extensions), do: extensions
+  defp normalize_extensions_filter(_), do: nil
 
   defp additional_required_fields(nil), do: []
 
   defp additional_required_fields(association) do
-    association.config_overrides
+    (association.config_overrides || %{})
     |> Map.get("additional_required_fields", [])
     |> Enum.map(&to_string/1)
   end
 
-  defp normalize_required_field(field) when is_atom(field), do: Atom.to_string(field)
-  defp normalize_required_field(field) when is_binary(field), do: field
-  defp normalize_required_field(field), do: to_string(field)
+  defp additional_required_fields_by_framework(active_frameworks) do
+    Enum.reduce(active_frameworks, %{}, fn association, acc ->
+      required_fields = additional_required_fields(association)
 
-  defp missing_framework_field?(attrs, field) when is_atom(field) do
-    missing_framework_field?(attrs, Atom.to_string(field))
-  end
-
-  defp missing_framework_field?(attrs, field) when is_binary(field) do
-    case fetch_attr(attrs, field) do
-      :error -> true
-      {:ok, nil} -> true
-      {:ok, _value} -> false
-    end
-  end
-
-  defp fetch_attr(attrs, field) when is_binary(field) do
-    cond do
-      Map.has_key?(attrs, field) ->
-        {:ok, Map.get(attrs, field)}
-
-      true ->
-        case to_existing_atom(field) do
-          nil -> :error
-          atom -> if Map.has_key?(attrs, atom), do: {:ok, Map.get(attrs, atom)}, else: :error
-        end
-    end
-  end
-
-  defp framework_validation_changeset(attrs, missing_fields) do
-    Enum.reduce(missing_fields, Log.changeset(%Log{}, attrs), fn {field, framework_names},
-                                                                 changeset ->
-      field_atom = field |> to_string() |> to_error_atom()
-
-      Enum.reduce(framework_names, changeset, fn framework_name, inner_changeset ->
-        add_error(inner_changeset, field_atom, "required by #{framework_name}")
-      end)
+      if required_fields == [] do
+        acc
+      else
+        Map.put(acc, association.framework_id, required_fields)
+      end
     end)
   end
 
-  defp to_error_atom(field) when is_binary(field) do
-    case to_existing_atom(field) do
-      nil -> String.to_atom(field)
-      atom -> atom
+  defp hydrate_legacy_fields(attrs) do
+    actor_id = get_opt(attrs, :actor_id)
+    extensions = get_opt(attrs, :extensions) || %{}
+
+    attrs
+    |> put_if_missing(:user_id, actor_id)
+    |> put_if_missing(:user_role, extension_value(extensions, "hipaa", "user_role") || "unknown")
+    |> put_if_missing(:session_id, extension_value(extensions, "hipaa", "session_id"))
+    |> put_if_missing(:source_ip, extension_value(extensions, "hipaa", "source_ip"))
+    |> put_if_missing(:user_agent, extension_value(extensions, "hipaa", "user_agent"))
+    |> put_if_missing(:failure_reason, extension_value(extensions, "hipaa", "failure_reason"))
+    |> put_if_missing(:phi_accessed, extension_value(extensions, "hipaa", "phi_accessed") || false)
+  end
+
+  defp put_if_missing(attrs, _key, nil), do: attrs
+
+  defp put_if_missing(attrs, key, value) when is_atom(key) do
+    string_key = Atom.to_string(key)
+
+    cond do
+      Map.has_key?(attrs, key) and not is_nil(Map.get(attrs, key)) ->
+        attrs
+
+      Map.has_key?(attrs, string_key) and not is_nil(Map.get(attrs, string_key)) ->
+        attrs
+
+      Map.has_key?(attrs, key) ->
+        Map.put(attrs, key, value)
+
+      Map.has_key?(attrs, string_key) ->
+        Map.put(attrs, string_key, value)
+
+      true ->
+        Map.put(attrs, key, value)
     end
   end
 
-  defp to_existing_atom(field) when is_binary(field) do
-    try do
-      String.to_existing_atom(field)
-    rescue
-      ArgumentError -> nil
+  defp extension_value(extensions, framework_id, field)
+       when is_map(extensions) and is_binary(framework_id) and is_binary(field) do
+    framework_extensions = Map.get(extensions, framework_id)
+
+    case framework_extensions do
+      %{} = framework_map ->
+        Map.get(framework_map, field)
+
+      _ ->
+        nil
     end
   end
+
+  defp extension_value(_extensions, _framework_id, _field), do: nil
 end

@@ -1076,3 +1076,95 @@
 2026/03/05 16:09:38.965925 exec: codex exec --model gpt-5.3-codex --full-auto
 2026/03/05 16:09:38.965928 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/compliance-framework-profiles/phase-4-commit.log
 2026/03/05 16:09:38.967301 exec: process started pid=53669
+2026/03/05 16:12:35.651191 exec: process pid=53669 exited successfully
+2026/03/05 16:12:35.651322 [compliance-framework-profiles] phase 4: commit completed in 2m 57s
+2026/03/05 16:12:35.651341 [compliance-framework-profiles] phase 4 completed in 31m 55s
+2026/03/05 16:12:35.651355 [compliance-framework-profiles] phase 5 (land-the-plane) starting
+2026/03/05 16:12:35.651387 [compliance-framework-profiles] phase 5: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/compliance-framework-profiles/phase-5-land-the-plane.log
+2026/03/05 16:12:35.651393 [compliance-framework-profiles] phase 5: prompt=Run /land-the-plane for the change named "compliance-framework-profiles" located at openspec/changes/compliance-framework-profiles/. Do not ask me any questions — use your best judgment for any decisions. IMPORTANT: This is an intermediate change in a multi-change pipeline. After verifying and approving all issues for this change, do NOT create a PR, do NOT run /git commit, and do NOT return to main. Stay on the current branch — the next change will continue here.
+2026/03/05 16:12:35.651398 [compliance-framework-profiles] phase 5: launching codex session
+2026/03/05 16:12:35.651415 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 16:12:35.651418 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/compliance-framework-profiles/phase-5-land-the-plane.log
+2026/03/05 16:12:35.652999 exec: process started pid=60669
+2026/03/05 16:18:41.947204 exec: process pid=60669 exited successfully
+2026/03/05 16:18:41.947462 [compliance-framework-profiles] phase 5: codex session completed in 6m 6s
+2026/03/05 16:18:41.947482 [compliance-framework-profiles] phase 5: running intermediate commit
+2026/03/05 16:18:41.947501 [compliance-framework-profiles] commit phase 5: launching codex session
+2026/03/05 16:18:41.947505 [compliance-framework-profiles] commit phase 5: prompt=Run /git commit with the message "%!(EXTRA string=compliance-framework-profiles)". Do not ask me any questions.
+2026/03/05 16:18:41.947519 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 16:18:41.947523 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/compliance-framework-profiles/phase-5-commit.log
+2026/03/05 16:18:41.949053 exec: process started pid=68971
+2026/03/05 16:19:43.824732 exec: process pid=68971 exited successfully
+2026/03/05 16:19:43.824839 [compliance-framework-profiles] phase 5: commit completed in 1m 2s
+2026/03/05 16:19:43.824870 [compliance-framework-profiles] phase 5 completed in 6m 6s
+2026/03/05 16:19:43.824888 change "compliance-framework-profiles" succeeded in 63m 39s
+2026/03/05 16:19:43.824948 --- Change 2/3: extensible-event-schema (start_phase=1) ---
+2026/03/05 16:19:43.824959 [extensible-event-schema] phase 1 (prepare-for-takeoff) starting
+2026/03/05 16:19:43.825068 [extensible-event-schema] phase 1: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/extensible-event-schema/phase-1-prepare-for-takeoff.log
+2026/03/05 16:19:43.825071 [extensible-event-schema] phase 1: prompt=Run /prepare-for-takeoff for the change named "extensible-event-schema" located at openspec/changes/extensible-event-schema/. Do not ask me any questions — use your best judgment for any decisions. You are already on the correct feature branch. Do NOT warn about not being on main — this is expected for a multi-change pipeline run.
+2026/03/05 16:19:43.825076 [extensible-event-schema] phase 1: launching codex session
+2026/03/05 16:19:43.825092 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 16:19:43.825094 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/extensible-event-schema/phase-1-prepare-for-takeoff.log
+2026/03/05 16:19:43.826470 exec: process started pid=70689
+2026/03/05 16:27:45.523408 exec: process pid=70689 exited successfully
+2026/03/05 16:27:45.523736 [extensible-event-schema] phase 1: codex session completed in 8m 2s
+2026/03/05 16:27:45.523757 [extensible-event-schema] phase 1: running intermediate commit
+2026/03/05 16:27:45.523774 [extensible-event-schema] commit phase 1: launching codex session
+2026/03/05 16:27:45.523778 [extensible-event-schema] commit phase 1: prompt=Run /git commit with the message "chore(openspec): import tasks for extensible-event-schema". Do not ask me any questions.
+2026/03/05 16:27:45.523796 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 16:27:45.523799 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/extensible-event-schema/phase-1-commit.log
+2026/03/05 16:27:45.525250 exec: process started pid=87919
+2026/03/05 16:29:39.065445 exec: process pid=87919 exited successfully
+2026/03/05 16:29:39.065699 [extensible-event-schema] phase 1: commit completed in 1m 54s
+2026/03/05 16:29:39.065753 [extensible-event-schema] phase 1 completed in 8m 2s
+2026/03/05 16:29:39.065768 [extensible-event-schema] phase 2 (takeoff) starting
+2026/03/05 16:29:39.065801 [extensible-event-schema] phase 2: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/extensible-event-schema/phase-2-takeoff.log
+2026/03/05 16:29:39.065805 [extensible-event-schema] phase 2: prompt=Run /takeoff for the change named "extensible-event-schema" located at openspec/changes/extensible-event-schema/. Do not ask me any questions — use your best judgment for any decisions. IMPORTANT: Do NOT create a new feature branch. You are already on the correct feature branch from a previous change in this pipeline. Stay on the current branch, find the epic, and begin implementation immediately.
+2026/03/05 16:29:39.065810 [extensible-event-schema] phase 2: launching codex session
+2026/03/05 16:29:39.065822 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 16:29:39.065825 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/extensible-event-schema/phase-2-takeoff.log
+2026/03/05 16:29:39.067255 exec: process started pid=90964
+2026/03/05 16:36:08.295452 exec: process pid=90964 exited successfully
+2026/03/05 16:36:08.295730 [extensible-event-schema] phase 2: codex session completed in 6m 29s
+2026/03/05 16:36:08.295762 [extensible-event-schema] phase 2: running intermediate commit
+2026/03/05 16:36:08.295783 [extensible-event-schema] commit phase 2: launching codex session
+2026/03/05 16:36:08.295787 [extensible-event-schema] commit phase 2: prompt=Run /git commit with the message "feat(extensible-event-schema): implement changes". Do not ask me any questions.
+2026/03/05 16:36:08.295803 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 16:36:08.295807 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/extensible-event-schema/phase-2-commit.log
+2026/03/05 16:36:08.297341 exec: process started pid=9040
+2026/03/05 16:37:11.555141 exec: process pid=9040 exited successfully
+2026/03/05 16:37:11.555504 [extensible-event-schema] phase 2: commit completed in 1m 3s
+2026/03/05 16:37:11.555529 [extensible-event-schema] phase 2 completed in 6m 29s
+2026/03/05 16:37:11.555543 [extensible-event-schema] phase 3 (pre-landing-check) starting
+2026/03/05 16:37:11.555581 [extensible-event-schema] phase 3: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/extensible-event-schema/phase-3-pre-landing-check.log
+2026/03/05 16:37:11.555585 [extensible-event-schema] phase 3: prompt=Run /pre-landing-check for the change named "extensible-event-schema" located at openspec/changes/extensible-event-schema/. Do not ask me any questions — use your best judgment for any decisions.
+2026/03/05 16:37:11.555588 [extensible-event-schema] phase 3: launching codex session
+2026/03/05 16:37:11.555603 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 16:37:11.555607 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/extensible-event-schema/phase-3-pre-landing-check.log
+2026/03/05 16:37:11.556889 exec: process started pid=11668
+2026/03/05 16:42:31.587002 exec: process pid=11668 exited successfully
+2026/03/05 16:42:31.587277 [extensible-event-schema] phase 3: codex session completed in 5m 20s
+2026/03/05 16:42:31.587296 [extensible-event-schema] phase 3: running intermediate commit
+2026/03/05 16:42:31.587305 [extensible-event-schema] commit phase 3: launching codex session
+2026/03/05 16:42:31.587308 [extensible-event-schema] commit phase 3: prompt=Run /git commit with the message "chore(extensible-event-schema): code review findings". Do not ask me any questions.
+2026/03/05 16:42:31.587326 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 16:42:31.587330 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/extensible-event-schema/phase-3-commit.log
+2026/03/05 16:42:31.588673 exec: process started pid=25200
+2026/03/05 16:43:59.549039 exec: process pid=25200 exited successfully
+2026/03/05 16:43:59.549240 [extensible-event-schema] phase 3: commit completed in 1m 28s
+2026/03/05 16:43:59.549269 [extensible-event-schema] phase 3 completed in 5m 20s
+2026/03/05 16:43:59.549283 [extensible-event-schema] phase 4 (prepare-for-landing) starting
+2026/03/05 16:43:59.549318 [extensible-event-schema] phase 4: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/extensible-event-schema/phase-4-prepare-for-landing.log
+2026/03/05 16:43:59.549322 [extensible-event-schema] phase 4: prompt=Run /prepare-for-landing for the change named "extensible-event-schema" located at openspec/changes/extensible-event-schema/. Do not ask me any questions — use your best judgment for any decisions.
+2026/03/05 16:43:59.549325 [extensible-event-schema] phase 4: launching codex session
+2026/03/05 16:43:59.549345 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 16:43:59.549348 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/extensible-event-schema/phase-4-prepare-for-landing.log
+2026/03/05 16:43:59.550694 exec: process started pid=27978
+2026/03/05 17:03:34.676105 exec: process pid=27978 exited successfully
+2026/03/05 17:03:34.676381 [extensible-event-schema] phase 4: codex session completed in 19m 35s
+2026/03/05 17:03:34.676399 [extensible-event-schema] phase 4: running intermediate commit
+2026/03/05 17:03:34.676411 [extensible-event-schema] commit phase 4: launching codex session
+2026/03/05 17:03:34.676415 [extensible-event-schema] commit phase 4: prompt=Run /git commit with the message "fix(extensible-event-schema): address review findings". Do not ask me any questions.
+2026/03/05 17:03:34.676436 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 17:03:34.676440 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/extensible-event-schema/phase-4-commit.log
+2026/03/05 17:03:34.678502 exec: process started pid=85490

@@ -133,18 +133,13 @@ defmodule GAWeb.Api.V1.CheckpointControllerTest do
 
   defp valid_audit_attrs(overrides \\ %{}) do
     defaults = %{
-      user_id: Ecto.UUID.generate(),
-      user_role: "admin",
-      session_id: "session-#{System.unique_integer([:positive])}",
+      actor_id: Ecto.UUID.generate(),
       action: "read",
       resource_type: "patient",
       resource_id: Ecto.UUID.generate(),
       timestamp: ~U[2026-03-03 16:00:00Z],
-      source_ip: "127.0.0.1",
-      user_agent: "ExUnit",
       outcome: "success",
-      failure_reason: nil,
-      phi_accessed: false,
+      extensions: %{},
       metadata: %{"source" => "checkpoint_controller_test"}
     }
 

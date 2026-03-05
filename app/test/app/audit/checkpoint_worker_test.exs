@@ -105,6 +105,7 @@ defmodule GA.Audit.CheckpointWorkerTest do
 
   defp add_log(account_id, resource_id) do
     attrs = %{
+      actor_id: Ecto.UUID.generate(),
       user_id: Ecto.UUID.generate(),
       user_role: "admin",
       session_id: "session-#{System.unique_integer([:positive])}",

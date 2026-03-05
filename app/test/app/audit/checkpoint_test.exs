@@ -90,6 +90,7 @@ defmodule GA.Audit.CheckpointTest do
         sequence_number: 1,
         checksum: String.duplicate("a", 64),
         previous_checksum: nil,
+        actor_id: Ecto.UUID.generate(),
         user_id: Ecto.UUID.generate(),
         user_role: "admin",
         session_id: "session_1",

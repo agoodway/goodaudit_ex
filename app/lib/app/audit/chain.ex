@@ -8,19 +8,12 @@ defmodule GA.Audit.Chain do
   @payload_fields [
     "account_id",
     "sequence_number",
-    "timestamp",
-    "user_id",
-    "user_role",
-    "session_id",
+    "actor_id",
     "action",
     "resource_type",
     "resource_id",
     "outcome",
-    "failure_reason",
-    "phi_accessed",
-    "source_ip",
-    "user_agent",
-    "frameworks"
+    "timestamp"
   ]
 
   @doc """
@@ -75,9 +68,11 @@ defmodule GA.Audit.Chain do
       |> Enum.map(&render_value(get_value(normalized_attrs, &1)))
 
     previous = validated_previous_checksum || @genesis_previous
+    extensions = canonical_extensions(get_value(normalized_attrs, "extensions"))
     metadata = canonical_metadata(get_value(normalized_attrs, "metadata"))
 
-    ([Enum.at(fields, 0), Enum.at(fields, 1), previous] ++ Enum.drop(fields, 2) ++ [metadata])
+    ([Enum.at(fields, 0), Enum.at(fields, 1), previous] ++ Enum.drop(fields, 2) ++
+       [extensions, metadata])
     |> Enum.map(&reject_payload_delimiter!/1)
     |> Enum.join("|")
   end
@@ -90,7 +85,7 @@ defmodule GA.Audit.Chain do
     entry
     |> maybe_from_struct()
     |> normalize_keys()
-    |> Map.take(@payload_fields ++ ["metadata"])
+    |> Map.take(@payload_fields ++ ["extensions", "metadata"])
   end
 
   defp maybe_from_struct(%{__struct__: _} = struct), do: Map.from_struct(struct)
@@ -125,6 +120,17 @@ defmodule GA.Audit.Chain do
   end
 
   defp canonical_metadata(other), do: other |> sort_keys_recursive() |> Jason.encode!()
+
+  defp canonical_extensions(nil), do: "{}"
+  defp canonical_extensions(extensions) when extensions == %{}, do: "{}"
+
+  defp canonical_extensions(extensions) when is_map(extensions) do
+    extensions
+    |> sort_keys_recursive()
+    |> Jason.encode!()
+  end
+
+  defp canonical_extensions(other), do: other |> sort_keys_recursive() |> Jason.encode!()
 
   defp sort_keys_recursive(map) when is_map(map) do
     map
