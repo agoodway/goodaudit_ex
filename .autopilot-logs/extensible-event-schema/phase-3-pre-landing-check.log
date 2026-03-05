@@ -1,0 +1,1244 @@
+OpenAI Codex v0.107.0 (research preview)
+--------
+workdir: /Users/tbrewer/projects/goodway/goodaudit
+model: gpt-5.3-codex
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: none
+session id: 019cbfee-ea6f-7a12-9eec-40dc1bc94e84
+--------
+user
+Run /pre-landing-check for the change named "extensible-event-schema" located at openspec/changes/extensible-event-schema/. Do not ask me any questions — use your best judgment for any decisions.
+mcp: sequential-thinking starting
+mcp: zread starting
+mcp: context7 starting
+mcp: perplexity starting
+mcp: playwright starting
+mcp: sequential-thinking ready
+mcp: perplexity ready
+mcp: context7 ready
+mcp: playwright ready
+2026-03-05T21:37:13.287911Z ERROR rmcp::transport::common::reqwest::streamable_http_client: unexpected content type: None
+2026-03-05T21:37:13.287955Z ERROR rmcp::transport::worker: worker quit with fatal: Unexpected content type: None, when send initialized notification
+mcp: zread failed: MCP client for `zread` failed to start: MCP startup failed: handshaking with MCP server failed: Send message error Transport [rmcp::transport::worker::WorkerTransport<rmcp::transport::streamable_http_client::StreamableHttpClientWorker<reqwest::async_impl::client::Client>>] error: Transport channel closed, when send initialized notification
+mcp startup: ready: sequential-thinking, perplexity, context7, playwright; failed: zread
+codex
+I’ll run the `pre-landing-check` workflow on `openspec/changes/extensible-event-schema/`: first I’m loading that skill’s instructions, then I’ll inspect the change artifacts, review the implemented code, and triage findings into `td` issues linked to the correct epic.
+exec
+/bin/zsh -lc 'cat /Users/tbrewer/.agents/skills/pre-landing-check/SKILL.md' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+---
+name: pre-landing-check
+description: Run a multi-specialist code review of recent work, then triage findings into td issues linked to an epic. Use when the user says "pre-landing check", "pre landing check", "review and triage", "review work and create issues", "review and file issues", or wants a full review-to-issues pipeline. Also triggers on "review changes and triage to epic" or "code review with issue tracking". Requires td CLI and a td epic to link issues to.
+---
+
+# Review and Triage
+
+Two-phase workflow: (1) multi-specialist code review of uncommitted changes, (2) triage findings into prioritized td issues under an epic.
+
+## Arguments
+
+```
+/pre-landing-check [epic-id-or-name] [optional file/area focus]
+```
+
+- **epic-id-or-name** (optional): td epic ID (e.g., `td-a0ba4f`) or name to search for. If omitted, ask the user.
+- **file/area focus** (optional): specific file path or area to focus the review on.
+
+## Phase 0: Check current branch
+
+codex
+Using the `pre-landing-check` skill because you explicitly requested `/pre-landing-check`; I’m now running Phase 0/1 checks (`git` context + scope) before triaging findings into `td`.
+exec
+/bin/zsh -lc 'git branch --show-current' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'git status --porcelain' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'git diff HEAD --stat' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+main
+ succeeded in 52ms:
+ .autopilot-logs/pipeline.log                  | 66 +++++++++++++++++++++++++
+ app/lib/app/audit/log.ex                      |  5 ++
+ app/test/app/audit/checkpoint_test.exs        |  1 +
+ app/test/app/audit/checkpoint_worker_test.exs |  1 +
+ app/test/app/audit/context_test.exs           |  2 +
+ app/test/app/audit/log_test.exs               | 19 +++++++
+ app/test/app/audit/schema_migration_test.exs  | 71 ++++++++++++++++++++++++++-
+ app/test/app/audit/verifier_test.exs          |  1 +
+ 8 files changed, 164 insertions(+), 2 deletions(-)
+ succeeded in 52ms:
+ M .autopilot-logs/pipeline.log
+ M app/lib/app/audit/log.ex
+ M app/test/app/audit/checkpoint_test.exs
+ M app/test/app/audit/checkpoint_worker_test.exs
+ M app/test/app/audit/context_test.exs
+ M app/test/app/audit/log_test.exs
+ M app/test/app/audit/schema_migration_test.exs
+ M app/test/app/audit/verifier_test.exs
+?? .autopilot-logs/audit-endpoints/phase-4-commit.log
+?? .autopilot-logs/audit-endpoints/phase-4-prepare-for-landing.log
+?? .autopilot-logs/audit-endpoints/phase-5-land-the-plane.log
+?? .autopilot-logs/compliance-framework-profiles/
+?? .autopilot-logs/extensible-event-schema/
+?? app/lib/app/compliance.ex
+?? app/lib/app/compliance/
+?? app/priv/repo/migrations/20260305140000_create_account_compliance_frameworks.exs
+?? app/priv/repo/migrations/20260305140100_add_frameworks_to_audit_logs.exs
+?? app/priv/repo/migrations/20260305163000_add_actor_id_and_extensions_to_audit_logs.exs
+?? app/test/app/compliance_test.exs
+?? openspec/changes/compliance-evidence-export/
+exec
+/bin/zsh -lc 'git branch --list' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+* main
+codex
+I found we’re on `main` with only that branch available, so I’ll proceed by scoping the review strictly to `openspec/changes/extensible-event-schema/` and its related implementation files. Next I’m extracting the change artifacts to identify the exact epic and expected behavior.
+exec
+/bin/zsh -lc 'rg --files openspec/changes/extensible-event-schema' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+openspec/changes/extensible-event-schema/proposal.md
+openspec/changes/extensible-event-schema/design.md
+openspec/changes/extensible-event-schema/tasks.md
+openspec/changes/extensible-event-schema/specs/extension-field-indexing/spec.md
+openspec/changes/extensible-event-schema/specs/extension-field-schema/spec.md
+exec
+/bin/zsh -lc 'cat openspec/changes/extensible-event-schema/design.md' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'cat openspec/changes/extensible-event-schema/proposal.md' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'cat openspec/changes/extensible-event-schema/tasks.md' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'cat openspec/changes/extensible-event-schema/specs/extension-field-indexing/spec.md' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'cat openspec/changes/extensible-event-schema/specs/extension-field-schema/spec.md' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+## Context
+
+The audit log schema hardcodes HIPAA-specific fields (`phi_accessed`, `user_role`, `source_ip`, `session_id`, `failure_reason`, `user_agent`) as top-level columns on `audit_logs`. Non-HIPAA tenants carry unused columns and pay for indexes they never query. Other compliance frameworks (PCI-DSS, SOC 2, GDPR) have required fields (`cardholder_data_accessed`, `change_ticket_id`, `legal_basis`, `data_subject_id`) with no structured home — they end up in the untyped `metadata` JSONB blob where they cannot be validated or efficiently queried. The upcoming `compliance-framework-profiles` change will define per-framework extension schemas, but the storage layer has no mechanism to receive them.
+
+## Goals / Non-Goals
+
+**Goals:**
+- Separate universal audit fields (who/what/when/outcome + chain integrity) from framework-specific extension fields.
+- Introduce a validated, namespaced `extensions` JSONB column that framework modules populate with typed fields.
+- Enable efficient querying of extension fields via GIN and partial expression indexes.
+
+**Non-Goals:**
+- Defining the full set of framework extension schemas (that belongs to `compliance-framework-profiles`).
+- Changing the chain verification algorithm (HMAC-SHA-256 stays).
+- Supporting per-field encryption within extensions (field-level encryption is a separate concern).
+- Building a UI for extension schema management.
+
+## Decisions
+
+### Use actor_id instead of user_id
+ succeeded in 52ms:
+## Why
+
+The audit log schema hardcodes HIPAA-specific fields (`phi_accessed`, `user_role`, `source_ip`, `session_id`, `failure_reason`) as top-level columns. This creates two problems: (1) non-HIPAA users carry unused columns and pay for indexes they don't need, and (2) other frameworks' required fields (PCI's `cardholder_data_accessed`, SOC 2's `change_ticket_id`, GDPR's `legal_basis`, `data_subject_id`) have nowhere to live except the untyped `metadata` JSONB blob.
+
+The schema should separate universal audit fields that every framework needs from framework-specific extension fields that are validated and queryable but only present when relevant.
+
+## What Changes
+
+1. **Universal core fields** — Keep as top-level columns: `account_id`, `sequence_number`, `checksum`, `previous_checksum`, `actor_id`, `action`, `resource_type`, `resource_id`, `outcome`, `timestamp`, `metadata`. These are the "who did what to which thing and when" fields every audit standard requires.
+
+2. **Extension fields via typed JSONB** — Replace `phi_accessed`, `user_role`, `source_ip`, `session_id`, `failure_reason`, `user_agent` with a validated `extensions` JSONB column. Framework modules (from compliance-framework-profiles) define JSON schemas for their extension fields. Validation happens at the application layer before insertion.
+
+3. **Extension field indexing** — GIN index on `extensions` for framework-specific queries. Partial indexes for high-value extension paths (e.g., `extensions->'hipaa'->>'phi_accessed'` for HIPAA accounts).
+
+4. **Canonical payload update** — The HMAC chain canonical format includes extensions in a deterministic sorted representation.
+
+## Capabilities
+
+### New Capabilities
+- `extension-field-schema`: Typed, validated JSONB extension fields driven by compliance framework definitions
+ succeeded in 50ms:
+## 1. Schema Migration
+
+- [x] 1.1 Create Ecto migration with `extensions` JSONB column on `audit_logs` with `NOT NULL DEFAULT '{}'::jsonb`
+- [x] 1.2 Create Ecto migration with `actor_id` varchar column on `audit_logs` (NOT NULL)
+- [x] 1.3 Create GIN index on `audit_logs.extensions`
+- [x] 1.4 Create partial B-tree index on `(extensions->'hipaa'->>'phi_accessed') WHERE extensions->'hipaa' IS NOT NULL`
+- [x] 1.5 Add unique index on `[account_id, sequence_number]` if not already present (verify existing indexes)
+
+## 2. Ecto Schema and Changeset Updates
+
+- [x] 2.1 Add `field(:extensions, :map, default: %{})` to `GA.Audit.Log` schema
+- [x] 2.2 Add `field(:actor_id, :string)` to `GA.Audit.Log` schema
+- [x] 2.3 Update `changeset/2` to cast `:extensions` and `:actor_id`
+- [x] 2.4 Update `changeset/2` to validate `:actor_id` as required
+- [x] 2.5 Update `valid_actions/0` and `valid_outcomes/0` if any additions needed
+
+## 3. Extension Validation Module
+
+- [x] 3.1 Create `lib/app/compliance/extension_schema.ex` with `GA.Compliance.ExtensionSchema` module
+- [x] 3.2 Implement `validate(frameworks, extensions)` — validates extension map against active framework schemas, returns `{:ok, extensions}` or `{:error, changeset}`
+ succeeded in 50ms:
+## ADDED Requirements
+
+### Requirement: GIN index on extensions column
+
+The `audit_logs` table MUST have a GIN index on the `extensions` JSONB column to support efficient containment queries (`@>` operator). The index MUST be created in the same migration that creates the `audit_logs` table.
+
+#### Scenario: GIN index created
+- **WHEN** the migration runs
+- **THEN** a GIN index is created on `audit_logs.extensions`
+
+#### Scenario: Containment query uses GIN index
+- **WHEN** a query filters with `WHERE extensions @> '{"hipaa": {"phi_accessed": true}}'`
+- **THEN** the query planner uses the GIN index rather than a sequential scan
+
+#### Scenario: Multi-framework containment query
+- **WHEN** a query filters with `WHERE extensions @> '{"hipaa": {"phi_accessed": true}, "soc2": {"change_ticket_id": "JIRA-123"}}'`
+- **THEN** the GIN index supports the combined containment predicate
+
+### Requirement: Partial expression indexes for high-frequency extension paths
+
+ succeeded in 50ms:
+## ADDED Requirements
+
+### Requirement: Extensions JSONB column
+
+The `audit_logs` table MUST have an `extensions` column of type JSONB with a default value of `'{}'::jsonb`. The column MUST be NOT NULL. The column MUST store a map where each top-level key is a framework identifier (e.g., `hipaa`, `soc2`, `pci`, `gdpr`) and each value is a map of that framework's extension fields.
+
+#### Scenario: Column exists with correct type and default
+- **WHEN** the migration runs
+- **THEN** the `extensions` column exists on `audit_logs` as JSONB, NOT NULL, defaulting to `'{}'::jsonb`
+
+#### Scenario: Empty extensions on insert
+- **WHEN** an audit log entry is inserted without specifying `extensions`
+- **THEN** the stored value is `{}` (empty JSON object)
+
+#### Scenario: Namespaced framework extensions
+- **WHEN** an audit log entry is inserted with `extensions: %{"hipaa" => %{"phi_accessed" => true, "user_role" => "nurse"}, "soc2" => %{"change_ticket_id" => "JIRA-123"}}`
+- **THEN** the stored JSONB preserves the namespaced structure with each framework's fields nested under its key
+
+### Requirement: Actor ID column
+
+exec
+/bin/zsh -lc 'git status --porcelain app/lib app/priv/repo/migrations app/test openspec/changes/extensible-event-schema' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+ M app/lib/app/audit/log.ex
+ M app/test/app/audit/checkpoint_test.exs
+ M app/test/app/audit/checkpoint_worker_test.exs
+ M app/test/app/audit/context_test.exs
+ M app/test/app/audit/log_test.exs
+ M app/test/app/audit/schema_migration_test.exs
+ M app/test/app/audit/verifier_test.exs
+?? app/lib/app/compliance.ex
+?? app/lib/app/compliance/
+?? app/priv/repo/migrations/20260305140000_create_account_compliance_frameworks.exs
+?? app/priv/repo/migrations/20260305140100_add_frameworks_to_audit_logs.exs
+?? app/priv/repo/migrations/20260305163000_add_actor_id_and_extensions_to_audit_logs.exs
+?? app/test/app/compliance_test.exs
+?? openspec/changes/extensible-event-schema/
+exec
+/bin/zsh -lc 'rg --files app/lib/app/compliance' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+app/lib/app/compliance/frameworks/hipaa.ex
+app/lib/app/compliance/frameworks/soc2.ex
+app/lib/app/compliance/frameworks/pci_dss.ex
+app/lib/app/compliance/frameworks/iso27001.ex
+app/lib/app/compliance/frameworks/gdpr.ex
+app/lib/app/compliance/framework.ex
+app/lib/app/compliance/account_compliance_framework.ex
+exec
+/bin/zsh -lc "rg --files app/lib/app | rg 'extension_schema|compliance.ex|audit.ex|audit/chain.ex|audit/log.ex'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 50ms:
+app/lib/app/audit/log.ex
+app/lib/app/audit/chain.ex
+app/lib/app/compliance.ex
+app/lib/app/audit.ex
+codex
+I’ve identified the modified/new files tied to this change and I’m now reviewing the actual code with line references (not just summaries) so I can produce concrete, severity-ranked findings and triage each into a `td` issue.
+exec
+/bin/zsh -lc 'git diff HEAD -- app/test/app/audit/checkpoint_test.exs' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'git diff HEAD -- app/lib/app/audit/log.ex' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'git diff HEAD -- app/test/app/audit/checkpoint_worker_test.exs' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'git diff HEAD -- app/test/app/audit/context_test.exs' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'git diff HEAD -- app/test/app/audit/schema_migration_test.exs' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'git diff HEAD -- app/test/app/audit/log_test.exs' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'git diff HEAD -- app/test/app/audit/verifier_test.exs' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+diff --git a/app/test/app/audit/checkpoint_worker_test.exs b/app/test/app/audit/checkpoint_worker_test.exs
+index b14b986..9ca4b34 100644
+--- a/app/test/app/audit/checkpoint_worker_test.exs
++++ b/app/test/app/audit/checkpoint_worker_test.exs
+@@ -105,6 +105,7 @@ defmodule GA.Audit.CheckpointWorkerTest do
+ 
+   defp add_log(account_id, resource_id) do
+     attrs = %{
++      actor_id: Ecto.UUID.generate(),
+       user_id: Ecto.UUID.generate(),
+       user_role: "admin",
+       session_id: "session-#{System.unique_integer([:positive])}",
+ succeeded in 51ms:
+diff --git a/app/lib/app/audit/log.ex b/app/lib/app/audit/log.ex
+index 1883d6d..0f51ac3 100644
+--- a/app/lib/app/audit/log.ex
++++ b/app/lib/app/audit/log.ex
+@@ -17,6 +17,7 @@ defmodule GA.Audit.Log do
+     field(:sequence_number, :integer)
+     field(:checksum, :string)
+     field(:previous_checksum, :string)
++    field(:actor_id, :string)
+     field(:user_id, :string)
+     field(:user_role, :string)
+     field(:session_id, :string)
+@@ -29,6 +30,7 @@ defmodule GA.Audit.Log do
+     field(:outcome, :string)
+     field(:failure_reason, :string)
+     field(:phi_accessed, :boolean, default: false)
++    field(:extensions, :map, default: %{})
+     field(:frameworks, {:array, :string}, default: [])
+     field(:metadata, :map, default: %{})
+ 
+ succeeded in 51ms:
+diff --git a/app/test/app/audit/checkpoint_test.exs b/app/test/app/audit/checkpoint_test.exs
+index c3f9aa3..e027f64 100644
+--- a/app/test/app/audit/checkpoint_test.exs
++++ b/app/test/app/audit/checkpoint_test.exs
+@@ -90,6 +90,7 @@ defmodule GA.Audit.CheckpointTest do
+         sequence_number: 1,
+         checksum: String.duplicate("a", 64),
+         previous_checksum: nil,
++        actor_id: Ecto.UUID.generate(),
+         user_id: Ecto.UUID.generate(),
+         user_role: "admin",
+         session_id: "session_1",
+ succeeded in 51ms:
+diff --git a/app/test/app/audit/context_test.exs b/app/test/app/audit/context_test.exs
+index 47d067d..1a2ab13 100644
+--- a/app/test/app/audit/context_test.exs
++++ b/app/test/app/audit/context_test.exs
+@@ -562,6 +562,7 @@ defmodule GA.Audit.ContextTest do
+ 
+   defp valid_attrs(overrides \\ %{}) do
+     defaults = %{
++      actor_id: Ecto.UUID.generate(),
+       user_id: Ecto.UUID.generate(),
+       user_role: "admin",
+       session_id: "session-#{System.unique_integer([:positive])}",
+@@ -613,6 +614,7 @@ defmodule GA.Audit.ContextTest do
+           sequence_number: sequence,
+           checksum: sequence |> Integer.to_string(16) |> String.pad_leading(64, "0"),
+           previous_checksum: nil,
++          actor_id: "bulk-actor",
+           user_id: "bulk-user",
+           user_role: "admin",
+           session_id: "bulk-session-#{sequence}",
+ succeeded in 51ms:
+diff --git a/app/test/app/audit/log_test.exs b/app/test/app/audit/log_test.exs
+index cfc7531..c3a8a44 100644
+--- a/app/test/app/audit/log_test.exs
++++ b/app/test/app/audit/log_test.exs
+@@ -5,6 +5,7 @@ defmodule GA.Audit.LogTest do
+ 
+   defp valid_attrs do
+     %{
++      actor_id: Ecto.UUID.generate(),
+       user_id: Ecto.UUID.generate(),
+       user_role: "admin",
+       session_id: "sess_123",
+@@ -17,6 +18,7 @@ defmodule GA.Audit.LogTest do
+       outcome: "success",
+       failure_reason: nil,
+       phi_accessed: true,
++      extensions: %{"hipaa" => %{"phi_accessed" => true}},
+       frameworks: ["hipaa"],
+       metadata: %{"source" => "test"}
+     }
+ succeeded in 51ms:
+diff --git a/app/test/app/audit/schema_migration_test.exs b/app/test/app/audit/schema_migration_test.exs
+index e3669ce..6abd4ea 100644
+--- a/app/test/app/audit/schema_migration_test.exs
++++ b/app/test/app/audit/schema_migration_test.exs
+@@ -20,6 +20,7 @@ defmodule GA.Audit.SchemaMigrationTest do
+       sequence_number: 1,
+       checksum: String.duplicate("a", 64),
+       previous_checksum: nil,
++      actor_id: Ecto.UUID.generate(),
+       user_id: Ecto.UUID.generate(),
+       user_role: "admin",
+       session_id: "session_1",
+@@ -43,12 +44,12 @@ defmodule GA.Audit.SchemaMigrationTest do
+       Repo,
+       """
+       INSERT INTO audit_logs (
+-        id, account_id, sequence_number, checksum, previous_checksum, user_id, user_role,
++        id, account_id, sequence_number, checksum, previous_checksum, actor_id, user_id, user_role,
+         session_id, action, resource_type, resource_id, "timestamp", source_ip, user_agent,
+         outcome, failure_reason, phi_accessed, metadata, inserted_at, updated_at
+ succeeded in 51ms:
+diff --git a/app/test/app/audit/verifier_test.exs b/app/test/app/audit/verifier_test.exs
+index 80ee026..75ab643 100644
+--- a/app/test/app/audit/verifier_test.exs
++++ b/app/test/app/audit/verifier_test.exs
+@@ -171,6 +171,7 @@ defmodule GA.Audit.VerifierTest do
+ 
+   defp valid_attrs(overrides \\ %{}) do
+     defaults = %{
++      actor_id: Ecto.UUID.generate(),
+       user_id: Ecto.UUID.generate(),
+       user_role: "admin",
+       session_id: "session-#{System.unique_integer([:positive])}",
+codex
+I’ve finished the raw diffs and I’m now reading the full touched modules/migrations to catch design-level gaps that don’t show up as obvious line edits (especially schema, validation, and query-path behavior).
+exec
+/bin/zsh -lc 'nl -ba app/lib/app/audit.ex' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'nl -ba app/lib/app/audit/chain.ex' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'nl -ba app/lib/app/audit/log.ex' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'nl -ba app/lib/app/compliance/framework.ex' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'nl -ba app/lib/app/compliance.ex' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'nl -ba app/lib/app/compliance/account_compliance_framework.ex' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'nl -ba app/priv/repo/migrations/20260305140100_add_frameworks_to_audit_logs.exs' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'nl -ba app/priv/repo/migrations/20260305140000_create_account_compliance_frameworks.exs' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+     1	defmodule GA.Compliance.Framework do
+     2	  @moduledoc """
+     3	  Behaviour contract for built-in and custom compliance framework profiles.
+     4	  """
+     5	
+     6	  @callback name() :: String.t()
+     7	  @callback required_fields() :: [atom()]
+     8	  @callback recommended_fields() :: [atom()]
+     9	  @callback default_retention_days() :: pos_integer()
+    10	  @callback verification_cadence_hours() :: pos_integer()
+    11	  @callback extension_schema() :: map()
+    12	  @callback event_taxonomy() :: [String.t()]
+    13	end
+ succeeded in 51ms:
+     1	defmodule GA.Audit.Log do
+     2	  @moduledoc """
+     3	  Ecto schema for append-only audit log entries.
+     4	  """
+     5	  use Ecto.Schema
+     6	  import Ecto.Changeset
+     7	
+     8	  @primary_key {:id, :binary_id, autogenerate: true}
+     9	  @foreign_key_type :binary_id
+    10	
+    11	  @valid_actions ~w(create read update delete export login logout)
+    12	  @valid_outcomes ~w(success failure)
+    13	
+    14	  schema "audit_logs" do
+    15	    belongs_to(:account, GA.Accounts.Account)
+    16	
+    17	    field(:sequence_number, :integer)
+    18	    field(:checksum, :string)
+    19	    field(:previous_checksum, :string)
+    20	    field(:actor_id, :string)
+ succeeded in 51ms:
+     1	defmodule GA.Compliance do
+     2	  @moduledoc """
+     3	  Context for account-scoped compliance framework profiles.
+     4	  """
+     5	
+     6	  import Ecto.Query, warn: false
+     7	
+     8	  alias GA.Compliance.AccountComplianceFramework
+     9	  alias GA.Repo
+    10	
+    11	  @registry %{
+    12	    "hipaa" => GA.Compliance.Frameworks.HIPAA,
+    13	    "soc2" => GA.Compliance.Frameworks.SOC2,
+    14	    "pci_dss" => GA.Compliance.Frameworks.PCIDSS,
+    15	    "gdpr" => GA.Compliance.Frameworks.GDPR,
+    16	    "iso27001" => GA.Compliance.Frameworks.ISO27001
+    17	  }
+    18	
+    19	  @doc """
+    20	  Returns the built-in framework registry keyed by framework ID.
+ succeeded in 51ms:
+     1	defmodule GA.Audit.Chain do
+     2	  @moduledoc """
+     3	  Deterministic HMAC-SHA-256 chain checksum computation utilities.
+     4	  """
+     5	
+     6	  @genesis_previous "genesis"
+     7	  @checksum_pattern ~r/\A[0-9a-f]{64}\z/
+     8	  @payload_fields [
+     9	    "account_id",
+    10	    "sequence_number",
+    11	    "timestamp",
+    12	    "user_id",
+    13	    "user_role",
+    14	    "session_id",
+    15	    "action",
+    16	    "resource_type",
+    17	    "resource_id",
+    18	    "outcome",
+    19	    "failure_reason",
+    20	    "phi_accessed",
+ succeeded in 51ms:
+     1	defmodule GA.Audit do
+     2	  @moduledoc """
+     3	  Business logic for account-scoped append-only audit logs and checkpoints.
+     4	  """
+     5	
+     6	  import Ecto.Changeset, only: [add_error: 3, put_change: 3]
+     7	  import Ecto.Query, warn: false
+     8	
+     9	  alias GA.Accounts
+    10	  alias GA.Audit.{Chain, Checkpoint, Log, Verifier}
+    11	  alias GA.Compliance
+    12	  alias GA.Repo
+    13	
+    14	  @default_limit 50
+    15	  @max_limit 1000
+    16	  @reserved_chain_keys [:account_id, :sequence_number, :checksum, :previous_checksum]
+    17	
+    18	  @doc """
+    19	  Creates a new audit log entry with per-account chain fields in a single transaction.
+    20	  """
+ succeeded in 51ms:
+     1	defmodule GA.Repo.Migrations.AddFrameworksToAuditLogs do
+     2	  use Ecto.Migration
+     3	
+     4	  def change do
+     5	    alter table(:audit_logs) do
+     6	      add(:frameworks, {:array, :string}, null: false, default: [])
+     7	    end
+     8	  end
+     9	end
+ succeeded in 51ms:
+     1	defmodule GA.Compliance.AccountComplianceFramework do
+     2	  @moduledoc """
+     3	  Account-level framework activation record with per-framework overrides.
+     4	  """
+     5	
+     6	  use Ecto.Schema
+     7	  import Ecto.Changeset
+     8	
+     9	  @primary_key {:id, :binary_id, autogenerate: true}
+    10	  @foreign_key_type :binary_id
+    11	
+    12	  @allowed_override_keys ~w(retention_days verification_cadence_hours additional_required_fields)
+    13	
+    14	  schema "account_compliance_frameworks" do
+    15	    belongs_to(:account, GA.Accounts.Account)
+    16	    field(:framework_id, :string)
+    17	    field(:activated_at, :utc_datetime_usec)
+    18	    field(:config_overrides, :map, default: %{})
+    19	
+    20	    timestamps(type: :utc_datetime_usec)
+ succeeded in 50ms:
+     1	defmodule GA.Repo.Migrations.CreateAccountComplianceFrameworks do
+     2	  use Ecto.Migration
+     3	
+     4	  def change do
+     5	    create table(:account_compliance_frameworks, primary_key: false) do
+     6	      add(:id, :binary_id, primary_key: true)
+     7	
+     8	      add(:account_id, references(:accounts, type: :binary_id, on_delete: :delete_all),
+     9	        null: false
+    10	      )
+    11	
+    12	      add(:framework_id, :string, null: false)
+    13	
+    14	      add(:activated_at, :utc_datetime_usec,
+    15	        null: false,
+    16	        default: fragment("(now() at time zone 'utc')")
+    17	      )
+    18	
+    19	      add(:config_overrides, :map, null: false, default: %{})
+    20	
+exec
+/bin/zsh -lc 'nl -ba app/priv/repo/migrations/20260305163000_add_actor_id_and_extensions_to_audit_logs.exs' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'nl -ba app/lib/app/compliance/frameworks/soc2.ex' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'nl -ba app/lib/app/compliance/frameworks/hipaa.ex' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'nl -ba app/lib/app/compliance/frameworks/pci_dss.ex' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'nl -ba app/lib/app/compliance/frameworks/gdpr.ex' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'nl -ba app/lib/app/compliance/frameworks/iso27001.ex' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'nl -ba app/test/app/compliance_test.exs' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 50ms:
+     1	defmodule GA.Compliance.Frameworks.PCIDSS do
+     2	  @moduledoc false
+     3	  @behaviour GA.Compliance.Framework
+     4	
+     5	  @required_fields [
+     6	    :user_id,
+     7	    :action,
+     8	    :resource_type,
+     9	    :resource_id,
+    10	    :timestamp,
+    11	    :outcome,
+    12	    :source_ip,
+    13	    :user_role,
+    14	    :session_id
+    15	  ]
+    16	
+    17	  @impl true
+    18	  def name, do: "PCI-DSS v4"
+    19	
+    20	  @impl true
+ succeeded in 51ms:
+     1	defmodule GA.Compliance.Frameworks.SOC2 do
+     2	  @moduledoc false
+     3	  @behaviour GA.Compliance.Framework
+     4	
+     5	  @required_fields [
+     6	    :user_id,
+     7	    :action,
+     8	    :resource_type,
+     9	    :resource_id,
+    10	    :timestamp,
+    11	    :outcome,
+    12	    :source_ip,
+    13	    :session_id
+    14	  ]
+    15	
+    16	  @impl true
+    17	  def name, do: "SOC 2 Type II"
+    18	
+    19	  @impl true
+    20	  def required_fields, do: @required_fields
+ succeeded in 51ms:
+     1	defmodule GA.Compliance.Frameworks.HIPAA do
+     2	  @moduledoc false
+     3	  @behaviour GA.Compliance.Framework
+     4	
+     5	  @required_fields [
+     6	    :user_id,
+     7	    :action,
+     8	    :resource_type,
+     9	    :resource_id,
+    10	    :timestamp,
+    11	    :phi_accessed,
+    12	    :source_ip,
+    13	    :user_role
+    14	  ]
+    15	
+    16	  @impl true
+    17	  def name, do: "HIPAA"
+    18	
+    19	  @impl true
+    20	  def required_fields, do: @required_fields
+ succeeded in 51ms:
+     1	defmodule GA.Repo.Migrations.AddActorIdAndExtensionsToAuditLogs do
+     2	  use Ecto.Migration
+     3	
+     4	  def up do
+     5	    alter table(:audit_logs) do
+     6	      add(:actor_id, :string)
+     7	      add(:extensions, :map, null: false, default: %{})
+     8	    end
+     9	
+    10	    execute("""
+    11	    UPDATE audit_logs
+    12	    SET actor_id = user_id
+    13	    WHERE actor_id IS NULL
+    14	    """)
+    15	
+    16	    alter table(:audit_logs) do
+    17	      modify(:actor_id, :string, null: false)
+    18	    end
+    19	
+    20	    create_if_not_exists(unique_index(:audit_logs, [:account_id, :sequence_number]))
+ succeeded in 50ms:
+     1	defmodule GA.Compliance.Frameworks.GDPR do
+     2	  @moduledoc false
+     3	  @behaviour GA.Compliance.Framework
+     4	
+     5	  @required_fields [:user_id, :action, :resource_type, :resource_id, :timestamp, :outcome]
+     6	
+     7	  @impl true
+     8	  def name, do: "GDPR"
+     9	
+    10	  @impl true
+    11	  def required_fields, do: @required_fields
+    12	
+    13	  @impl true
+    14	  def recommended_fields, do: [:source_ip, :session_id, :user_agent]
+    15	
+    16	  @impl true
+    17	  def default_retention_days, do: 1825
+    18	
+    19	  @impl true
+    20	  def verification_cadence_hours, do: 48
+ succeeded in 50ms:
+     1	defmodule GA.Compliance.Frameworks.ISO27001 do
+     2	  @moduledoc false
+     3	  @behaviour GA.Compliance.Framework
+     4	
+     5	  @required_fields [
+     6	    :user_id,
+     7	    :action,
+     8	    :resource_type,
+     9	    :resource_id,
+    10	    :timestamp,
+    11	    :outcome,
+    12	    :source_ip
+    13	  ]
+    14	
+    15	  @impl true
+    16	  def name, do: "ISO 27001"
+    17	
+    18	  @impl true
+    19	  def required_fields, do: @required_fields
+    20	
+ succeeded in 52ms:
+     1	defmodule GA.ComplianceTest do
+     2	  use GA.DataCase, async: true
+     3	
+     4	  alias GA.Accounts
+     5	  alias GA.Compliance
+     6	
+     7	  describe "framework registry" do
+     8	    test "returns built-in framework mappings" do
+     9	      registry = Compliance.registry()
+    10	
+    11	      assert registry["hipaa"] == GA.Compliance.Frameworks.HIPAA
+    12	      assert registry["soc2"] == GA.Compliance.Frameworks.SOC2
+    13	      assert registry["pci_dss"] == GA.Compliance.Frameworks.PCIDSS
+    14	      assert registry["gdpr"] == GA.Compliance.Frameworks.GDPR
+    15	      assert registry["iso27001"] == GA.Compliance.Frameworks.ISO27001
+    16	    end
+    17	
+    18	    test "get_framework/1 resolves known and unknown IDs" do
+    19	      assert {:ok, GA.Compliance.Frameworks.SOC2} = Compliance.get_framework("soc2")
+    20	      assert {:error, :unknown_framework} = Compliance.get_framework("nope")
+exec
+/bin/zsh -lc 'rg --files app/priv/repo/migrations | sort' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+app/priv/repo/migrations/20260302162211_create_users_auth_tables.exs
+app/priv/repo/migrations/20260302162412_create_accounts.exs
+app/priv/repo/migrations/20260302162416_create_account_users.exs
+app/priv/repo/migrations/20260302162420_create_api_keys.exs
+app/priv/repo/migrations/20260303144500_add_hmac_key_to_accounts.exs
+app/priv/repo/migrations/20260303153000_create_audit_logs.exs
+app/priv/repo/migrations/20260303153100_create_audit_checkpoints.exs
+app/priv/repo/migrations/20260305140000_create_account_compliance_frameworks.exs
+app/priv/repo/migrations/20260305140100_add_frameworks_to_audit_logs.exs
+app/priv/repo/migrations/20260305163000_add_actor_id_and_extensions_to_audit_logs.exs
+exec
+/bin/zsh -lc 'nl -ba app/priv/repo/migrations/20260303153000_create_audit_logs.exs' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+     1	defmodule GA.Repo.Migrations.CreateAuditLogs do
+     2	  use Ecto.Migration
+     3	
+     4	  def up do
+     5	    create table(:audit_logs, primary_key: false) do
+     6	      add(:id, :binary_id, primary_key: true)
+     7	
+     8	      add(:account_id, references(:accounts, type: :binary_id, on_delete: :nothing), null: false)
+     9	
+    10	      add(:sequence_number, :bigint, null: false)
+    11	      add(:checksum, :string, size: 64, null: false)
+    12	      add(:previous_checksum, :string, size: 64)
+    13	      add(:user_id, :string, null: false)
+    14	      add(:user_role, :string, null: false)
+    15	      add(:session_id, :string)
+    16	      add(:action, :string, null: false)
+    17	      add(:resource_type, :string, null: false)
+    18	      add(:resource_id, :string, null: false)
+    19	      add(:timestamp, :utc_datetime_usec, null: false)
+    20	      add(:source_ip, :string)
+exec
+/bin/zsh -lc 'nl -ba app/test/app/audit/schema_migration_test.exs' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+     1	defmodule GA.Audit.SchemaMigrationTest do
+     2	  use GA.DataCase, async: true
+     3	
+     4	  alias Ecto.Adapters.SQL
+     5	  alias GA.Accounts
+     6	  alias GA.Repo
+     7	
+     8	  defp account_fixture do
+     9	    {:ok, account} =
+    10	      Accounts.create_account(%{name: "Audit Test Account #{System.unique_integer([:positive])}"})
+    11	
+    12	    account
+    13	  end
+    14	
+    15	  defp insert_audit_log(attrs) do
+    16	    now = DateTime.utc_now() |> DateTime.truncate(:second)
+    17	
+    18	    defaults = %{
+    19	      id: Ecto.UUID.generate(),
+    20	      sequence_number: 1,
+exec
+/bin/zsh -lc ls in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+app
+openspec
+codex
+I’ve now got enough code context to do the specialist pass; I’m running targeted tests around `audit` and `compliance` to validate behavioral regressions before I open `td` issues.
+exec
+/bin/zsh -lc 'mix test test/app/audit/log_test.exs test/app/audit/schema_migration_test.exs test/app/audit/context_test.exs test/app/audit/verifier_test.exs test/app/compliance_test.exs' in /Users/tbrewer/projects/goodway/goodaudit/app exited 1 in 318ms:
+Error! Failed to load module 'elixir' because it requires a more recent Erlang/OTP version or its .beam file was corrupted.
+(You are running Erlang/OTP 27.)
+
+Runtime terminating during boot ({undef,[{init,start_it,1,[]},{init,start_em,1,[]},{init,do_boot,3,[]}]})
+
+Crash dump is being written to: erl_crash.dump...done
+exec
+/bin/zsh -lc "rg -n \"extensions|actor_id|phi_accessed|ExtensionSchema|create_entry|create_log_entry|list_logs\\(\" app/lib app/test" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 50ms:
+app/lib/app/compliance/frameworks/hipaa.ex:11:    :phi_accessed,
+app/test/app_web/controllers/verification_controller_test.exs:14:               Audit.create_log_entry(account.id, valid_audit_attrs(%{resource_id: "one"}))
+app/test/app_web/controllers/verification_controller_test.exs:17:               Audit.create_log_entry(account.id, valid_audit_attrs(%{resource_id: "two"}))
+app/test/app_web/controllers/verification_controller_test.exs:39:               Audit.create_log_entry(account_a.id, valid_audit_attrs(%{resource_id: "a-1"}))
+app/test/app_web/controllers/verification_controller_test.exs:42:               Audit.create_log_entry(account_a.id, valid_audit_attrs(%{resource_id: "a-2"}))
+app/test/app_web/controllers/verification_controller_test.exs:45:               Audit.create_log_entry(account_b.id, valid_audit_attrs(%{resource_id: "b-1"}))
+app/test/app_web/controllers/verification_controller_test.exs:108:      phi_accessed: false,
+app/test/app_web/controllers/checkpoint_controller_test.exs:14:               Audit.create_log_entry(account.id, valid_audit_attrs(%{resource_id: "entry-1"}))
+app/test/app_web/controllers/checkpoint_controller_test.exs:63:               Audit.create_log_entry(account_a.id, valid_audit_attrs(%{resource_id: "a-1"}))
+app/test/app_web/controllers/checkpoint_controller_test.exs:68:               Audit.create_log_entry(account_a.id, valid_audit_attrs(%{resource_id: "a-2"}))
+app/test/app_web/controllers/checkpoint_controller_test.exs:73:               Audit.create_log_entry(account_b.id, valid_audit_attrs(%{resource_id: "b-1"}))
+app/test/app_web/controllers/checkpoint_controller_test.exs:147:      phi_accessed: false,
+app/test/app_web/controllers/audit_log_controller_test.exs:92:               Audit.create_log_entry(account.id, valid_audit_attrs(%{resource_id: "r-1"}))
+app/test/app_web/controllers/audit_log_controller_test.exs:95:               Audit.create_log_entry(account.id, valid_audit_attrs(%{resource_id: "r-2"}))
+app/test/app_web/controllers/audit_log_controller_test.exs:98:               Audit.create_log_entry(account.id, valid_audit_attrs(%{resource_id: "r-3"}))
+app/test/app_web/controllers/audit_log_controller_test.exs:120:               Audit.create_log_entry(
+app/test/app_web/controllers/audit_log_controller_test.exs:125:                   phi_accessed: true,
+app/test/app_web/controllers/audit_log_controller_test.exs:132:               Audit.create_log_entry(
+app/test/app_web/controllers/audit_log_controller_test.exs:137:                   phi_accessed: true,
+app/test/app_web/controllers/audit_log_controller_test.exs:144:               Audit.create_log_entry(
+exec
+/bin/zsh -lc 'nl -ba app/lib/app_web/controllers/api/v1/audit_log_controller.ex' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'nl -ba app/lib/app_web/controllers/api/v1/audit_log_json.ex' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'nl -ba app/lib/app_web/schemas/audit_log_list_response.ex' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'nl -ba app/test/app/audit/chain_test.exs' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'nl -ba app/lib/app_web/schemas/audit_log_request.ex' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'nl -ba app/lib/app_web/schemas/audit_log_response.ex' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+     1	defmodule GAWeb.Api.V1.AuditLogController do
+     2	  @moduledoc """
+     3	  Account-scoped audit log endpoints.
+     4	  """
+     5	  use GAWeb, :controller
+     6	  use OpenApiSpex.ControllerSpecs
+     7	
+     8	  alias GA.Audit
+     9	  alias GAWeb.Api.V1.AuditLogJSON
+    10	
+    11	  alias GAWeb.Schemas.{
+    12	    AuditLogListResponse,
+    13	    AuditLogRequest,
+    14	    AuditLogResponse,
+    15	    ErrorResponse
+    16	  }
+    17	
+    18	  action_fallback GAWeb.FallbackController
+    19	
+    20	  tags(["Audit Logs"])
+ succeeded in 51ms:
+     1	defmodule GAWeb.Api.V1.AuditLogJSON do
+     2	  @moduledoc """
+     3	  JSON rendering for audit log API responses.
+     4	  """
+     5	
+     6	  def index(%{logs: logs, next_cursor: next_cursor}) do
+     7	    %{
+     8	      data: Enum.map(logs, &data/1),
+     9	      meta: %{
+    10	        next_cursor: next_cursor,
+    11	        count: length(logs)
+    12	      }
+    13	    }
+    14	  end
+    15	
+    16	  def show(%{log: log}), do: %{data: data(log)}
+    17	
+    18	  def data(log) do
+    19	    %{
+    20	      id: log.id,
+ succeeded in 52ms:
+     1	defmodule GAWeb.Schemas.AuditLogRequest do
+     2	  @moduledoc """
+     3	  OpenAPI schema for creating an audit log entry.
+     4	  """
+     5	  require OpenApiSpex
+     6	  alias OpenApiSpex.Schema
+     7	
+     8	  OpenApiSpex.schema(%{
+     9	    title: "AuditLogRequest",
+    10	    type: :object,
+    11	    properties: %{
+    12	      user_id: %Schema{type: :string, format: :uuid},
+    13	      user_role: %Schema{type: :string},
+    14	      session_id: %Schema{type: :string, nullable: true},
+    15	      action: %Schema{
+    16	        type: :string,
+    17	        enum: GA.Audit.Log.valid_actions()
+    18	      },
+    19	      resource_type: %Schema{type: :string},
+    20	      resource_id: %Schema{type: :string},
+ succeeded in 52ms:
+     1	defmodule GAWeb.Schemas.AuditLogResponse do
+     2	  @moduledoc """
+     3	  OpenAPI schema for a single audit log response payload.
+     4	  """
+     5	  require OpenApiSpex
+     6	  alias OpenApiSpex.Schema
+     7	
+     8	  OpenApiSpex.schema(%{
+     9	    title: "AuditLogResponse",
+    10	    type: :object,
+    11	    properties: %{
+    12	      data: %Schema{
+    13	        type: :object,
+    14	        properties: %{
+    15	          id: %Schema{type: :string, format: :uuid},
+    16	          account_id: %Schema{type: :string, format: :uuid},
+    17	          sequence_number: %Schema{type: :integer},
+    18	          checksum: %Schema{type: :string},
+    19	          previous_checksum: %Schema{type: :string, nullable: true},
+    20	          user_id: %Schema{type: :string},
+ succeeded in 52ms:
+     1	defmodule GAWeb.Schemas.AuditLogListResponse do
+     2	  @moduledoc """
+     3	  OpenAPI schema for a paginated audit log list response.
+     4	  """
+     5	  require OpenApiSpex
+     6	  alias OpenApiSpex.Schema
+     7	
+     8	  OpenApiSpex.schema(%{
+     9	    title: "AuditLogListResponse",
+    10	    type: :object,
+    11	    properties: %{
+    12	      data: %Schema{
+    13	        type: :array,
+    14	        items: %Schema{
+    15	          type: :object,
+    16	          properties: %{
+    17	            id: %Schema{type: :string, format: :uuid},
+    18	            account_id: %Schema{type: :string, format: :uuid},
+    19	            sequence_number: %Schema{type: :integer},
+    20	            checksum: %Schema{type: :string},
+ succeeded in 52ms:
+     1	defmodule GA.Audit.ChainTest do
+     2	  use ExUnit.Case, async: true
+     3	
+     4	  alias GA.Audit.Chain
+     5	
+     6	  defmodule AuditLog do
+     7	    defstruct [
+     8	      :account_id,
+     9	      :sequence_number,
+    10	      :timestamp,
+    11	      :user_id,
+    12	      :user_role,
+    13	      :session_id,
+    14	      :action,
+    15	      :resource_type,
+    16	      :resource_id,
+    17	      :outcome,
+    18	      :failure_reason,
+    19	      :phi_accessed,
+    20	      :source_ip,
+exec
+/bin/zsh -lc 'rg -n "td-[a-z0-9]+|epic|takeoff|issue" openspec/changes/extensible-event-schema .autopilot-logs/extensible-event-schema -S' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+Total output lines: 483
+
+.autopilot-logs/extensible-event-schema/phase-3-pre-landing-check.log:28:I’ll run the `pre-landing-check` workflow on `openspec/changes/extensible-event-schema/`: first I’m loading that skill’s instructions, then I’ll inspect the change artifacts, review the implemented code, and triage findings into `td` issues linked to the correct epic.
+.autopilot-logs/extensible-event-schema/phase-3-pre-landing-check.log:33:description: Run a multi-specialist code review of recent work, then triage findings into td issues linked to an epic. Use when the user says "pre-landing check", "pre landing check", "review and triage", "review work and create issues", "review and file issues", or wants a full review-to-issues pipeline. Also triggers on "review changes and triage to epic" or "code review with issue tracking". Requires td CLI and a td epic to link issues to.
+.autopilot-logs/extensible-event-schema/phase-3-pre-landing-check.log:38:Two-phase workflow: (1) multi-specialist code review of uncommitted changes, (2) triage findings into prioritized td issues under an epic.
+.autopilot-logs/extensible-event-schema/phase-3-pre-landing-check.log:43:/pre-landing-check [epic-id-or-name] [optional file/area focus]
+.autopilot-logs/extensible-event-schema/phase-3-pre-landing-check.log:46:- **epic-id-or-name** (optional): td epic ID (e.g., `td-a0ba4f`) or name to search for. If omitted, ask the user.
+.autopilot-logs/extensible-event-schema/phase-3-pre-landing-check.log:93:I found we’re on `main` with only that branch available, so I’ll proceed by scoping the review strictly to `openspec/changes/extensible-event-schema/` and its related implementation files. Next I’m extracting the change artifacts to identify the exact epic and expected behavior.
+.autopilot-logs/extensible-event-schema/phase-3-pre-landing-check.log:243:I’ve identified the modified/new files tied to this change and I’m now reviewing the actual code with line references (not just summaries) so I can produce concrete, severity-ranked findings and triage each into a `td` issue.
+.autopilot-logs/extensible-event-schema/phase-3-pre-landing-check.log:749:I’ve now got enough code context to do the specialist pass; I’m running targeted tests around `audit` and `compliance` to validate behavioral regressions before I open `td` issues.
+.autopilot-logs/extensible-event-schema/phase-1-commit.log:83:.autopilot-logs/extensible-event-schema/phase-1-prepare-for-takeoff.log
+.autopilot-logs/extensible-event-schema/phase-1-commit.log:112:.autopilot-logs/audit-endpoints/phase-1-prepare-for-takeoff.log
+.autopilot-logs/extensible-event-schema/phase-1-commit.log:117:/bin/zsh -lc "sed -n '1,220p' .autopilot-logs/extensible-event-schema/phase-1-prepare-for-takeoff.log" in /Users/tbrewer/projects/goodway/goodauditexec
+.autopilot-logs/extensible-event-schema/phase-1-commit.log:154:Run /prepare-for-takeoff for the change named "extensible-event-schema" located at openspec/changes/extensible-event-schema/. Do not ask me any questions — use your best judgment for any decisions. You are already on the correct feature branch. Do NOT warn about not being on main — this is expected for a multi-change pipeline run.
+.autopilot-logs/extensible-event-schema/phase-1-commit.log:176:+2026/03/05 16:12:35.651393 [compliance-framework-profiles] phase 5: prompt=Run /land-the-plane for the change named "compliance-framework-profiles" located at openspec/changes/compliance-framework-profiles/. Do not ask me any questions — use your best judgment for any decisions. IMPORTANT: This is an intermediate change in a multi-change pipeline. After verifying and approving all issues for this change, do NOT create a PR, do NOT run /git commit, and do NOT return to main. Stay on the current branch — the next change will continue here.
+.autopilot-logs/extensible-event-schema/phase-1-commit.log:265:  .autopilot-logs/extensible-event-schema/phase-1-prepare-for-takeoff.log \
+.autopilot-logs/extensible-event-schema/phase-1-commit.log:282:  .autopilot-logs/extensible-event-schema/phase-1-prepare-for-takeoff.log \
+.autopilot-logs/extensible-event-schema/phase-2-commit.log:102:.autopilot-logs/compliance-framework-profiles/phase-1-prepare-for-takeoff.log
+.autopilot-logs/extensible-event-schema/phase-2-commit.log:104:.autopilot-logs/compliance-framework-profiles/phase-2-takeoff.log
+.autopilot-logs/extensible-event-schema/phase-2-commit.log:112:.autopilot-logs/extensible-event-schema/phase-1-prepare-for-takeoff.log
+exec
+/bin/zsh -lc 'rg -n "defp valid_audit_attrs|actor_id" app/test/app_web/controllers/audit_log_controller_test.exs app/test/app_web/controllers/checkpoint_controller_test.exs app/test/app_web/controllers/verification_controller_test.exs' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+app/test/app_web/controllers/checkpoint_controller_test.exs:134:  defp valid_audit_attrs(overrides \\ %{}) do
+app/test/app_web/controllers/verification_controller_test.exs:95:  defp valid_audit_attrs(overrides \\ %{}) do
+app/test/app_web/controllers/audit_log_controller_test.exs:357:  defp valid_audit_attrs(overrides) do
+exec
+/bin/zsh -lc "nl -ba app/test/app_web/controllers/audit_log_controller_test.exs | sed -n '340,410p'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "nl -ba app/test/app_web/controllers/verification_controller_test.exs | sed -n '80,140p'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "nl -ba app/test/app_web/controllers/checkpoint_controller_test.exs | sed -n '120,180p'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+   340	      public_token: public_token,
+   341	      private_token: private_token
+   342	    }
+   343	  end
+   344	
+   345	  defp api_key_conn(conn, token) do
+   346	    conn
+   347	    |> put_req_header("accept", "application/json")
+   348	    |> put_req_header("content-type", "application/json")
+   349	    |> put_req_header("authorization", "Bearer #{token}")
+   350	  end
+   351	
+   352	  defp valid_audit_payload(overrides \\ %{}) do
+   353	    valid_audit_attrs(overrides)
+   354	    |> Enum.into(%{}, fn {key, value} -> {to_string(key), value} end)
+   355	  end
+   356	
+   357	  defp valid_audit_attrs(overrides) do
+   358	    defaults = %{
+   359	      user_id: Ecto.UUID.generate(),
+ succeeded in 51ms:
+    80	    %{
+    81	      account: account,
+    82	      user: user,
+    83	      public_token: public_token,
+    84	      private_token: private_token
+    85	    }
+    86	  end
+    87	
+    88	  defp api_key_conn(conn, token) do
+    89	    conn
+    90	    |> put_req_header("accept", "application/json")
+    91	    |> put_req_header("content-type", "application/json")
+    92	    |> put_req_header("authorization", "Bearer #{token}")
+    93	  end
+    94	
+    95	  defp valid_audit_attrs(overrides \\ %{}) do
+    96	    defaults = %{
+    97	      user_id: Ecto.UUID.generate(),
+    98	      user_role: "admin",
+    99	      session_id: "session-#{System.unique_integer([:positive])}",
+ succeeded in 51ms:
+   120	      account: account,
+   121	      user: user,
+   122	      public_token: public_token,
+   123	      private_token: private_token
+   124	    }
+   125	  end
+   126	
+   127	  defp api_key_conn(conn, token) do
+   128	    conn
+   129	    |> put_req_header("accept", "application/json")
+   130	    |> put_req_header("content-type", "application/json")
+   131	    |> put_req_header("authorization", "Bearer #{token}")
+   132	  end
+   133	
+   134	  defp valid_audit_attrs(overrides \\ %{}) do
+   135	    defaults = %{
+   136	      user_id: Ecto.UUID.generate(),
+   137	      user_role: "admin",
+   138	      session_id: "session-#{System.unique_integer([:positive])}",
+   139	      action: "read",
+codex
+I’ve completed the review pass and found several high-confidence implementation gaps; next I’m entering Phase 2 by resolving the epic (`td`) and moving any still-`in_progress` child issues to `in_review` before filing new review-finding issues.
+exec
+/bin/zsh -lc 'td --version' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+td version 0.37.0
+exec
+/bin/zsh -lc 'td show td-067a70' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+td-067a70: Extensible Event Schema
+Status: [open]
+Type: epic | Priority: P2
+Labels: extensible-event-schema
+
+Description:
+The audit log schema currently hardcodes HIPAA-specific fields, which creates unnecessary overhead for non-HIPAA tenants and leaves other framework-specific fields untyped in metadata. This change introduces universal core fields plus validated, namespaced framework extensions that remain queryable and deterministic for chain hashing.
+
+Artifacts:
+- Proposal: openspec/changes/extensible-event-schema/proposal.md
+- Design: openspec/changes/extensible-event-schema/design.md
+- Tasks: openspec/changes/extensible-event-schema/tasks.md
+- Specs: openspec/changes/extensible-event-schema/specs/
+
+STORIES:
+  ├── task td-cab135: Add migration for required actor_id column [in_review] ⧗
+  ├── task td-e22cd8: Add migration for extensions JSONB column [in_review] ⧗
+  ├── task td-351b4e: Verify/add unique index on account sequence [in_review] ⧗
+  ├── task td-9540de: Add GIN index on extensions column [in_review] ⧗
+  ├── task td-c94c93: Add HIPAA phi_accessed partial index [in_review] ⧗
+exec
+/bin/zsh -lc 'td list --epic td-067a70 --status in_progress' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+td-74f6c8  [P2]  Create GA.Compliance.ExtensionSchema module file  task  [in_progress]
+td-61876e  [P2]  Implement validate(frameworks, extensions)  task  [in_progress]
+td-37e6f8  [P2]  Add HIPAA bootstrap extension schema  task  [in_progress]
+td-ddb3a8  [P2]  Implement extension field type checking  task  [in_progress]
+td-561a52  [P2]  Reject unrecognized framework extension keys  task  [in_progress]
+td-d992e5  [P2]  Add namespaced extension validation errors  task  [in_progress]
+td-137fd3  [P2]  Define GA.Audit.Chain payload core fields  task  [in_progress]
+td-453143  [P2]  Implement canonical_extensions deterministic JSON  task  [in_progress]
+td-e20d47  [P2]  Update canonical_payload field order for extensions  task  [in_progress]
+td-8d8f59  [P2]  Include extensions and actor_id in entry attrs  task  [in_progress]
+td-3e765f  [P2]  Validate extensions in GA.Audit.create_entry/2  task  [in_progress]
+td-f8f131  [P2]  Support extension filters in entry querying  task  [in_progress]
+td-d8891b  [P2]  Require account scope for extension queries  task  [in_progress]
+td-b53a74  [P2]  Rewrite AuditLogRequest schema for extensions  task  [in_progress]
+td-df2337  [P2]  Rewrite AuditLogResponse schema for actor_id  task  [in_progress]
+td-a767d8  [P2]  Rewrite AuditLogListResponse item schema  task  [in_progress]
+td-bd210f  [P2]  Update create operation OpenAPI docs  task  [in_progress]
+td-77d676  [P2]  Update index operation extension filter docs  task  [in_progress]
+td-ddf72d  [P2]  Update show operation response schema reference  task  [in_progress]
+td-1ce841  [P2]  Verify OpenAPI and Swagger rendering  task  [in_progress]
+exec
+/bin/zsh -lc "td list --epic td-067a70 --status in_progress | rg -o 'td-[0-9a-f]{6}' | xargs -I{} td update {} --status in_review" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 3.81s:
+UPDATED td-61876e
+UPDATED td-37e6f8
+UPDATED td-ddb3a8
+UPDATED td-561a52
+UPDATED td-d992e5
+UPDATED td-137fd3
+UPDATED td-453143
+UPDATED td-e20d47
+UPDATED td-8d8f59
+UPDATED td-3e765f
+UPDATED td-f8f131
+UPDATED td-d8891b
+UPDATED td-b53a74
+UPDATED td-df2337
+UPDATED td-a767d8
+UPDATED td-bd210f
+UPDATED td-77d676
+UPDATED td-ddf72d
+UPDATED td-1ce841
+UPDATED td-850c86
+exec
+/bin/zsh -lc 'td create --help' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+Create a new issue with optional flags for type, priority, labels, and more.
+
+Usage:
+  td create [title] [flags]
+
+Aliases:
+  create, add, new
+
+Flags:
+      --acceptance string    Acceptance criteria
+      --blocks string        Issues this blocks
+      --body string          Alias for --description
+      --defer string         Defer until date (e.g., +7d, monday, 2026-03-01)
+      --depends-on string    Issues this depends on
+      --desc string          Alias for --description
+  -d, --description string   Description text
+      --due string           Due date (e.g., friday, +2w, 2026-03-15)
+      --epic string          Parent issue ID (alias for --parent)
+  -h, --help                 help for create
+      --label string         Alias for --labels (single or comma-separated)
+exec
+/bin/zsh -lc 'td list --epic td-067a70 --status in_progress' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+No issues found
+codex
+I’m now creating one `td` issue per synthesized finding (critical first), each linked to `td-067a70` and labeled `review-finding` per the workflow.
+exec
+/bin/zsh -lc 'td create "Update chain canonical payload for actor_id/extensions" -t bug -p P1 --status open --epic td-067a70 --labels "review-finding,code-quality" -d "Chain hashing still uses legacy flat fields and omits the new extensible contract. In app/lib/app/audit/chain.ex:8-24, @payload_fields includes user_id/user_role/session_id/phi_accessed/source_ip/user_agent/frameworks and excludes actor_id/extensions; canonical_payload/2 (app/lib/app/audit/chain.ex:69-83) therefore never hashes extensions. This breaks the change requirement that integrity covers sorted extensions and actor_id in canonical order. Suggested fix: replace @payload_fields with core fields + actor_id and include canonical_extensions JSON segment before metadata; update entry_to_attrs/1 and chain tests accordingly. Found by: Code Quality, Test Coverage, Codex Fresh Eyes." --acceptance "1) canonical_payload format is account_id|sequence_number|previous_checksum|actor_id|action|resource_type|resource_id|outcome|timestamp|sorted_extensions_json|sorted_metadata_json. 2) Two entries with same data but different extension key insertion order produce identical checksum. 3) Mutating any extension field changes checksum."' in /Users/tbrewer/projects/goodway/goodaudit exited 1 in 52ms:
+Usage:
+  td create [title] [flags]
+
+Aliases:
+  create, add, new
+
+Flags:
+      --acceptance string    Acceptance criteria
+      --blocks string        Issues this blocks
+      --body string          Alias for --description
+      --defer string         Defer until date (e.g., +7d, monday, 2026-03-01)
+      --depends-on string    Issues this depends on
+      --desc string          Alias for --description
+  -d, --description string   Description text
+      --due string           Due date (e.g., friday, +2w, 2026-03-15)
+      --epic string          Parent issue ID (alias for --parent)
+  -h, --help                 help for create
+      --label string         Alias for --labels (single or comma-separated)
+  -l, --labels string        Comma-separated labels
+      --minor                Mark as minor task (allows self-review)
+codex
+I hit a CLI mismatch (`td create` doesn’t support `--status`), so I’m re-running the issue creation commands without that flag and keeping all issues open by default.
+exec
+/bin/zsh -lc 'td create "Update chain canonical payload for actor_id/extensions" -t bug -p P1 --epic td-067a70 --labels "review-finding,code-quality" -d "Chain hashing still uses legacy flat fields and omits the new extensible contract. In app/lib/app/audit/chain.ex:8-24, @payload_fields includes user_id/user_role/session_id/phi_accessed/source_ip/user_agent/frameworks and excludes actor_id/extensions; canonical_payload/2 (app/lib/app/audit/chain.ex:69-83) therefore never hashes extensions. This breaks the change requirement that integrity covers sorted extensions and actor_id in canonical order. Suggested fix: replace @payload_fields with core fields + actor_id and include canonical_extensions JSON segment before metadata; update entry_to_attrs/1 and chain tests accordingly. Found by: Code Quality, Test Coverage, Codex Fresh Eyes." --acceptance "1) canonical_payload format is account_id|sequence_number|previous_checksum|actor_id|action|resource_type|resource_id|outcome|timestamp|sorted_extensions_json|sorted_metadata_json. 2) Two entries with same data but different extension key insertion order produce identical checksum. 3) Mutating any extension field changes checksum."' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 66ms:
+CREATED td-350b22
+exec
+/bin/zsh -lc 'td create "Validate extensions before log insert and reject unknown frameworks" -t bug -p P1 --epic td-067a70 --labels "review-finding,code-quality" -d "Audit log creation still validates legacy flat required fields instead of namespaced extensions. In app/lib/app/audit.ex:24-27 and 318-347, create_log_entry/2 calls validate_framework_fields/3 which checks top-level attrs like phi_accessed/source_ip rather than validating attrs.extensions. There is no GA.Compliance.ExtensionSchema module in app/lib/app/compliance/, so schema-driven extension validation is missing entirely. Suggested fix: add GA.Compliance.ExtensionSchema.validate/2, call it from create_log_entry/2 before checksum/insert, and fail with namespaced errors for missing/typed/unknown framework fields. Found by: Code Quality, Security, Codex Fresh Eyes." --acceptance "1) create_log_entry/2 calls ExtensionSchema.validate(active_frameworks, extensions) before Repo.insert. 2) Unknown framework keys in extensions return {:error, changeset}. 3) Missing required extension fields return namespaced errors (e.g., hipaa.user_role). 4) Valid extensions insert successfully."' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 171ms:
+CREATED td-45d60c
+exec
+/bin/zsh -lc 'td create "Align audit API request/response with actor_id and extensions" -t bug -p P1 --epic td-067a70 --labels "review-finding,documentation" -d "The API contract still documents and returns legacy fields, conflicting with the new schema requirements and actor_id-required writes. Request schema in app/lib/app_web/schemas/audit_log_request.ex:12-33 requires user_id/user_role and has no actor_id/extensions. Response schemas in app/lib/app_web/schemas/audit_log_response.ex:20-54 and app/lib/app_web/schemas/audit_log_list_response.ex:22-56 expose user_id/phi_accessed and omit actor_id/extensions. Controller docs/filters in app/lib/app_web/controllers/api/v1/audit_log_controller.ex:52-57 and 107-118 still use user_id/phi_accessed query params. JSON renderer in app/lib/app_web/controllers/api/v1/audit_log_json.ex:25-37 also omits actor_id/extensions. Suggested fix: migrate all API schemas, params, and renderers to actor_id + extensions namespaced model. Found by: Code Quality, Test Coverage, Codex Fresh Eyes." --acceptance "1) OpenAPI request schema requires actor_id and supports extensions object. 2) OpenAPI response/list schemas expose actor_id and extensions and remove legacy HIPAA flat fields. 3) Controller index parameters document extensions filter support and drop user_id/phi_accessed-only contract. 4) JSON responses include actor_id and extensions."' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 76ms:
+CREATED td-fd22c4
+exec
+/bin/zsh -lc 'td create "Eliminate dynamic atom creation in audit framework validation" -t bug -p P1 --epic td-067a70 --labels "review-finding,security" -d "Audit validation creates atoms from runtime field names, which can exhaust the VM atom table under untrusted/custom framework field input. In app/lib/app/audit.ex:417-420, to_error_atom/1 calls String.to_atom(field) when String.to_existing_atom/1 fails. additional_required_fields comes from persisted config_overrides (app/lib/app/audit.ex:371-374), so new arbitrary field names can force atom creation. Suggested fix: keep error keys as strings (or use a bounded mapping) and avoid String.to_atom/1 on external data paths. Found by: Security, Code Quality, Codex Fresh Eyes." --acceptance "1) No runtime path in audit validation calls String.to_atom/1 on user/config-provided field names. 2) Validation still reports missing-field errors with deterministic keys. 3) Regression test covers unknown additional_required_fields without atom creation."' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 77ms:
+CREATED td-4eb51c
+exec
+/bin/zsh -lc 'td create "Remove legacy user_* required fields from extensible schema path" -t bug -p P1 --epic td-067a70 --labels "review-finding,code-quality" -d "Current validation path still enforces legacy flat fields that the change intends to replace with actor_id + extensions. GA.Audit.Log.changeset/2 in app/lib/app/audit/log.ex:67-75 requires user_id and user_role in addition to actor_id. Built-in framework profiles also encode legacy flat requirements (e.g., app/lib/app/compliance/frameworks/hipaa.ex:5-14 includes :phi_accessed, :source_ip, :user_role). This blocks migration to framework-namespaced extension fields and keeps redundant columns semantically authoritative. Suggested fix: make actor_id the canonical actor field, move framework-specific requirements into extension_schema definitions, and stop requiring legacy flat fields for the extensible-event-schema flow. Found by: Code Quality, Test Coverage, Codex Fresh Eyes." --acceptance "1) Log changeset required fields align with core schema (actor_id, action, resource_type, resource_id, timestamp, outcome). 2) Framework-specific required fields are validated via extensions schema, not flat audit_log columns. 3) Regression tests cover create_log_entry success with valid extensions and no legacy HIPAA flat attrs."' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 84ms:
+CREATED td-e768f2
+exec
+/bin/zsh -lc 'td create "Update API/controller test fixtures for actor_id and extensions" -t task -p P2 --epic td-067a70 --labels "review-finding,testing" -d "Controller test helpers still build legacy payloads without actor_id, which will break once the contract is enforced and can mask extension-path regressions today. See app/test/app_web/controllers/audit_log_controller_test.exs:357-372, app/test/app_web/controllers/checkpoint_controller_test.exs:134-149, and app/test/app_web/controllers/verification_controller_test.exs:95-110 (no actor_id/extensions defaults). Suggested fix: update shared helpers/fixtures to include actor_id + extensions payloads and add explicit assertions for extension filtering/serialization. Found by: Test Coverage, Code Quality." --acceptance "1) All audit-related controller fixtures include actor_id by default. 2) At least one controller test posts and returns extensions data. 3) Existing controller suites pass with new contract assumptions."' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 99ms:
+CREATED td-0b7ea0
+exec
+/bin/zsh -lc 'td list --epic td-067a70 --labels review-finding' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+td-350b22  [P1]  Update chain canonical payload for actor_id/extensions  bug  [open]
+td-45d60c  [P1]  Validate extensions before log insert and reject unknown frameworks  bug  [open]
+td-fd22c4  [P1]  Align audit API request/response with actor_id and extensions  bug  [open]
+td-4eb51c  [P1]  Eliminate dynamic atom creation in audit framework validation  bug  [open]
+td-e768f2  [P1]  Remove legacy user_* required fields from extensible schema path  bug  [open]
+td-0b7ea0  [P2]  Update API/controller test fixtures for actor_id and extensions  task  [open]
+exec
+/bin/zsh -lc 'td list --epic td-067a70 --status in_review | wc -l' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+      47
+codex
+**Review Findings (Pre-Landing Check: `extensible-event-schema`)**
+
+`Phase 1` complete (manual multi-pass: code-quality, security, test-coverage, fresh-eyes).  
+`Phase 2` complete on epic `td-067a70`:
+- Transitioned all epic child issues in `in_progress` to `in_review` (`47` now in review).
+- Created `6` new `review-finding` issues.
+
+**Critical**
+1. `P1 bug` `td-350b22`  
+Chain canonical payload still hashes legacy fields and omits `actor_id`/`extensions`, so extension tampering won’t affect checksum.  
+Refs: [chain.ex:8](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/audit/chain.ex:8), [chain.ex:69](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/audit/chain.ex:69)
+
+2. `P1 bug` `td-45d60c`  
+Audit insert path still validates legacy flat framework fields; extension-schema validation is not wired.  
+Refs: [audit.ex:24](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/audit.ex:24), [audit.ex:318](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/audit.ex:318)
+
+3. `P1 bug` `td-fd22c4`  
+API/OpenAPI contract is still legacy (`user_id`, `phi_accessed`) and does not align to `actor_id` + `extensions`.  
+Refs: [audit_log_request.ex:12](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app_web/schemas/audit_log_request.ex:12), [audit_log_response.ex:20](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app_web/schemas/audit_log_response.ex:20), [audit_log_controller.ex:52](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app_web/controllers/api/v1/audit_log_controller.ex:52), [audit_log_json.ex:25](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app_web/controllers/api/v1/audit_log_json.ex:25)
+
+4. `P1 bug` `td-4eb51c`  
+Security risk: dynamic atom creation from runtime field names (`String.to_atom/1`) can exhaust VM atom table.  
+Ref: [audit.ex:417](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/audit.ex:417)
+
+5. `P1 bug` `td-e768f2`  
+Core validation still requires legacy `user_*` fields and framework modules still encode flat HIPAA-style requirements, conflicting with extensible schema goals.  
+Refs: [log.ex:67](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/audit/log.ex:67), [hipaa.ex:5](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/compliance/frameworks/hipaa.ex:5)
+
+**Warning**
+1. `P2 task` `td-0b7ea0`  
+Controller fixtures still omit `actor_id`/`extensions`, creating regression blind spots for API behavior.  
+Refs: [audit_log_controller_test.exs:357](/Users/tbrewer/projects/goodway/goodaudit/app/test/app_web/controllers/audit_log_controller_test.exs:357), [checkpoint_controller_test.exs:134](/Users/tbrewer/projects/goodway/goodaudit/app/test/app_web/controllers/checkpoint_controller_test.exs:134), [verification_controller_test.exs:95](/Users/tbrewer/projects/goodway/goodaudit/app/test/app_web/controllers/verification_controller_test.exs:95)
+
+**Triage Output (`review-finding` issues)**
+- `td-350b22` P1 bug
+- `td-45d60c` P1 bug
+- `td-fd22c4` P1 bug
+- `td-4eb51c` P1 bug
+- `td-e768f2` P1 bug
+- `td-0b7ea0` P2 task
+
+**Execution Note**
+- Could not run Elixir tests in this environment due runtime mismatch: Erlang/OTP is `27`, but installed Elixir modules require newer OTP.
+tokens used
+273,208
+**Review Findings (Pre-Landing Check: `extensible-event-schema`)**
+
+`Phase 1` complete (manual multi-pass: code-quality, security, test-coverage, fresh-eyes).  
+`Phase 2` complete on epic `td-067a70`:
+- Transitioned all epic child issues in `in_progress` to `in_review` (`47` now in review).
+- Created `6` new `review-finding` issues.
+
+**Critical**
+1. `P1 bug` `td-350b22`  
+Chain canonical payload still hashes legacy fields and omits `actor_id`/`extensions`, so extension tampering won’t affect checksum.  
+Refs: [chain.ex:8](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/audit/chain.ex:8), [chain.ex:69](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/audit/chain.ex:69)
+
+2. `P1 bug` `td-45d60c`  
+Audit insert path still validates legacy flat framework fields; extension-schema validation is not wired.  
+Refs: [audit.ex:24](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/audit.ex:24), [audit.ex:318](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/audit.ex:318)
+
+3. `P1 bug` `td-fd22c4`  
+API/OpenAPI contract is still legacy (`user_id`, `phi_accessed`) and does not align to `actor_id` + `extensions`.  
+Refs: [audit_log_request.ex:12](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app_web/schemas/audit_log_request.ex:12), [audit_log_response.ex:20](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app_web/schemas/audit_log_response.ex:20), [audit_log_controller.ex:52](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app_web/controllers/api/v1/audit_log_controller.ex:52), [audit_log_json.ex:25](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app_web/controllers/api/v1/audit_log_json.ex:25)
+
+4. `P1 bug` `td-4eb51c`  
+Security risk: dynamic atom creation from runtime field names (`String.to_atom/1`) can exhaust VM atom table.  
+Ref: [audit.ex:417](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/audit.ex:417)
+
+5. `P1 bug` `td-e768f2`  
+Core validation still requires legacy `user_*` fields and framework modules still encode flat HIPAA-style requirements, conflicting with extensible schema goals.  
+Refs: [log.ex:67](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/audit/log.ex:67), [hipaa.ex:5](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/compliance/frameworks/hipaa.ex:5)
+
+**Warning**
+1. `P2 task` `td-0b7ea0`  
+Controller fixtures still omit `actor_id`/`extensions`, creating regression blind spots for API behavior.  
+Refs: [audit_log_controller_test.exs:357](/Users/tbrewer/projects/goodway/goodaudit/app/test/app_web/controllers/audit_log_controller_test.exs:357), [checkpoint_controller_test.exs:134](/Users/tbrewer/projects/goodway/goodaudit/app/test/app_web/controllers/checkpoint_controller_test.exs:134), [verification_controller_test.exs:95](/Users/tbrewer/projects/goodway/goodaudit/app/test/app_web/controllers/verification_controller_test.exs:95)
+
+**Triage Output (`review-finding` issues)**
+- `td-350b22` P1 bug
+- `td-45d60c` P1 bug
+- `td-fd22c4` P1 bug
+- `td-4eb51c` P1 bug
+- `td-e768f2` P1 bug
+- `td-0b7ea0` P2 task
+
+**Execution Note**
+- Could not run Elixir tests in this environment due runtime mismatch: Erlang/OTP is `27`, but installed Elixir modules require newer OTP.
