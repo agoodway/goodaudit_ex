@@ -1,0 +1,1343 @@
+OpenAI Codex v0.107.0 (research preview)
+--------
+workdir: /Users/tbrewer/projects/goodway/goodaudit
+model: gpt-5.3-codex
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: none
+session id: 019cc0f8-ac68-71c3-8223-ab605c57fd45
+--------
+user
+Run /prepare-for-takeoff for the change named "regulatory-event-taxonomies" located at openspec/changes/regulatory-event-taxonomies/. Do not ask me any questions — use your best judgment for any decisions.
+mcp: sequential-thinking starting
+mcp: context7 starting
+mcp: perplexity starting
+mcp: playwright starting
+mcp: zread starting
+mcp: sequential-thinking ready
+mcp: perplexity ready
+mcp: context7 ready
+mcp: playwright ready
+2026-03-06T02:27:30.856649Z ERROR rmcp::transport::common::reqwest::streamable_http_client: unexpected content type: None
+2026-03-06T02:27:30.856694Z ERROR rmcp::transport::worker: worker quit with fatal: Unexpected content type: None, when send initialized notification
+mcp: zread failed: MCP client for `zread` failed to start: MCP startup failed: handshaking with MCP server failed: Send message error Transport [rmcp::transport::worker::WorkerTransport<rmcp::transport::streamable_http_client::StreamableHttpClientWorker<reqwest::async_impl::client::Client>>] error: Transport channel closed, when send initialized notification
+mcp startup: ready: sequential-thinking, perplexity, context7, playwright; failed: zread
+codex
+I’ll run the `prepare-for-takeoff` skill for `openspec/changes/regulatory-event-taxonomies` and execute its workflow end-to-end using best judgment. First I’m loading the skill instructions and the target change artifacts to map tasks into `td` issues.
+exec
+/bin/zsh -lc "ls -la .codex/skills/prepare-for-takeoff && sed -n '1,260p' .codex/skills/prepare-for-takeoff/SKILL.md" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'ls -la openspec/changes/regulatory-event-taxonomies && find openspec/changes/regulatory-event-taxonomies -maxdepth 3 -type f | sort' in /Users/tbrewer/projects/goodway/goodaudit exited 1 in 51ms:
+ls: .codex/skills/prepare-for-takeoff: No such file or directory
+ succeeded in 51ms:
+total 48
+drwxr-xr-x@  6 tbrewer  staff   192 Mar  5 13:22 .
+drwxr-xr-x@ 23 tbrewer  staff   736 Mar  4 04:48 ..
+-rw-r--r--@  1 tbrewer  staff  6789 Mar  5 13:22 design.md
+-rw-r--r--@  1 tbrewer  staff  3200 Mar  5 13:04 proposal.md
+drwxr-xr-x@  5 tbrewer  staff   160 Mar  4 04:59 specs
+-rw-r--r--@  1 tbrewer  staff  8278 Mar  5 13:22 tasks.md
+openspec/changes/regulatory-event-taxonomies/design.md
+openspec/changes/regulatory-event-taxonomies/proposal.md
+openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md
+openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md
+openspec/changes/regulatory-event-taxonomies/specs/taxonomy-aware-querying/spec.md
+openspec/changes/regulatory-event-taxonomies/tasks.md
+codex
+I found the change artifacts, but the skill isn’t in `.codex/skills`; I’m loading it from the path specified in your AGENTS instructions (`~/.agents/skills/prepare-for-takeoff/SKILL.md`) and then applying it.
+exec
+/bin/zsh -lc "sed -n '1,320p' /Users/tbrewer/.agents/skills/prepare-for-takeoff/SKILL.md" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+---
+name: prepare-for-takeoff
+description: Convert OpenSpec change tasks into td issues with full subtask fidelity. Use when the user wants to import, sync, or break up openspec tasks.md into td issues. Triggers on "prepare for takeoff", "create td issues from openspec", "import tasks from change", "break up tasks", or references to converting openspec tasks to td.
+---
+
+# OpenSpec to td Issue Import
+
+Convert an OpenSpec change's `tasks.md` into td issues, preserving every subtask as an individual trackable issue with links back to source artifacts.
+
+## Workflow
+
+### 0. Check current branch
+
+```bash
+git branch --show-current
+```
+
+If on a branch other than `main`/`master`, check whether it's related to this change (e.g., branch name contains the change name). If unrelated, use `AskUserQuestion` to warn them and offer choices: "Switch to main first", "Continue on current branch", or "Abort". Do NOT silently proceed on the wrong branch.
+
+### 1. Locate the change
+codex
+I’m validating branch context now, then I’ll parse `tasks.md` and create a 1:1 `td` issue set (plus dependencies and review gate), then mark imported tasks complete in `tasks.md`.
+exec
+/bin/zsh -lc "sed -n '1,260p' openspec/changes/regulatory-event-taxonomies/tasks.md" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "sed -n '1,220p' openspec/changes/regulatory-event-taxonomies/proposal.md" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "sed -n '1,260p' openspec/changes/regulatory-event-taxonomies/design.md" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'find openspec/changes/regulatory-event-taxonomies/specs -type f | sort' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'git branch --show-current' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+## 1. Taxonomy Behaviour and Registry
+
+- [ ] 1.1 Create `lib/app/compliance/taxonomy.ex` with `GA.Compliance.Taxonomy` behaviour — define callbacks `framework/0`, `taxonomy_version/0`, `taxonomy/0`, `actions/0`
+- [ ] 1.2 Implement `GA.Compliance.Taxonomy.get/1` — registry lookup from framework string to module
+- [ ] 1.3 Implement `GA.Compliance.Taxonomy.list_frameworks/0` — returns sorted list of registered framework identifiers
+- [ ] 1.4 Implement `GA.Compliance.Taxonomy.resolve_path/2` — resolve dot-separated path (with wildcard support) to list of actions
+
+## 2. Framework Taxonomy Modules
+
+- [ ] 2.1 Create `lib/app/compliance/taxonomies/hipaa.ex` — `GA.Compliance.Taxonomies.HIPAA` implementing taxonomy behaviour with access/admin/disclosure categories
+- [ ] 2.2 Create `lib/app/compliance/taxonomies/soc2.ex` — `GA.Compliance.Taxonomies.SOC2` implementing taxonomy behaviour with change/access/incident/monitoring categories
+- [ ] 2.3 Create `lib/app/compliance/taxonomies/pci_dss.ex` — `GA.Compliance.Taxonomies.PCIDSS` implementing taxonomy behaviour with cardholder/authentication/key_management/network categories
+- [ ] 2.4 Create `lib/app/compliance/taxonomies/gdpr.ex` — `GA.Compliance.Taxonomies.GDPR` implementing taxonomy behaviour with processing/subject_request/consent/transfer categories
+- [ ] 2.5 Create `lib/app/compliance/taxonomies/iso_27001.ex` — `GA.Compliance.Taxonomies.ISO27001` implementing taxonomy behaviour with access_control/asset_management/incident_management/change_management categories
+
+## 3. Database Schema
+
+- [ ] 3.1 Create migration for `account_compliance_frameworks` table — `account_id`, `framework`, `action_validation_mode` (default `"flexible"`), `enabled_at`, unique index on `[account_id, framework]`
+- [ ] 3.2 Create `lib/app/compliance/account_framework.ex` — Ecto schema for `account_compliance_frameworks` with changeset validation
+- [ ] 3.3 Create migration for `account_action_mappings` table — `account_id`, `custom_action`, `framework`, `taxonomy_path`, `taxonomy_version`, `created_at`, unique index on `[account_id, custom_action, framework]`
+ succeeded in 50ms:
+## Why
+
+The `action` field on audit log entries is currently freeform text. HIPAA, SOC 2, PCI-DSS, and GDPR each define specific event categories that auditors expect to see in compliance reports. Without standardized action taxonomies, customers must invent their own event naming and auditors must manually map freeform actions to regulatory categories. This makes compliance reporting error-prone and increases audit preparation cost.
+
+A per-framework event taxonomy provides standard action vocabularies, maps customer events to regulatory categories, and enables framework-specific reporting out of the box.
+
+## What Changes
+
+1. **Taxonomy registry** — Each compliance framework module (from compliance-framework-profiles) exports an event taxonomy: a tree of categories, subcategories, and standard action names. For example, HIPAA defines `access.phi_read`, `access.phi_write`, `auth.login`, `auth.logout`, `admin.user_provision`; SOC 2 defines `change.deploy`, `change.config_update`, `access.production_access`; PCI-DSS defines `access.cardholder_data`, `access.key_management`; GDPR defines `processing.collection`, `processing.erasure`, `subject_request.access`, `subject_request.portability`.
+
+2. **Action validation mode** — Accounts can operate in `strict` mode (action must match a taxonomy entry for their active frameworks) or `flexible` mode (any action accepted, but non-taxonomy actions are flagged as `uncategorized` in reports). Default is `flexible` for easy adoption.
+
+3. **Action mapping rules** — Accounts can define custom mappings from their internal action names to taxonomy categories. For example, map `"patient_chart_viewed"` to `hipaa:access.phi_read`. Mappings are stored per-account and applied at query/report time, not at ingestion.
+
+4. **Taxonomy-aware queries** — New query filter `category` that matches all actions mapped to a taxonomy category. For example, filtering by `hipaa:access.*` returns all PHI access events regardless of the specific action string.
+
+5. **Taxonomy versioning** — Framework taxonomies are versioned. When a taxonomy is updated, new categories are additive.
+
+## Capabilities
+
+ succeeded in 50ms:
+## Context
+
+The `action` field on audit log entries is currently freeform text validated against a fixed allowlist (`create`, `read`, `update`, `delete`, `export`, `login`, `logout`). Compliance frameworks like HIPAA, SOC 2, PCI-DSS, GDPR, and ISO 27001 each define specific event categories that auditors expect in compliance reports. Without standardized action taxonomies tied to these frameworks, customers must invent their own event naming and auditors must manually map freeform actions to regulatory categories. This increases audit preparation cost and makes compliance reporting error-prone.
+
+GoodAudit already has per-account HMAC chains, checkpoints, and scoped API keys. This change adds a per-framework event taxonomy layer that provides standard action vocabularies, allows accounts to map their custom events to regulatory categories, and enables framework-specific querying.
+
+## Goals / Non-Goals
+
+**Goals:**
+- Define per-framework event taxonomies as structured category/subcategory/action trees.
+- Allow accounts to map custom action names to taxonomy paths.
+- Support strict and flexible validation modes per account per framework.
+- Enable taxonomy-aware queries that resolve categories through mappings.
+- Version taxonomies so updates are additive.
+
+**Non-Goals:**
+- Replacing the existing freeform `action` field or breaking existing integrations.
+- Enforcing strict mode by default (flexible is the default for easy adoption).
+- Building a UI for taxonomy browsing or mapping management (API only).
+- Per-entry taxonomy resolution at ingestion time (resolution happens at query/report time).
+ succeeded in 51ms:
+openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md
+openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md
+openspec/changes/regulatory-event-taxonomies/specs/taxonomy-aware-querying/spec.md
+ succeeded in 51ms:
+main
+codex
+I’m now mapping each task section to `backend/api/test` tags and specific spec links so each generated `td` issue keeps traceability and full task text.
+exec
+/bin/zsh -lc "sed -n '1,260p' openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "sed -n '1,260p' openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "sed -n '1,260p' openspec/changes/regulatory-event-taxonomies/specs/taxonomy-aware-querying/spec.md" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+## ADDED Requirements
+
+### Requirement: Taxonomy behaviour contract
+
+A `GA.Compliance.Taxonomy` behaviour MUST define callbacks that all framework taxonomy modules implement: `framework/0` returning the framework identifier string, `taxonomy_version/0` returning a semantic version string, `taxonomy/0` returning the full taxonomy tree as `%{category => %{subcategory => [action_name]}}`, and `actions/0` returning a flat list of all action names in the taxonomy.
+
+#### Scenario: Behaviour enforcement
+- **WHEN** a new taxonomy module is created without implementing all callbacks
+- **THEN** a compilation warning is raised for each missing callback
+
+#### Scenario: Taxonomy structure
+- **WHEN** `taxonomy/0` is called on any framework module
+- **THEN** it returns a map where keys are category strings, values are maps of subcategory strings to lists of action name strings
+
+### Requirement: HIPAA taxonomy
+
+`GA.Compliance.Taxonomies.HIPAA` MUST implement the `GA.Compliance.Taxonomy` behaviour with framework `"hipaa"` and define the following taxonomy tree:
+
+- `"access"` -> `"phi"` -> `["phi_read", "phi_write", "phi_delete"]`; `"system"` -> `["login", "logout", "session_timeout"]`
+- `"admin"` -> `"user"` -> `["user_provision", "user_deprovision", "role_change"]`; `"system"` -> `["config_change", "key_rotation"]`
+ succeeded in 52ms:
+## ADDED Requirements
+
+### Requirement: Action mapping schema
+
+The `account_action_mappings` table MUST have columns: `id` (binary_id, primary key), `account_id` (binary_id, references accounts, not null), `custom_action` (string, not null), `framework` (string, not null), `taxonomy_path` (string, not null, dot-separated like `"access.phi.phi_read"`), `taxonomy_version` (string, not null), `created_at` (utc_datetime_usec, not null). A unique index MUST exist on `[account_id, custom_action, framework]`.
+
+#### Scenario: Schema structure
+- **WHEN** the migration runs
+- **THEN** the `account_action_mappings` table is created with all specified columns and the unique index
+
+#### Scenario: Duplicate mapping prevention
+- **WHEN** a mapping is inserted for `(account_id, "patient_chart_viewed", "hipaa")` and another insert is attempted for the same triple
+- **THEN** the second insert fails with a unique constraint violation
+
+### Requirement: Account compliance frameworks join table
+
+The `account_compliance_frameworks` table MUST have columns: `id` (binary_id, primary key), `account_id` (binary_id, references accounts, not null), `framework` (string, not null), `action_validation_mode` (string, not null, default `"flexible"`), `enabled_at` (utc_datetime_usec, not null). A unique index MUST exist on `[account_id, framework]`. Valid values for `action_validation_mode` are `"flexible"` and `"strict"`.
+
+#### Scenario: Default validation mode
+- **WHEN** a framework is enabled for an account without specifying validation mode
+ succeeded in 51ms:
+## ADDED Requirements
+
+### Requirement: Category filter on list_logs
+
+`list_logs(account_id, opts)` MUST accept a `category` filter option. The category filter value is a string in the format `"framework:pattern"` where `framework` is a registered framework identifier and `pattern` is a dot-separated taxonomy path that may end with `"*"` for wildcard matching. Examples: `"hipaa:access.*"`, `"hipaa:access.phi.*"`, `"hipaa:access.phi.phi_read"`, `"soc2:change.*"`.
+
+#### Scenario: Category filter with category wildcard
+- **WHEN** `list_logs(account_id, category: "hipaa:access.*")` is called
+- **THEN** the query resolves `"access.*"` against the HIPAA taxonomy to find all access actions, also finds custom actions mapped to any HIPAA access path for this account, and returns entries where `action` is in the combined set
+
+#### Scenario: Category filter with subcategory wildcard
+- **WHEN** `list_logs(account_id, category: "hipaa:access.phi.*")` is called
+- **THEN** only entries whose `action` matches PHI-specific access actions (`"phi_read"`, `"phi_write"`, `"phi_delete"`) or custom actions mapped to `"access.phi.*"` paths are returned
+
+#### Scenario: Category filter with exact path
+- **WHEN** `list_logs(account_id, category: "hipaa:access.phi.phi_read")` is called
+- **THEN** only entries whose `action` is `"phi_read"` or custom actions mapped to `"access.phi.phi_read"` are returned
+
+#### Scenario: Category filter combined with other filters
+- **WHEN** `list_logs(account_id, category: "hipaa:access.*", user_id: "user-1", from: ~U[2025-01-01 00:00:00Z])` is called
+exec
+/bin/zsh -lc 'td --version' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+td version 0.37.0
+codex
+I confirmed `td` is installed. Next I’ll check whether this change already has an epic/issues to avoid duplicate imports, then I’ll create the epic and all subtask issues with dependency wiring.
+exec
+/bin/zsh -lc 'td list --help' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+List issues matching given filters
+
+Usage:
+  td list [filters] [flags]
+
+Aliases:
+  list, ls
+
+Flags:
+  -a, --all                  Include closed and deferred issues
+      --closed string        Closed date filter
+      --created string       Created date filter
+      --deferred             Show only currently deferred tasks
+      --due-soon             Show tasks due within 3 days
+      --epic string          Filter by epic (shows all tasks within epic)
+  -f, --filter string        TDQ query expression (e.g., 'status=open AND type=bug')
+      --format string        Output format (short, long, json)
+  -h, --help                 help for list
+  -i, --id stringArray       Filter by issue IDs
+      --implementer string   Filter by implementer session
+exec
+/bin/zsh -lc 'td list' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+No issues found
+exec
+/bin/zsh -lc 'td add --help' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+Create a new issue with optional flags for type, priority, labels, and more.
+
+Usage:
+  td create [title] [flags]
+
+Aliases:
+  create, add, new
+
+Flags:
+      --acceptance string    Acceptance criteria
+      --blocks string        Issues this blocks
+      --body string          Alias for --description
+      --defer string         Defer until date (e.g., +7d, monday, 2026-03-01)
+      --depends-on string    Issues this depends on
+      --desc string          Alias for --description
+  -d, --description string   Description text
+      --due string           Due date (e.g., friday, +2w, 2026-03-15)
+      --epic string          Parent issue ID (alias for --parent)
+  -h, --help                 help for create
+      --label string         Alias for --labels (single or comma-separated)
+codex
+I’m creating the epic first, then I’ll generate one `td` issue per checkbox line in `tasks.md` and capture all IDs for dependency wiring and the final review-gate issue.
+exec
+/bin/zsh -lc 'td add "Regulatory Event Taxonomies" -t epic --tag "regulatory-event-taxonomies" -d "Adds per-framework regulatory event taxonomies so accounts can map custom actions, optionally enforce strict validation, and query audit logs by taxonomy categories instead of only freeform action names.
+
+Artifacts:
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Specs: openspec/changes/regulatory-event-taxonomies/specs/
+"' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 79ms:
+CREATED td-372f04
+exec
+/bin/zsh -lc 'td add "Create GA.Compliance.Taxonomy behavior module" --parent td-372f04 --tag backend -d "Source task: 1.1 Create `lib/app/compliance/taxonomy.ex` with `GA.Compliance.Taxonomy` behaviour — define callbacks `framework/0`, `taxonomy_version/0`, `taxonomy/0`, `actions/0`
+
+Section: 1. Taxonomy Behaviour and Registry
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md"' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td add "Implement taxonomy registry lookup (get/1)" --parent td-372f04 --tag backend -d "Source task: 1.2 Implement `GA.Compliance.Taxonomy.get/1` — registry lookup from framework string to module
+
+Section: 1. Taxonomy Behaviour and Registry
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md"' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td add "Implement taxonomy framework listing (list_frameworks/0)" --parent td-372f04 --tag backend -d "Source task: 1.3 Implement `GA.Compliance.Taxonomy.list_frameworks/0` — returns sorted list of registered framework identifiers
+
+Section: 1. Taxonomy Behaviour and Registry
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md"' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td add "Implement taxonomy path resolver (resolve_path/2)" --parent td-372f04 --tag backend -d "Source task: 1.4 Implement `GA.Compliance.Taxonomy.resolve_path/2` — resolve dot-separated path (with wildcard support) to list of actions
+
+Section: 1. Taxonomy Behaviour and Registry
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md"' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 74ms:
+zsh:1: no such file or directory: GA.Compliance.Taxonomy.get/1
+CREATED td-ec4315
+ succeeded in 78ms:
+zsh:1: no such file or directory: GA.Compliance.Taxonomy.resolve_path/2
+CREATED td-24859a
+ succeeded in 97ms:
+CREATED td-6b057a
+ succeeded in 201ms:
+CREATED td-4ff524
+codex
+I hit shell quoting with backticks in the first batch; issues were still created, and I’ll normalize those descriptions after import. I’m continuing with safe quoting (no command substitution) for the remaining task imports.
+exec
+/bin/zsh -lc "td add \"Add HIPAA taxonomy module\" --parent td-372f04 --tag backend -d 'Source task: 2.1 Create lib/app/compliance/taxonomies/hipaa.ex — GA.Compliance.Taxonomies.HIPAA implementing taxonomy behaviour with access/admin/disclosure categories
+
+Section: 2. Framework Taxonomy Modules
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "td add \"Add SOC2 taxonomy module\" --parent td-372f04 --tag backend -d 'Source task: 2.2 Create lib/app/compliance/taxonomies/soc2.ex — GA.Compliance.Taxonomies.SOC2 implementing taxonomy behaviour with change/access/incident/monitoring categories
+
+Section: 2. Framework Taxonomy Modules
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "td add \"Add PCI-DSS taxonomy module\" --parent td-372f04 --tag backend -d 'Source task: 2.3 Create lib/app/compliance/taxonomies/pci_dss.ex — GA.Compliance.Taxonomies.PCIDSS implementing taxonomy behaviour with cardholder/authentication/key_management/network categories
+
+Section: 2. Framework Taxonomy Modules
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "td add \"Add GDPR taxonomy module\" --parent td-372f04 --tag backend -d 'Source task: 2.4 Create lib/app/compliance/taxonomies/gdpr.ex — GA.Compliance.Taxonomies.GDPR implementing taxonomy behaviour with processing/subject_request/consent/transfer categories
+
+Section: 2. Framework Taxonomy Modules
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "td add \"Add ISO27001 taxonomy module\" --parent td-372f04 --tag backend -d 'Source task: 2.5 Create lib/app/compliance/taxonomies/iso_27001.ex — GA.Compliance.Taxonomies.ISO27001 implementing taxonomy behaviour with access_control/asset_management/incident_management/change_management categories
+
+Section: 2. Framework Taxonomy Modules
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 63ms:
+CREATED td-bad096
+ succeeded in 90ms:
+CREATED td-4ce32f
+ succeeded in 105ms:
+CREATED td-e25bea
+ succeeded in 86ms:
+CREATED td-0057a2
+ succeeded in 194ms:
+CREATED td-ddc195
+exec
+/bin/zsh -lc "td add \"Add migration for account_compliance_frameworks\" --parent td-372f04 --tag backend -d 'Source task: 3.1 Create migration for account_compliance_frameworks table — account_id, framework, action_validation_mode (default flexible), enabled_at, unique index on [account_id, framework]
+
+Section: 3. Database Schema
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "td add \"Add migration for account_action_mappings\" --parent td-372f04 --tag backend -d 'Source task: 3.3 Create migration for account_action_mappings table — account_id, custom_action, framework, taxonomy_path, taxonomy_version, created_at, unique index on [account_id, custom_action, framework]
+
+Section: 3. Database Schema
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "td add \"Create AccountFramework Ecto schema\" --parent td-372f04 --tag backend -d 'Source task: 3.2 Create lib/app/compliance/account_framework.ex — Ecto schema for account_compliance_frameworks with changeset validation
+
+Section: 3. Database Schema
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "td add \"Create ActionMapping Ecto schema\" --parent td-372f04 --tag backend -d 'Source task: 3.4 Create lib/app/compliance/action_mapping.ex — Ecto schema for account_action_mappings with changeset validation including framework and taxonomy_path validation
+
+Section: 3. Database Schema
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 70ms:
+CREATED td-eb1a29
+ succeeded in 78ms:
+CREATED td-a0219d
+ succeeded in 61ms:
+CREATED td-ae223e
+ succeeded in 165ms:
+CREATED td-d0f7f6
+exec
+/bin/zsh -lc "td add \"Implement create_mapping/2\" --parent td-372f04 --tag backend -d 'Source task: 4.1 Implement GA.Compliance.ActionMapping.create_mapping/2 — validate framework exists, validate taxonomy_path resolves, record taxonomy_version, insert
+
+Section: 4. Action Mapping Context
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "td add \"Implement update_mapping/3\" --parent td-372f04 --tag backend -d 'Source task: 4.3 Implement GA.Compliance.ActionMapping.update_mapping/3 — update taxonomy_path with validation and version recording
+
+Section: 4. Action Mapping Context
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "td add \"Implement list_mappings/2\" --parent td-372f04 --tag backend -d 'Source task: 4.2 Implement GA.Compliance.ActionMapping.list_mappings/2 — list mappings for account with optional framework and custom_action filters
+
+Section: 4. Action Mapping Context
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "td add \"Implement delete_mapping/2\" --parent td-372f04 --tag backend -d 'Source task: 4.4 Implement GA.Compliance.ActionMapping.delete_mapping/2 — account-scoped deletion
+
+Section: 4. Action Mapping Context
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "td add \"Implement resolve_actions/3\" --parent td-372f04 --tag backend -d 'Source task: 4.5 Implement GA.Compliance.ActionMapping.resolve_actions/3 — resolve taxonomy pattern to combined set of taxonomy actions and mapped custom actions
+
+Section: 4. Action Mapping Context
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/taxonomy-aware-querying/spec.md'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "td add \"Implement validate_actions/2 dry-run\" --parent td-372f04 --tag backend -d 'Source task: 4.6 Implement GA.Compliance.ActionMapping.validate_actions/2 — dry-run scan of recent log actions against framework taxonomy and mappings
+
+Section: 4. Action Mapping Context
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 102ms:
+CREATED td-5d8730
+ succeeded in 126ms:
+CREATED td-47c49b
+ succeeded in 130ms:
+CREATED td-457864
+ succeeded in 166ms:
+CREATED td-d70ed8
+ exited 1 in 240ms:
+Error: enable WAL mode: database is locked (261)
+ exited 1 in 280ms:
+Error: enable WAL mode: database is locked (261)
+codex
+`td` uses a SQLite backend and parallel writes caused lock errors. I’m switching to sequential `td add`/`td update` for reliability and filling the two missed issues from that batch now.
+exec
+/bin/zsh -lc "td add \"Implement create_mapping/2\" --parent td-372f04 --tag backend -d 'Source task: 4.1 Implement GA.Compliance.ActionMapping.create_mapping/2 — validate framework exists, validate taxonomy_path resolves, record taxonomy_version, insert
+
+Section: 4. Action Mapping Context
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "td add \"Implement update_mapping/3\" --parent td-372f04 --tag backend -d 'Source task: 4.3 Implement GA.Compliance.ActionMapping.update_mapping/3 — update taxonomy_path with validation and version recording
+
+Section: 4. Action Mapping Context
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit exited 1 in 75ms:
+Error: enable WAL mode: database is locked (261)
+ succeeded in 118ms:
+CREATED td-8fe4ad
+exec
+/bin/zsh -lc "td add \"Implement update_mapping/3\" --parent td-372f04 --tag backend -d 'Source task: 4.3 Implement GA.Compliance.ActionMapping.update_mapping/3 — update taxonomy_path with validation and version recording
+
+Section: 4. Action Mapping Context
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 62ms:
+CREATED td-67a63f
+codex
+I’m now running all remaining `td` writes strictly one-at-a-time to avoid further lock contention.
+exec
+/bin/zsh -lc "td add \"Add strict-mode validation helper in GA.Compliance\" --parent td-372f04 --tag backend -d 'Source task: 5.1 Add strict-mode validation helper in GA.Compliance — given account_id and action, check all strict-mode frameworks for the account
+
+Section: 5. Strict Mode Validation Integration
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 86ms:
+CREATED td-4edc22
+exec
+/bin/zsh -lc "td add \"Integrate strict-mode checks into audit log creation\" --parent td-372f04 --tag backend -d 'Source task: 5.2 Integrate strict-mode check into GA.Audit.create_log_entry/2 — after changeset validation, before insert, reject unrecognized actions for strict-mode frameworks
+
+Section: 5. Strict Mode Validation Integration
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 59ms:
+CREATED td-b05c26
+exec
+/bin/zsh -lc "td add \"Relax GA.Audit.Log action inclusion for taxonomy validation\" --parent td-372f04 --tag backend -d 'Source task: 5.3 Update GA.Audit.Log changeset to relax validate_inclusion(:action, @valid_actions) when taxonomy validation is active — allow any action string through changeset, let strict-mode validation handle framework-specific checks
+
+Section: 5. Strict Mode Validation Integration
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 79ms:
+CREATED td-535802
+exec
+/bin/zsh -lc "td add \"Implement category filter parser\" --parent td-372f04 --tag backend -d 'Source task: 6.1 Implement category filter parser — parse framework:pattern format, validate framework, resolve pattern to action set
+
+Section: 6. Taxonomy-Aware Querying
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/taxonomy-aware-querying/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 62ms:
+CREATED td-d58caa
+exec
+/bin/zsh -lc "td add \"Add category filter to GA.Audit.apply_filters/2\" --parent td-372f04 --tag backend -d 'Source task: 6.2 Add category filter to GA.Audit.apply_filters/2 — expand category to WHERE action IN (taxonomy_actions ++ mapped_actions) clause
+
+Section: 6. Taxonomy-Aware Querying
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/taxonomy-aware-querying/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 65ms:
+CREATED td-e0c65e
+exec
+/bin/zsh -lc "td add \"Return category validation errors from list_logs/2\" --parent td-372f04 --tag backend -d 'Source task: 6.3 Handle category validation errors in list_logs/2 — return {:error, :unknown_framework}, {:error, :invalid_category_path}, or {:error, :invalid_category_format} as appropriate
+
+Section: 6. Taxonomy-Aware Querying
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/taxonomy-aware-querying/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 57ms:
+CREATED td-cfd396
+exec
+/bin/zsh -lc "td add \"Create TaxonomyController endpoints\" --parent td-372f04 --tag api -d 'Source task: 7.1 Create lib/app_web/controllers/taxonomy_controller.ex — index/2 (list all frameworks), show/2 (get specific framework taxonomy)
+
+Section: 7. API Endpoints — Taxonomies
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 60ms:
+CREATED td-f7e37c
+exec
+/bin/zsh -lc "td add \"Create TaxonomyJSON renderer\" --parent td-372f04 --tag api -d 'Source task: 7.2 Create lib/app_web/controllers/taxonomy_json.ex — renders framework list and taxonomy tree
+
+Section: 7. API Endpoints — Taxonomies
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 57ms:
+CREATED td-a258a0
+exec
+/bin/zsh -lc "td add \"Add taxonomy API routes\" --parent td-372f04 --tag api -d 'Source task: 7.3 Add routes: GET /api/v1/taxonomies and GET /api/v1/taxonomies/:framework to :api_authenticated scope
+
+Section: 7. API Endpoints — Taxonomies
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 70ms:
+CREATED td-53f7cc
+codex
+I’m through sections 1–7 in `td`; next I’m importing sections 8–10, then I’ll wire dependencies, add the review gate, and mark all OpenSpec checkboxes complete.
+exec
+/bin/zsh -lc "td add \"Create ActionMappingController endpoints\" --parent td-372f04 --tag api -d 'Source task: 8.1 Create lib/app_web/controllers/action_mapping_controller.ex — index/2, create/2, update/2, delete/2, validate/2, check_compatibility/2
+
+Section: 8. API Endpoints — Action Mappings
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "td add \"Create ActionMappingJSON renderer\" --parent td-372f04 --tag api -d 'Source task: 8.2 Create lib/app_web/controllers/action_mapping_json.ex — renders mapping records, validation reports, and compatibility reports
+
+Section: 8. API Endpoints — Action Mappings
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "td add \"Add action-mappings validate route\" --parent td-372f04 --tag api -d 'Source task: 8.4 Add route: POST /api/v1/action-mappings/validate to :api_authenticated scope
+
+Section: 8. API Endpoints — Action Mappings
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "td add \"Add action-mappings CRUD routes\" --parent td-372f04 --tag api -d 'Source task: 8.3 Add routes: GET /api/v1/action-mappings to :api_authenticated scope, POST /api/v1/action-mappings, PUT /api/v1/action-mappings/:id, DELETE /api/v1/action-mappings/:id to :api_write scope
+
+Section: 8. API Endpoints — Action Mappings
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "td add \"Add category query param support to audit-logs API\" --parent td-372f04 --tag api -d 'Source task: 8.5 Add category query parameter support to existing GET /api/v1/audit-logs endpoint and update AuditLogController.operation(:index) annotation to document the new parameter
+
+Section: 8. API Endpoints — Action Mappings
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/taxonomy-aware-querying/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 170ms:
+CREATED td-5ca94c
+ succeeded in 216ms:
+CREATED td-7ede6f
+ succeeded in 202ms:
+CREATED td-b3b8cf
+ succeeded in 236ms:
+CREATED td-22b6ac
+ succeeded in 325ms:
+CREATED td-205a42
+exec
+/bin/zsh -lc "td add \"Create taxonomy list response schema\" --parent td-372f04 --tag api -d 'Source task: 9.1 Create lib/app_web/schemas/taxonomy_list_response.ex — list of %{framework: string, version: string}
+
+Section: 9. OpenAPI Schemas
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 53ms:
+CREATED td-28a1fb
+exec
+/bin/zsh -lc "td add \"Create taxonomy show response schema\" --parent td-372f04 --tag api -d 'Source task: 9.2 Create lib/app_web/schemas/taxonomy_show_response.ex — single framework taxonomy tree with categories/subcategories/actions
+
+Section: 9. OpenAPI Schemas
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 99ms:
+CREATED td-d8490b
+exec
+/bin/zsh -lc "td add \"Create action mapping request schema\" --parent td-372f04 --tag api -d 'Source task: 9.3 Create lib/app_web/schemas/action_mapping_request.ex — custom_action, framework, taxonomy_path fields
+
+Section: 9. OpenAPI Schemas
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 58ms:
+CREATED td-608d90
+exec
+/bin/zsh -lc "td add \"Create action mapping response schema\" --parent td-372f04 --tag api -d 'Source task: 9.4 Create lib/app_web/schemas/action_mapping_response.ex — single mapping object with id, custom_action, framework, taxonomy_path, taxonomy_version
+
+Section: 9. OpenAPI Schemas
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 60ms:
+CREATED td-8827f0
+exec
+/bin/zsh -lc "td add \"Create action mapping list response schema\" --parent td-372f04 --tag api -d 'Source task: 9.5 Create lib/app_web/schemas/action_mapping_list_response.ex — paginated list of mapping objects
+
+Section: 9. OpenAPI Schemas
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 60ms:
+CREATED td-6f3c86
+exec
+/bin/zsh -lc "td add \"Create action mapping validate response schema\" --parent td-372f04 --tag api -d 'Source task: 9.6 Create lib/app_web/schemas/action_mapping_validate_response.ex — recognized and unmapped action lists
+
+Section: 9. OpenAPI Schemas
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 55ms:
+CREATED td-61b460
+exec
+/bin/zsh -lc "td add \"Add OpenApiSpex annotations to TaxonomyController\" --parent td-372f04 --tag api -d 'Source task: 9.7 Add OpenApiSpex operation annotations to TaxonomyController (index, show)
+
+Section: 9. OpenAPI Schemas
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 72ms:
+CREATED td-05c367
+exec
+/bin/zsh -lc "td add \"Add OpenApiSpex annotations to ActionMappingController\" --parent td-372f04 --tag api -d 'Source task: 9.8 Add OpenApiSpex operation annotations to ActionMappingController (index, create, update, delete, validate)
+
+Section: 9. OpenAPI Schemas
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 80ms:
+CREATED td-2006fe
+codex
+I’m importing the 14 test subtasks now, then I’ll repair the first four issue descriptions (affected by shell backticks), set dependencies, and add the review-gate blocker.
+exec
+/bin/zsh -lc "td add \"Test taxonomy behavior callback enforcement\" --parent td-372f04 --tag test -d 'Source task: 10.1 Test taxonomy behaviour enforcement — modules without all callbacks produce warnings
+
+Section: 10. Tests
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 99ms:
+CREATED td-ea4b4e
+exec
+/bin/zsh -lc "td add \"Test each framework taxonomy module\" --parent td-372f04 --tag test -d 'Source task: 10.2 Test each framework taxonomy module — taxonomy/0 returns correct structure, actions/0 returns correct flat list, taxonomy_version/0 returns valid version
+
+Section: 10. Tests
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 77ms:
+CREATED td-aea0cb
+exec
+/bin/zsh -lc "td add \"Test taxonomy get/1 for known and unknown frameworks\" --parent td-372f04 --tag test -d 'Source task: 10.3 Test GA.Compliance.Taxonomy.get/1 — returns correct module for known frameworks, error for unknown
+
+Section: 10. Tests
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 62ms:
+CREATED td-49feea
+exec
+/bin/zsh -lc "td add \"Test taxonomy resolve_path/2 wildcard and invalid paths\" --parent td-372f04 --tag test -d 'Source task: 10.4 Test GA.Compliance.Taxonomy.resolve_path/2 — exact path, subcategory wildcard, category wildcard, invalid path
+
+Section: 10. Tests
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 59ms:
+CREATED td-5c9c28
+exec
+/bin/zsh -lc "td add \"Test action mapping CRUD and account isolation\" --parent td-372f04 --tag test -d 'Source task: 10.5 Test action mapping CRUD — create with valid/invalid framework and path, list with filters, update, delete, account isolation
+
+Section: 10. Tests
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 91ms:
+CREATED td-3d8cd6
+exec
+/bin/zsh -lc "td add \"Test resolve_actions/3 combined taxonomy and mappings\" --parent td-372f04 --tag test -d 'Source task: 10.6 Test resolve_actions/3 — taxonomy actions, mapped actions, combined set, unknown framework
+
+Section: 10. Tests
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/taxonomy-aware-querying/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 87ms:
+CREATED td-f7b4a2
+exec
+/bin/zsh -lc "td add \"Test strict-mode validation behavior\" --parent td-372f04 --tag test -d 'Source task: 10.7 Test strict-mode validation — canonical action accepted, mapped action accepted, unknown action rejected, flexible mode allows any action, mixed-mode frameworks
+
+Section: 10. Tests
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 83ms:
+CREATED td-75aa70
+exec
+/bin/zsh -lc "td add \"Test validate_actions/2 dry-run coverage\" --parent td-372f04 --tag test -d 'Source task: 10.8 Test validate_actions/2 dry-run — full coverage, partial coverage, no mappings
+
+Section: 10. Tests
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 65ms:
+CREATED td-a025c0
+exec
+/bin/zsh -lc "td add \"Test list_logs/2 category filter behavior\" --parent td-372f04 --tag test -d 'Source task: 10.9 Test category filter in list_logs/2 — category wildcard, subcategory wildcard, exact path, combined with other filters, cursor pagination
+
+Section: 10. Tests
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/taxonomy-aware-querying/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 56ms:
+CREATED td-4a6bbb
+exec
+/bin/zsh -lc "td add \"Test category filter validation errors\" --parent td-372f04 --tag test -d 'Source task: 10.10 Test category filter validation — unknown framework, invalid path, missing framework prefix
+
+Section: 10. Tests
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/taxonomy-aware-querying/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 64ms:
+CREATED td-46af9c
+exec
+/bin/zsh -lc "td add \"Test taxonomy API endpoints\" --parent td-372f04 --tag test -d 'Source task: 10.11 Test taxonomy API endpoints — list frameworks, get specific taxonomy, unknown framework returns 404
+
+Section: 10. Tests
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 67ms:
+CREATED td-e57dc8
+exec
+/bin/zsh -lc "td add \"Test action mapping API endpoints\" --parent td-372f04 --tag test -d 'Source task: 10.12 Test action mapping API endpoints — CRUD operations, validation endpoint, auth enforcement
+
+Section: 10. Tests
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 62ms:
+CREATED td-129466
+exec
+/bin/zsh -lc "td add \"Test category param on GET /api/v1/audit-logs\" --parent td-372f04 --tag test -d 'Source task: 10.13 Test category query parameter on GET /api/v1/audit-logs — valid category, invalid category returns 422
+
+Section: 10. Tests
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/taxonomy-aware-querying/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 58ms:
+CREATED td-ccadd3
+exec
+/bin/zsh -lc "td add \"Test OpenAPI schema rendering for taxonomy/action mappings\" --parent td-372f04 --tag test -d 'Source task: 10.14 Test OpenAPI schemas render correctly for taxonomy and action mapping endpoints
+
+Section: 10. Tests
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 64ms:
+CREATED td-b4a403
+exec
+/bin/zsh -lc 'td list --id td-4ff524 --id td-ec4315 --id td-6b057a --id td-24859a --long' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+td-24859a: Implement taxonomy path resolver (resolve_path/2)
+Status: [open]
+Type: task | Priority: P2
+Labels: backend
+
+Description:
+Source task: 1.4 Implement  — resolve dot-separated path (with wildcard support) to list of actions
+
+Section: 1. Taxonomy Behaviour and Registry
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md
+---
+td-4ff524: Create GA.Compliance.Taxonomy behavior module
+Status: [open]
+Type: task | Priority: P2
+Labels: backend
+exec
+/bin/zsh -lc 'td update --help' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 53ms:
+Update one or more fields on existing issues
+
+Usage:
+  td update [issue-id...] [flags]
+
+Aliases:
+  update, edit
+
+Flags:
+      --acceptance string    New acceptance criteria
+      --append               Append to text fields instead of replacing
+      --blocks string        Replace blocked issues
+      --body string          Alias for --description
+  -m, --comment string       Add a comment to the updated issue(s)
+      --defer string         Defer until date (e.g., +7d, monday, 2026-03-01; empty to clear)
+      --depends-on string    Replace dependencies
+      --desc string          Alias for --description
+  -d, --description string   New description
+      --due string           Due date (e.g., friday, +2w, 2026-03-15; empty to clear)
+  -h, --help                 help for update
+exec
+/bin/zsh -lc "td update td-4ff524 -d 'Source task: 1.1 Create lib/app/compliance/taxonomy.ex with GA.Compliance.Taxonomy behaviour — define callbacks framework/0, taxonomy_version/0, taxonomy/0, actions/0
+
+Section: 1. Taxonomy Behaviour and Registry
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+UPDATED td-4ff524
+exec
+/bin/zsh -lc "td update td-ec4315 -d 'Source task: 1.2 Implement GA.Compliance.Taxonomy.get/1 — registry lookup from framework string to module
+
+Section: 1. Taxonomy Behaviour and Registry
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+UPDATED td-ec4315
+exec
+/bin/zsh -lc "td update td-6b057a -d 'Source task: 1.3 Implement GA.Compliance.Taxonomy.list_frameworks/0 — returns sorted list of registered framework identifiers
+
+Section: 1. Taxonomy Behaviour and Registry
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+UPDATED td-6b057a
+exec
+/bin/zsh -lc "td update td-24859a -d 'Source task: 1.4 Implement GA.Compliance.Taxonomy.resolve_path/2 — resolve dot-separated path (with wildcard support) to list of actions
+
+Section: 1. Taxonomy Behaviour and Registry
+
+Artifacts:
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+UPDATED td-24859a
+exec
+/bin/zsh -lc 'td list --parent td-372f04 --json' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+Total output lines: 1052
+
+[
+  {
+    "id": "td-ec4315",
+    "title": "Implement taxonomy registry lookup (get/1)",
+    "description": "Source task: 1.2 Implement GA.Compliance.Taxonomy.get/1 — registry lookup from framework string to module\n\nSection: 1. Taxonomy Behaviour and Registry\n\nArtifacts:\n- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md\n- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md\n- Design: openspec/changes/regulatory-event-taxonomies/design.md\n- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md",
+    "status": "open",
+    "type": "task",
+    "priority": "P2",
+    "points": 0,
+    "labels": [
+      "backend"
+    ],
+    "parent_id": "td-372f04",
+    "implementer_session": "",
+    "creator_session": "ses_0de317",
+    "reviewer_session": "",
+    "created_at": "2026-03-05T21:28:50.780042-05:00",
+    "updated_at": "2026-03-05T21:32:46.515244-05:00",
+exec
+/bin/zsh -lc 'td update td-ec4315 td-6b057a td-24859a --depends-on td-4ff524' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 60ms:
+UPDATED td-ec4315
+UPDATED td-6b057a
+UPDATED td-24859a
+exec
+/bin/zsh -lc 'td update td-e25bea td-4ce32f td-bad096 td-0057a2 td-ddc195 --depends-on td-4ff524' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 65ms:
+UPDATED td-e25bea
+UPDATED td-4ce32f
+UPDATED td-bad096
+UPDATED td-0057a2
+UPDATED td-ddc195
+exec
+/bin/zsh -lc 'td update td-8fe4ad td-d70ed8 td-67a63f td-5d8730 td-47c49b td-457864 --depends-on td-4ff524,td-ec4315,td-6b057a,td-24859a,td-e25bea,td-4ce32f,td-bad096,td-0057a2,td-ddc195,td-eb1a29,td-d0f7f6,td-a0219d,td-ae223e' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 426ms:
+UPDATED td-d70ed8
+UPDATED td-67a63f
+UPDATED td-5d8730
+UPDATED td-47c49b
+UPDATED td-457864
+exec
+/bin/zsh -lc 'td update td-4edc22 td-b05c26 td-535802 --depends-on td-eb1a29,td-a0219d,td-8fe4ad,td-d70ed8,td-67a63f,td-5d8730,td-47c49b,td-457864' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 184ms:
+UPDATED td-b05c26
+UPDATED td-535802
+exec
+/bin/zsh -lc 'td update td-d58caa td-e0c65e td-cfd396 --depends-on td-24859a,td-47c49b' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 72ms:
+UPDATED td-d58caa
+UPDATED td-e0c65e
+UPDATED td-cfd396
+exec
+/bin/zsh -lc 'td update td-f7e37c td-a258a0 td-53f7cc --depends-on td-ec4315,td-6b057a,td-e25bea,td-4ce32f,td-bad096,td-0057a2,td-ddc195' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 143ms:
+UPDATED td-a258a0
+UPDATED td-53f7cc
+exec
+/bin/zsh -lc 'td update td-7ede6f td-5ca94c td-b3b8cf td-205a42 --depends-on td-8fe4ad,td-d70ed8,td-67a63f,td-5d8730,td-47c49b,td-457864' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 201ms:
+UPDATED td-5ca94c
+UPDATED td-b3b8cf
+UPDATED td-205a42
+exec
+/bin/zsh -lc 'td update td-22b6ac --depends-on td-d58caa,td-e0c65e,td-cfd396' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 53ms:
+UPDATED td-22b6ac
+exec
+/bin/zsh -lc 'td update td-28a1fb td-d8490b td-608d90 td-8827f0 td-6f3c86 td-61b460 td-05c367 td-2006fe --depends-on td-f7e37c,td-a258a0,td-53f7cc,td-7ede6f,td-5ca94c,td-b3b8cf,td-205a42,td-22b6ac' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 375ms:
+UPDATED td-d8490b
+UPDATED td-608d90
+UPDATED td-8827f0
+UPDATED td-6f3c86
+UPDATED td-61b460
+UPDATED td-05c367
+UPDATED td-2006fe
+exec
+/bin/zsh -lc 'td update td-ea4b4e td-aea0cb td-49feea td-5c9c28 td-3d8cd6 td-f7b4a2 td-75aa70 td-a025c0 td-4a6bbb td-46af9c td-e57dc8 td-129466 td-ccadd3 td-b4a403 --depends-on td-4ff524,td-ec4315,td-6b057a,td-24859a,td-e25bea,td-4ce32f,td-bad096,td-0057a2,td-ddc195,td-eb1a29,td-d0f7f6,td-a0219d,td-ae223e,td-8fe4ad,td-d70ed8,td-67a63f,td-5d8730,td-47c49b,td-457864,td-4edc22,td-b05c26,td-535802,td-d58caa,td-e0c65e,td-cfd396,td-f7e37c,td-a258a0,td-53f7cc,td-7ede6f,td-5ca94c,td-b3b8cf,td-205a42,td-22b6ac,td-28a1fb,td-d8490b,td-608d90,td-8827f0,td-6f3c86,td-61b460,td-05c367,td-2006fe' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 2.88s:
+UPDATED td-ea4b4e
+UPDATED td-aea0cb
+UPDATED td-49feea
+UPDATED td-5c9c28
+UPDATED td-3d8cd6
+UPDATED td-f7b4a2
+UPDATED td-75aa70
+UPDATED td-a025c0
+UPDATED td-4a6bbb
+UPDATED td-46af9c
+UPDATED td-e57dc8
+UPDATED td-129466
+UPDATED td-ccadd3
+UPDATED td-b4a403
+codex
+I’ve finished dependency wiring for the implementation and test groups. Next I’m creating the review-gate issue that depends on every imported task, then I’ll mark all OpenSpec checklist items complete.
+exec
+/bin/zsh -lc 'td add "Review all work for Regulatory Event Taxonomies" --parent td-372f04 --tag review --depends-on td-4ff524,td-ec4315,td-6b057a,td-24859a,td-e25bea,td-4ce32f,td-bad096,td-0057a2,td-ddc195,td-eb1a29,td-d0f7f6,td-a0219d,td-ae223e,td-8fe4ad,td-d70ed8,td-67a63f,td-5d8730,td-47c49b,td-457864,td-4edc22,td-b05c26,td-535802,td-d58caa,td-e0c65e,td-cfd396,td-f7e37c,td-a258a0,td-53f7cc,td-7ede6f,td-5ca94c,td-b3b8cf,td-205a42,td-22b6ac,td-28a1fb,td-d8490b,td-608d90,td-8827f0,td-6f3c86,td-61b460,td-05c367,td-2006fe,td-ea4b4e,td-aea0cb,td-49feea,td-5c9c28,td-3d8cd6,td-f7b4a2,td-75aa70,td-a025c0,td-4a6bbb,td-46af9c,td-e57dc8,td-129466,td-ccadd3,td-b4a403 -d "## Agent Instructions
+
+This is an automated review gate. When you pick up this issue:
+
+1. Run /compact to clear the context window
+2. Run /review-work to execute the multi-specialist collaborative review
+3. Based on review results, either close this issue or create follow-up issues for any findings
+
+Do NOT start implementation work — this issue exists solely to trigger a review.
+"' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 336ms:
+CREATED td-6c29d2
+codex
+I’m updating `openspec/changes/regulatory-event-taxonomies/tasks.md` now to mark every imported checkbox as complete so the change won’t be imported twice.
+exec
+/bin/zsh -lc "perl -0pi -e 's/- \\[ \\]/- [x]/g' openspec/changes/regulatory-event-taxonomies/tasks.md" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+
+exec
+/bin/zsh -lc "rg \"- \\[ \\]\" openspec/changes/regulatory-event-taxonomies/tasks.md || true" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+rg: unrecognized flag - 
+exec
+/bin/zsh -lc "rg -- \"- \\[ \\]\" openspec/changes/regulatory-event-taxonomies/tasks.md || true" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 53ms:
+
+exec
+/bin/zsh -lc 'td list --epic td-372f04' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 53ms:
+td-ec4315  [P2]  Implement taxonomy registry lookup (get/1)  task  [open]
+td-24859a  [P2]  Implement taxonomy path resolver (resolve_path/2)  task  [open]
+td-6b057a  [P2]  Implement taxonomy framework listing (list_frameworks/0)  task  [open]
+td-4ff524  [P2]  Create GA.Compliance.Taxonomy behavior module  task  [open]
+td-bad096  [P2]  Add PCI-DSS taxonomy module  task  [open]
+td-4ce32f  [P2]  Add SOC2 taxonomy module  task  [open]
+td-e25bea  [P2]  Add HIPAA taxonomy module  task  [open]
+td-0057a2  [P2]  Add GDPR taxonomy module  task  [open]
+td-ddc195  [P2]  Add ISO27001 taxonomy module  task  [open]
+td-eb1a29  [P2]  Add migration for account_compliance_frameworks  task  [open]
+td-a0219d  [P2]  Add migration for account_action_mappings  task  [open]
+td-ae223e  [P2]  Create ActionMapping Ecto schema  task  [open]
+td-d0f7f6  [P2]  Create AccountFramework Ecto schema  task  [open]
+td-5d8730  [P2]  Implement delete_mapping/2  task  [open]
+td-47c49b  [P2]  Implement resolve_actions/3  task  [open]
+td-457864  [P2]  Implement validate_actions/2 dry-run  task  [open]
+td-d70ed8  [P2]  Implement list_mappings/2  task  [open]
+td-8fe4ad  [P2]  Implement create_mapping/2  task  [open]
+td-67a63f  [P2]  Implement update_mapping/3  task  [open]
+td-4edc22  [P2]  Add strict-mode validation helper in GA.Compliance  task  [open]
+exec
+/bin/zsh -lc 'td list --epic td-372f04 --limit 100' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+td-ec4315  [P2]  Implement taxonomy registry lookup (get/1)  task  [open]
+td-24859a  [P2]  Implement taxonomy path resolver (resolve_path/2)  task  [open]
+td-6b057a  [P2]  Implement taxonomy framework listing (list_frameworks/0)  task  [open]
+td-4ff524  [P2]  Create GA.Compliance.Taxonomy behavior module  task  [open]
+td-bad096  [P2]  Add PCI-DSS taxonomy module  task  [open]
+td-4ce32f  [P2]  Add SOC2 taxonomy module  task  [open]
+td-e25bea  [P2]  Add HIPAA taxonomy module  task  [open]
+td-0057a2  [P2]  Add GDPR taxonomy module  task  [open]
+td-ddc195  [P2]  Add ISO27001 taxonomy module  task  [open]
+td-eb1a29  [P2]  Add migration for account_compliance_frameworks  task  [open]
+td-a0219d  [P2]  Add migration for account_action_mappings  task  [open]
+td-ae223e  [P2]  Create ActionMapping Ecto schema  task  [open]
+td-d0f7f6  [P2]  Create AccountFramework Ecto schema  task  [open]
+td-5d8730  [P2]  Implement delete_mapping/2  task  [open]
+td-47c49b  [P2]  Implement resolve_actions/3  task  [open]
+td-457864  [P2]  Implement validate_actions/2 dry-run  task  [open]
+td-d70ed8  [P2]  Implement list_mappings/2  task  [open]
+td-8fe4ad  [P2]  Implement create_mapping/2  task  [open]
+td-67a63f  [P2]  Implement update_mapping/3  task  [open]
+td-4edc22  [P2]  Add strict-mode validation helper in GA.Compliance  task  [open]
+exec
+/bin/zsh -lc 'git status --short' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+ M .autopilot-logs/extensible-event-schema/phase-5-commit.log
+ M .autopilot-logs/pipeline.log
+ M .autopilot-logs/preflight.log
+ M openspec/changes/regulatory-event-taxonomies/tasks.md
+?? .autopilot-logs/regulatory-event-taxonomies/
+exec
+/bin/zsh -lc 'td list --id td-6c29d2 --long' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+td-6c29d2: Review all work for Regulatory Event Taxonomies
+Status: [open]
+Type: task | Priority: P2
+Labels: review
+
+Description:
+## Agent Instructions
+
+This is an automated review gate. When you pick up this issue:
+
+1. Run /compact to clear the context window
+2. Run /review-work to execute the multi-specialist collaborative review
+3. Based on review results, either close this issue or create follow-up issues for any findings
+
+Do NOT start implementation work — this issue exists solely to trigger a review.
+
+---
+exec
+/bin/zsh -lc 'td list --id td-6c29d2 --json' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 53ms:
+[
+  {
+    "id": "td-6c29d2",
+    "title": "Review all work for Regulatory Event Taxonomies",
+    "description": "## Agent Instructions\n\nThis is an automated review gate. When you pick up this issue:\n\n1. Run /compact to clear the context window\n2. Run /review-work to execute the multi-specialist collaborative review\n3. Based on review results, either close this issue or create follow-up issues for any findings\n\nDo NOT start implementation work — this issue exists solely to trigger a review.\n",
+    "status": "open",
+    "type": "task",
+    "priority": "P2",
+    "points": 0,
+    "labels": [
+      "review"
+    ],
+    "parent_id": "td-372f04",
+    "implementer_session": "",
+    "creator_session": "ses_0de317",
+    "reviewer_session": "",
+    "created_at": "2026-03-05T21:34:58.089336-05:00",
+    "updated_at": "2026-03-05T21:34:58.089336-05:00",
+    "minor": false,
+    "created_branch": "main",
+exec
+/bin/zsh -lc 'td show --help' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+Display full details of one or more issues.
+
+Examples:
+  td show td-abc1                  # Show issue details
+  td show td-abc1 --children       # Show issue with child tasks
+  td show td-abc1 td-abc2          # Show multiple issues
+
+Usage:
+  td show [issue-id...] [flags]
+
+Aliases:
+  show, context, view, get
+
+Flags:
+      --children          Display child issues inline (alternative to 'td tree')
+  -f, --format string     Output format (json)
+  -h, --help              help for show
+      --json              Machine-readable JSON
+      --long              Detailed multi-line output (default)
+  -m, --render-markdown   Render markdown in description and acceptance
+exec
+/bin/zsh -lc 'td show td-6c29d2 --json' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+{
+  "acceptance": "",
+  "created_at": "2026-03-05T21:34:58.089336-05:00",
+  "description": "## Agent Instructions\n\nThis is an automated review gate. When you pick up this issue:\n\n1. Run /compact to clear the context window\n2. Run /review-work to execute the multi-specialist collaborative review\n3. Based on review results, either close this issue or create follow-up issues for any findings\n\nDo NOT start implementation work — this issue exists solely to trigger a review.\n",
+  "id": "td-6c29d2",
+  "implementer_session": "",
+  "labels": [
+    "review"
+  ],
+  "minor": false,
+  "parent_id": "td-372f04",
+  "points": 0,
+  "priority": "P2",
+  "reviewer_session": "",
+  "status": "open",
+  "title": "Review all work for Regulatory Event Taxonomies",
+  "type": "task",
+  "updated_at": "2026-03-05T21:34:58.089336-05:00"
+}
+exec
+/bin/zsh -lc 'td show td-ec4315 --json' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+{
+  "acceptance": "",
+  "created_at": "2026-03-05T21:28:50.780042-05:00",
+  "description": "Source task: 1.2 Implement GA.Compliance.Taxonomy.get/1 — registry lookup from framework string to module\n\nSection: 1. Taxonomy Behaviour and Registry\n\nArtifacts:\n- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md\n- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md\n- Design: openspec/changes/regulatory-event-taxonomies/design.md\n- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md",
+  "id": "td-ec4315",
+  "implementer_session": "",
+  "labels": [
+    "backend"
+  ],
+  "minor": false,
+  "parent_id": "td-372f04",
+  "points": 0,
+  "priority": "P2",
+  "reviewer_session": "",
+  "status": "open",
+  "title": "Implement taxonomy registry lookup (get/1)",
+  "type": "task",
+  "updated_at": "2026-03-05T21:33:52.668338-05:00"
+}
+exec
+/bin/zsh -lc 'td --help' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 53ms:
+td - A minimalist local task and session management CLI designed for AI-assisted development workflows.
+
+Optimized for session continuity—capturing working state so new context windows can resume where previous ones stopped.
+
+Usage:
+  td [command]
+
+Core Commands:
+  board                 Manage issue boards
+  create, add, new      Create a new issue
+  delete                Soft-delete one or more issues
+  epic                  Shortcuts for working with epics
+  list, ls              List issues matching given filters
+  note                  Manage freeform notes
+  restore               Restore soft-deleted issues
+  show, context, view, get Display full details of one or more issues
+  task                  Shortcuts for working with tasks
+  update, edit          Update one or more fields on existing issues
+
+Workflow Commands:
+exec
+/bin/zsh -lc 'td depends-on td-ec4315' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+td-ec4315 "Implement taxonomy registry lookup (get/1)" [open]
+└── depends on:
+    td-4ff524: Create GA.Compliance.Taxonomy behavior module [open]
+
+1 blocking, 0 resolved
+exec
+/bin/zsh -lc 'td depends-on td-6c29d2' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+td-6c29d2 "Review all work for Regulatory Event Taxonomies" [open]
+└── depends on:
+    td-0057a2: Add GDPR taxonomy module [open]
+    td-05c367: Add OpenApiSpex annotations to TaxonomyController [open]
+    td-129466: Test action mapping API endpoints [open]
+    td-2006fe: Add OpenApiSpex annotations to ActionMappingController [open]
+    td-205a42: Add action-mappings validate route [open]
+    td-22b6ac: Add category query param support to audit-logs API [open]
+    td-24859a: Implement taxonomy path resolver (resolve_path/2) [open]
+    td-28a1fb: Create taxonomy list response schema [open]
+    td-3d8cd6: Test action mapping CRUD and account isolation [open]
+    td-457864: Implement validate_actions/2 dry-run [open]
+    td-46af9c: Test category filter validation errors [open]
+    td-47c49b: Implement resolve_actions/3 [open]
+    td-49feea: Test taxonomy get/1 for known and unknown frameworks [open]
+    td-4a6bbb: Test list_logs/2 category filter behavior [open]
+    td-4ce32f: Add SOC2 taxonomy module [open]
+    td-4edc22: Add strict-mode validation helper in GA.Compliance [open]
+    td-4ff524: Create GA.Compliance.Taxonomy behavior module [open]
+    td-535802: Relax GA.Audit.Log action inclusion for taxonomy validation [open]
+exec
+/bin/zsh -lc "sed -n '1,260p' openspec/changes/regulatory-event-taxonomies/tasks.md" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+## 1. Taxonomy Behaviour and Registry
+
+- [x] 1.1 Create `lib/app/compliance/taxonomy.ex` with `GA.Compliance.Taxonomy` behaviour — define callbacks `framework/0`, `taxonomy_version/0`, `taxonomy/0`, `actions/0`
+- [x] 1.2 Implement `GA.Compliance.Taxonomy.get/1` — registry lookup from framework string to module
+- [x] 1.3 Implement `GA.Compliance.Taxonomy.list_frameworks/0` — returns sorted list of registered framework identifiers
+- [x] 1.4 Implement `GA.Compliance.Taxonomy.resolve_path/2` — resolve dot-separated path (with wildcard support) to list of actions
+
+## 2. Framework Taxonomy Modules
+
+- [x] 2.1 Create `lib/app/compliance/taxonomies/hipaa.ex` — `GA.Compliance.Taxonomies.HIPAA` implementing taxonomy behaviour with access/admin/disclosure categories
+- [x] 2.2 Create `lib/app/compliance/taxonomies/soc2.ex` — `GA.Compliance.Taxonomies.SOC2` implementing taxonomy behaviour with change/access/incident/monitoring categories
+- [x] 2.3 Create `lib/app/compliance/taxonomies/pci_dss.ex` — `GA.Compliance.Taxonomies.PCIDSS` implementing taxonomy behaviour with cardholder/authentication/key_management/network categories
+- [x] 2.4 Create `lib/app/compliance/taxonomies/gdpr.ex` — `GA.Compliance.Taxonomies.GDPR` implementing taxonomy behaviour with processing/subject_request/consent/transfer categories
+- [x] 2.5 Create `lib/app/compliance/taxonomies/iso_27001.ex` — `GA.Compliance.Taxonomies.ISO27001` implementing taxonomy behaviour with access_control/asset_management/incident_management/change_management categories
+
+## 3. Database Schema
+
+- [x] 3.1 Create migration for `account_compliance_frameworks` table — `account_id`, `framework`, `action_validation_mode` (default `"flexible"`), `enabled_at`, unique index on `[account_id, framework]`
+- [x] 3.2 Create `lib/app/compliance/account_framework.ex` — Ecto schema for `account_compliance_frameworks` with changeset validation
+- [x] 3.3 Create migration for `account_action_mappings` table — `account_id`, `custom_action`, `framework`, `taxonomy_path`, `taxonomy_version`, `created_at`, unique index on `[account_id, custom_action, framework]`
+exec
+/bin/zsh -lc "td list --epic td-372f04 --json | jq 'length'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+50
+exec
+/bin/zsh -lc "td list --epic td-372f04 --limit 200 --json | jq 'length'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 53ms:
+56
+codex
+Completed `/prepare-for-takeoff` for `regulatory-event-taxonomies` using the skill workflow.
+
+- Created epic: `td-372f04` (`Regulatory Event Taxonomies`).
+- Imported every unchecked subtask from `tasks.md` as a 1:1 `td` child issue: 55 task issues total, with `backend`/`api`/`test` tags and artifact/spec links in descriptions.
+- Wired dependencies across groups and added review gate issue `td-6c29d2` that depends on all 55 implementation/test issues (`td depends-on td-6c29d2` shows `55 blocking`).
+- Marked all OpenSpec checkboxes as completed in [tasks.md](/Users/tbrewer/projects/goodway/goodaudit/openspec/changes/regulatory-event-taxonomies/tasks.md).
+
+Verification:
+- `td list --epic td-372f04 --limit 200` now returns `56` open child issues (55 imported tasks + 1 review gate).
+tokens used
+75,219
+Completed `/prepare-for-takeoff` for `regulatory-event-taxonomies` using the skill workflow.
+
+- Created epic: `td-372f04` (`Regulatory Event Taxonomies`).
+- Imported every unchecked subtask from `tasks.md` as a 1:1 `td` child issue: 55 task issues total, with `backend`/`api`/`test` tags and artifact/spec links in descriptions.
+- Wired dependencies across groups and added review gate issue `td-6c29d2` that depends on all 55 implementation/test issues (`td depends-on td-6c29d2` shows `55 blocking`).
+- Marked all OpenSpec checkboxes as completed in [tasks.md](/Users/tbrewer/projects/goodway/goodaudit/openspec/changes/regulatory-event-taxonomies/tasks.md).
+
+Verification:
+- `td list --epic td-372f04 --limit 200` now returns `56` open child issues (55 imported tasks + 1 review gate).

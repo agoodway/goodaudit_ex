@@ -1186,3 +1186,62 @@
 2026/03/05 17:10:18.182582 exec: codex exec --model gpt-5.3-codex --full-auto
 2026/03/05 17:10:18.182586 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/extensible-event-schema/phase-5-commit.log
 2026/03/05 17:10:18.184063 exec: process started pid=97725
+2026/03/05 17:10:50.391056 exec: process pid=97725 exited successfully
+2026/03/05 17:10:50.391193 [extensible-event-schema] phase 5: commit completed in 32s
+2026/03/05 17:10:50.391212 [extensible-event-schema] phase 5 completed in 5m 9s
+2026/03/05 17:10:50.391235 change "extensible-event-schema" succeeded in 51m 7s
+2026/03/05 17:10:50.391289 --- Change 3/3: regulatory-event-taxonomies (start_phase=1) ---
+2026/03/05 17:10:50.391301 [regulatory-event-taxonomies] phase 1 (prepare-for-takeoff) starting
+2026/03/05 17:10:50.391396 [regulatory-event-taxonomies] phase 1: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/regulatory-event-taxonomies/phase-1-prepare-for-takeoff.log
+2026/03/05 17:10:50.391401 [regulatory-event-taxonomies] phase 1: prompt=Run /prepare-for-takeoff for the change named "regulatory-event-taxonomies" located at openspec/changes/regulatory-event-taxonomies/. Do not ask me any questions — use your best judgment for any decisions. You are already on the correct feature branch. Do NOT warn about not being on main — this is expected for a multi-change pipeline run.
+2026/03/05 17:10:50.391419 [regulatory-event-taxonomies] phase 1: launching codex session
+2026/03/05 17:10:50.391436 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 17:10:50.391439 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/regulatory-event-taxonomies/phase-1-prepare-for-takeoff.log
+2026/03/05 17:10:50.392760 exec: process started pid=98809
+2026/03/05 21:27:21.310633 === Pipeline started ===
+2026/03/05 21:27:21.311593   project_dir=/Users/tbrewer/projects/goodway/goodaudit
+2026/03/05 21:27:21.311598   log_dir=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs
+2026/03/05 21:27:21.311602   changes=[regulatory-event-taxonomies]
+2026/03/05 21:27:21.311821   backend=codex model=gpt-5.3-codex start_phase=1
+2026/03/05 21:27:21.311827   phase_timeout=45m0s
+2026/03/05 21:27:21.311831   auto_approve=true dry_run=false no_commit=false show_output=true
+2026/03/05 21:27:21.311849 preflight: starting health check
+2026/03/05 21:27:21.311890 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 21:27:21.311893 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/preflight.log
+2026/03/05 21:27:21.314034 exec: process started pid=59235
+2026/03/05 21:27:28.252777 exec: process pid=59235 exited successfully
+2026/03/05 21:27:28.253004 preflight: passed
+2026/03/05 21:27:28.253032 --- Change 1/1: regulatory-event-taxonomies (start_phase=1) ---
+2026/03/05 21:27:28.253050 [regulatory-event-taxonomies] phase 1 (prepare-for-takeoff) starting
+2026/03/05 21:27:28.253081 [regulatory-event-taxonomies] phase 1: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/regulatory-event-taxonomies/phase-1-prepare-for-takeoff.log
+2026/03/05 21:27:28.253087 [regulatory-event-taxonomies] phase 1: prompt=Run /prepare-for-takeoff for the change named "regulatory-event-taxonomies" located at openspec/changes/regulatory-event-taxonomies/. Do not ask me any questions — use your best judgment for any decisions.
+2026/03/05 21:27:28.253092 [regulatory-event-taxonomies] phase 1: launching codex session
+2026/03/05 21:27:28.253113 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 21:27:28.253118 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/regulatory-event-taxonomies/phase-1-prepare-for-takeoff.log
+2026/03/05 21:27:28.254487 exec: process started pid=60173
+2026/03/05 21:36:05.566777 exec: process pid=60173 exited successfully
+2026/03/05 21:36:05.567038 [regulatory-event-taxonomies] phase 1: codex session completed in 8m 37s
+2026/03/05 21:36:05.567055 [regulatory-event-taxonomies] phase 1: running intermediate commit
+2026/03/05 21:36:05.567073 [regulatory-event-taxonomies] commit phase 1: launching codex session
+2026/03/05 21:36:05.567077 [regulatory-event-taxonomies] commit phase 1: prompt=Run /git commit with the message "chore(openspec): import tasks for regulatory-event-taxonomies". Do not ask me any questions.
+2026/03/05 21:36:05.567099 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 21:36:05.567102 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/regulatory-event-taxonomies/phase-1-commit.log
+2026/03/05 21:36:05.568605 exec: process started pid=80156
+2026/03/05 21:37:33.598185 exec: process pid=80156 exited successfully
+2026/03/05 21:37:33.598509 [regulatory-event-taxonomies] phase 1: commit completed in 1m 28s
+2026/03/05 21:37:33.598535 [regulatory-event-taxonomies] phase 1 completed in 8m 37s
+2026/03/05 21:37:33.598547 [regulatory-event-taxonomies] phase 2 (takeoff) starting
+2026/03/05 21:37:33.598581 [regulatory-event-taxonomies] phase 2: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/regulatory-event-taxonomies/phase-2-takeoff.log
+2026/03/05 21:37:33.598587 [regulatory-event-taxonomies] phase 2: prompt=Run /takeoff for the change named "regulatory-event-taxonomies" located at openspec/changes/regulatory-event-taxonomies/. Do not ask me any questions — use your best judgment for any decisions.
+2026/03/05 21:37:33.598591 [regulatory-event-taxonomies] phase 2: launching codex session
+2026/03/05 21:37:33.598617 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 21:37:33.598621 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/regulatory-event-taxonomies/phase-2-takeoff.log
+2026/03/05 21:37:33.600207 exec: process started pid=82983
+2026/03/05 21:40:58.904211 exec: process pid=82983 exited successfully
+2026/03/05 21:40:58.904532 [regulatory-event-taxonomies] phase 2: codex session completed in 3m 25s
+2026/03/05 21:40:58.904562 [regulatory-event-taxonomies] phase 2: running intermediate commit
+2026/03/05 21:40:58.904578 [regulatory-event-taxonomies] commit phase 2: launching codex session
+2026/03/05 21:40:58.904583 [regulatory-event-taxonomies] commit phase 2: prompt=Run /git commit with the message "feat(regulatory-event-taxonomies): implement changes". Do not ask me any questions.
+2026/03/05 21:40:58.904602 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 21:40:58.904606 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/regulatory-event-taxonomies/phase-2-commit.log
+2026/03/05 21:40:58.905997 exec: process started pid=90418
