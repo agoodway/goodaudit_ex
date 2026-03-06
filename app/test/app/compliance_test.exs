@@ -12,7 +12,7 @@ defmodule GA.ComplianceTest do
       assert registry["soc2"] == GA.Compliance.Frameworks.SOC2
       assert registry["pci_dss"] == GA.Compliance.Frameworks.PCIDSS
       assert registry["gdpr"] == GA.Compliance.Frameworks.GDPR
-      assert registry["iso27001"] == GA.Compliance.Frameworks.ISO27001
+      assert registry["iso_27001"] == GA.Compliance.Frameworks.ISO27001
     end
 
     test "get_framework/1 resolves known and unknown IDs" do
@@ -68,22 +68,24 @@ defmodule GA.ComplianceTest do
       account = account_fixture()
 
       assert {:ok, hipaa} = Compliance.activate_framework(account.id, "hipaa")
-      assert hipaa.framework_id == "hipaa"
+      assert hipaa.framework == "hipaa"
       assert hipaa.account_id == account.id
+      assert hipaa.action_validation_mode == "flexible"
+      refute is_nil(hipaa.enabled_at)
       assert hipaa.config_overrides == %{}
 
       assert {:ok, _soc2} = Compliance.activate_framework(account.id, "soc2")
       assert Compliance.active_framework_ids(account.id) == ["hipaa", "soc2"]
 
       listed = Compliance.list_active_frameworks(account.id)
-      assert Enum.map(listed, & &1.framework_id) == ["hipaa", "soc2"]
+      assert Enum.map(listed, & &1.framework) == ["hipaa", "soc2"]
     end
 
     test "activate_framework/3 rejects unknown framework IDs" do
       account = account_fixture()
 
       assert {:error, changeset} = Compliance.activate_framework(account.id, "unknown_framework")
-      assert "is invalid" in errors_on(changeset).framework_id
+      assert "is invalid" in errors_on(changeset).framework
     end
 
     test "activate_framework/3 rejects duplicate activation for same account + framework" do
@@ -91,7 +93,7 @@ defmodule GA.ComplianceTest do
       assert {:ok, _} = Compliance.activate_framework(account.id, "hipaa")
 
       assert {:error, changeset} = Compliance.activate_framework(account.id, "hipaa")
-      assert "has already been taken" in errors_on(changeset).framework_id
+      assert "has already been taken" in errors_on(changeset).framework
     end
 
     test "deactivate_framework/2 removes active rows and returns not_found for missing rows" do
@@ -103,6 +105,20 @@ defmodule GA.ComplianceTest do
       assert Compliance.active_framework_ids(account.id) == []
 
       assert {:error, :not_found} = Compliance.deactivate_framework(account.id, "hipaa")
+    end
+
+    test "activate_framework/3 enforces validation mode values" do
+      account = account_fixture()
+
+      assert {:ok, strict} =
+               Compliance.activate_framework(account.id, "hipaa", action_validation_mode: "strict")
+
+      assert strict.action_validation_mode == "strict"
+
+      assert {:error, changeset} =
+               Compliance.activate_framework(account.id, "soc2", action_validation_mode: "invalid")
+
+      assert "is invalid" in errors_on(changeset).action_validation_mode
     end
   end
 

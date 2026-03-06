@@ -1,0 +1,1363 @@
+OpenAI Codex v0.107.0 (research preview)
+--------
+workdir: /Users/tbrewer/projects/goodway/goodaudit
+model: gpt-5.3-codex
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: none
+session id: 019cc105-cde1-78d0-b0ef-d3e071758530
+--------
+user
+Run /pre-landing-check for the change named "regulatory-event-taxonomies" located at openspec/changes/regulatory-event-taxonomies/. Do not ask me any questions — use your best judgment for any decisions.
+mcp: playwright starting
+mcp: context7 starting
+mcp: perplexity starting
+mcp: sequential-thinking starting
+mcp: zread starting
+mcp: sequential-thinking ready
+mcp: perplexity ready
+mcp: context7 ready
+mcp: playwright ready
+2026-03-06T02:41:50.520217Z ERROR rmcp::transport::common::reqwest::streamable_http_client: unexpected content type: None
+2026-03-06T02:41:50.520245Z ERROR rmcp::transport::worker: worker quit with fatal: Unexpected content type: None, when send initialized notification
+mcp: zread failed: MCP client for `zread` failed to start: MCP startup failed: handshaking with MCP server failed: Send message error Transport [rmcp::transport::worker::WorkerTransport<rmcp::transport::streamable_http_client::StreamableHttpClientWorker<reqwest::async_impl::client::Client>>] error: Transport channel closed, when send initialized notification
+mcp startup: ready: sequential-thinking, perplexity, context7, playwright; failed: zread
+codex
+Running the `pre-landing-check` workflow for `openspec/changes/regulatory-event-taxonomies` now. I’ll load the skill instructions first, then execute the review-and-triage pipeline end to end with default judgments where choices are needed.
+exec
+/bin/zsh -lc "pwd && ls -la .codex/skills/pre-landing-check && sed -n '1,220p' .codex/skills/pre-landing-check/SKILL.md" in /Users/tbrewer/projects/goodway/goodaudit exited 1 in 51ms:
+(eval):5: parse error near `end'
+/Users/tbrewer/projects/goodway/goodaudit
+ls: .codex/skills/pre-landing-check: No such file or directory
+codex
+I hit a path mismatch in the project-local `.codex` folder; I’m now loading the global skill file at `~/.agents/skills/pre-landing-check/SKILL.md` and continuing.
+exec
+/bin/zsh -lc "ls -la ~/.agents/skills/pre-landing-check && sed -n '1,260p' ~/.agents/skills/pre-landing-check/SKILL.md" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 50ms:
+(eval):5: parse error near `end'
+total 16
+drwxr-xr-x@  3 tbrewer  staff    96 Feb 12 09:01 .
+drwxr-xr-x@ 45 tbrewer  staff  1440 Feb 20 13:20 ..
+-rw-r--r--@  1 tbrewer  staff  5951 Feb 12 09:01 SKILL.md
+---
+name: pre-landing-check
+description: Run a multi-specialist code review of recent work, then triage findings into td issues linked to an epic. Use when the user says "pre-landing check", "pre landing check", "review and triage", "review work and create issues", "review and file issues", or wants a full review-to-issues pipeline. Also triggers on "review changes and triage to epic" or "code review with issue tracking". Requires td CLI and a td epic to link issues to.
+---
+
+# Review and Triage
+
+Two-phase workflow: (1) multi-specialist code review of uncommitted changes, (2) triage findings into prioritized td issues under an epic.
+
+## Arguments
+
+```
+/pre-landing-check [epic-id-or-name] [optional file/area focus]
+```
+
+codex
+I’ve loaded the skill and am executing it with a fallback for specialist subagents (not available in this environment): I’ll do a multi-pass review myself (quality, security, tests, fresh-eyes), then triage findings into `td` issues under the relevant epic. I’m starting with branch and change-scope checks now.
+exec
+/bin/zsh -lc 'git branch --show-current' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'git status --porcelain' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 50ms:
+(eval):5: parse error near `end'
+main
+exec
+/bin/zsh -lc 'git diff HEAD --stat' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+(eval):5: parse error near `end'
+ M .autopilot-logs/pipeline.log
+ M .autopilot-logs/regulatory-event-taxonomies/phase-2-commit.log
+?? .autopilot-logs/regulatory-event-taxonomies/phase-3-pre-landing-check.log
+ succeeded in 52ms:
+(eval):5: parse error near `end'
+ .autopilot-logs/pipeline.log                       | 10 +++++++
+ .../regulatory-event-taxonomies/phase-2-commit.log | 35 ++++++++++++++++++++++
+ 2 files changed, 45 insertions(+)
+codex
+The repo is currently on `main`, and only log files are dirty there. Per your “no questions” instruction, I’m selecting the feature branch that matches `regulatory-event-taxonomies` and running the review there.
+exec
+/bin/zsh -lc 'git branch --all' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 53ms:
+(eval):5: parse error near `end'
+* main
+exec
+/bin/zsh -lc 'find ~/.agents/skills/pre-landing-check -maxdepth 2 -type f | sort' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+(eval):5: parse error near `end'
+/Users/tbrewer/.agents/skills/pre-landing-check/SKILL.md
+exec
+/bin/zsh -lc 'find openspec/changes/regulatory-event-taxonomies -maxdepth 4 -type f | sort' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'ls -la openspec/changes/regulatory-event-taxonomies' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+(eval):5: parse error near `end'
+openspec/changes/regulatory-event-taxonomies/design.md
+openspec/changes/regulatory-event-taxonomies/proposal.md
+openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md
+openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md
+openspec/changes/regulatory-event-taxonomies/specs/taxonomy-aware-querying/spec.md
+openspec/changes/regulatory-event-taxonomies/tasks.md
+ succeeded in 51ms:
+(eval):5: parse error near `end'
+total 48
+drwxr-xr-x@  6 tbrewer  staff   192 Mar  5 21:35 .
+drwxr-xr-x@ 23 tbrewer  staff   736 Mar  4 04:48 ..
+-rw-r--r--@  1 tbrewer  staff  6789 Mar  5 13:22 design.md
+-rw-r--r--@  1 tbrewer  staff  3200 Mar  5 13:04 proposal.md
+drwxr-xr-x@  5 tbrewer  staff   160 Mar  4 04:59 specs
+-rw-r--r--@  1 tbrewer  staff  8278 Mar  5 21:35 tasks.md
+codex
+No feature branch exists, so I’m treating this as a same-branch pre-landing check and deriving review scope from the OpenSpec change artifacts plus implemented files referenced by tasks. I’m reading `tasks.md` and linked specs next.
+exec
+/bin/zsh -lc "sed -n '1,220p' openspec/changes/regulatory-event-taxonomies/proposal.md" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "sed -n '1,260p' openspec/changes/regulatory-event-taxonomies/tasks.md" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+(eval):5: parse error near `end'
+## Why
+
+The `action` field on audit log entries is currently freeform text. HIPAA, SOC 2, PCI-DSS, and GDPR each define specific event categories that auditors expect to see in compliance reports. Without standardized action taxonomies, customers must invent their own event naming and auditors must manually map freeform actions to regulatory categories. This makes compliance reporting error-prone and increases audit preparation cost.
+
+A per-framework event taxonomy provides standard action vocabularies, maps customer events to regulatory categories, and enables framework-specific reporting out of the box.
+
+## What Changes
+
+1. **Taxonomy registry** — Each compliance framework module (from compliance-framework-profiles) exports an event taxonomy: a tree of categories, subcategories, and standard action names. For example, HIPAA defines `access.phi_read`, `access.phi_write`, `auth.login`, `auth.logout`, `admin.user_provision`; SOC 2 defines `change.deploy`, `change.config_update`, `access.production_access`; PCI-DSS defines `access.cardholder_data`, `access.key_management`; GDPR defines `processing.collection`, `processing.erasure`, `subject_request.access`, `subject_request.portability`.
+
+2. **Action validation mode** — Accounts can operate in `strict` mode (action must match a taxonomy entry for their active frameworks) or `flexible` mode (any action accepted, but non-taxonomy actions are flagged as `uncategorized` in reports). Default is `flexible` for easy adoption.
+
+3. **Action mapping rules** — Accounts can define custom mappings from their internal action names to taxonomy categories. For example, map `"patient_chart_viewed"` to `hipaa:access.phi_read`. Mappings are stored per-account and applied at query/report time, not at ingestion.
+
+4. **Taxonomy-aware queries** — New query filter `category` that matches all actions mapped to a taxonomy category. For example, filtering by `hipaa:access.*` returns all PHI access events regardless of the specific action string.
+
+5. **Taxonomy versioning** — Framework taxonomies are versioned. When a taxonomy is updated, new categories are additive.
+
+## Capabilities
+ succeeded in 52ms:
+(eval):5: parse error near `end'
+## 1. Taxonomy Behaviour and Registry
+
+- [x] 1.1 Create `lib/app/compliance/taxonomy.ex` with `GA.Compliance.Taxonomy` behaviour — define callbacks `framework/0`, `taxonomy_version/0`, `taxonomy/0`, `actions/0`
+- [x] 1.2 Implement `GA.Compliance.Taxonomy.get/1` — registry lookup from framework string to module
+- [x] 1.3 Implement `GA.Compliance.Taxonomy.list_frameworks/0` — returns sorted list of registered framework identifiers
+- [x] 1.4 Implement `GA.Compliance.Taxonomy.resolve_path/2` — resolve dot-separated path (with wildcard support) to list of actions
+
+## 2. Framework Taxonomy Modules
+
+- [x] 2.1 Create `lib/app/compliance/taxonomies/hipaa.ex` — `GA.Compliance.Taxonomies.HIPAA` implementing taxonomy behaviour with access/admin/disclosure categories
+- [x] 2.2 Create `lib/app/compliance/taxonomies/soc2.ex` — `GA.Compliance.Taxonomies.SOC2` implementing taxonomy behaviour with change/access/incident/monitoring categories
+- [x] 2.3 Create `lib/app/compliance/taxonomies/pci_dss.ex` — `GA.Compliance.Taxonomies.PCIDSS` implementing taxonomy behaviour with cardholder/authentication/key_management/network categories
+- [x] 2.4 Create `lib/app/compliance/taxonomies/gdpr.ex` — `GA.Compliance.Taxonomies.GDPR` implementing taxonomy behaviour with processing/subject_request/consent/transfer categories
+- [x] 2.5 Create `lib/app/compliance/taxonomies/iso_27001.ex` — `GA.Compliance.Taxonomies.ISO27001` implementing taxonomy behaviour with access_control/asset_management/incident_management/change_management categories
+
+## 3. Database Schema
+
+- [x] 3.1 Create migration for `account_compliance_frameworks` table — `account_id`, `framework`, `action_validation_mode` (default `"flexible"`), `enabled_at`, unique index on `[account_id, framework]`
+- [x] 3.2 Create `lib/app/compliance/account_framework.ex` — Ecto schema for `account_compliance_frameworks` with changeset validation
+exec
+/bin/zsh -lc 'git log --oneline --decorate -n 30' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+(eval):5: parse error near `end'
+e244df8 (HEAD -> main) feat(regulatory-event-taxonomies): implement changes
+f559bcc %!(EXTRA string=extensible-event-schema)
+2bf4f59 fix(extensible-event-schema): address review findings
+c4622c5 fix(compliance-framework-profiles): address review findings
+249e2c2 fix(audit-endpoints): address review findings
+cc24c67 chore(audit-endpoints): code review findings
+74e3e90 feat(audit-endpoints): implement changes
+c595b52 chore(openspec): import tasks for audit-endpoints
+37b7c3d %!(EXTRA string=chain-verification)
+5a9ca56 chore(chain-verification): code review findings
+9b502d4 feat(chain-verification): implement changes
+0c29eaa chore(openspec): import tasks for chain-verification
+1bec85f %!(EXTRA string=audit-context)
+bbe614e fix(audit-context): address review findings
+dd03282 chore(openspec): import tasks for audit-context
+fbdfb98 fix(account-hmac-keys): address review findings
+44ce468 feat(account-hmac-keys): implement changes
+d55871f %!(EXTRA string=hmac-chain)
+9573e36 chore(hmac-chain): code review findings
+codex
+I found the implementation commit on `main` (`e244df8 feat(regulatory-event-taxonomies): implement changes`), so I’m using that commit diff as the review scope since there’s no separate feature branch. Next I’ll run a full code/security/test review over those files and then triage into `td`.
+exec
+/bin/zsh -lc 'git show --stat --name-only --pretty=fuller e244df8' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "git show --name-only --pretty=format: e244df8 | sed '/"'^$/d'"'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 53ms:
+(eval):5: parse error near `end'
+commit e244df8b174e096e9a519a1b37c35bb867a76ae4
+Author:     Thomas Brewer <thomas.brewer@hatchcare.com>
+AuthorDate: Thu Mar 5 21:41:38 2026 -0500
+Commit:     Thomas Brewer <thomas.brewer@hatchcare.com>
+CommitDate: Thu Mar 5 21:41:38 2026 -0500
+
+    feat(regulatory-event-taxonomies): implement changes
+
+.autopilot-logs/extensible-event-schema/phase-5-commit.log
+.autopilot-logs/pipeline.log
+.autopilot-logs/preflight.log
+.autopilot-logs/regulatory-event-taxonomies/phase-1-commit.log
+.autopilot-logs/regulatory-event-taxonomies/phase-1-prepare-for-takeoff.log
+.autopilot-logs/regulatory-event-taxonomies/phase-2-commit.log
+.autopilot-logs/regulatory-event-taxonomies/phase-2-takeoff.log
+app/lib/app/compliance/taxonomy.ex
+openspec/changes/regulatory-event-taxonomies/tasks.md
+ succeeded in 53ms:
+(eval):5: parse error near `end'
+.autopilot-logs/extensible-event-schema/phase-5-commit.log
+.autopilot-logs/pipeline.log
+.autopilot-logs/preflight.log
+.autopilot-logs/regulatory-event-taxonomies/phase-1-commit.log
+.autopilot-logs/regulatory-event-taxonomies/phase-1-prepare-for-takeoff.log
+.autopilot-logs/regulatory-event-taxonomies/phase-2-commit.log
+.autopilot-logs/regulatory-event-taxonomies/phase-2-takeoff.log
+app/lib/app/compliance/taxonomy.ex
+openspec/changes/regulatory-event-taxonomies/tasks.md
+exec
+/bin/zsh -lc "sed -n '1,260p' app/lib/app/compliance/taxonomy.ex" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'git show -- app/lib/app/compliance/taxonomy.ex' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'git show -- openspec/changes/regulatory-event-taxonomies/tasks.md' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+(eval):5: parse error near `end'
+defmodule GA.Compliance.Taxonomy do
+  @moduledoc """
+  Behaviour for framework event taxonomies used by compliance action mapping.
+  """
+
+  @typedoc """
+  Nested taxonomy tree where leaf nodes are action string lists.
+  """
+  @type taxonomy_tree :: %{optional(String.t()) => taxonomy_tree() | [String.t()]}
+
+  @callback framework() :: String.t()
+  @callback taxonomy_version() :: String.t()
+  @callback taxonomy() :: taxonomy_tree()
+  @callback actions() :: [String.t()]
+end
+ succeeded in 53ms:
+(eval):5: parse error near `end'
+commit e244df8b174e096e9a519a1b37c35bb867a76ae4
+Author: Thomas Brewer <thomas.brewer@hatchcare.com>
+Date:   Thu Mar 5 21:41:38 2026 -0500
+
+    feat(regulatory-event-taxonomies): implement changes
+
+diff --git a/app/lib/app/compliance/taxonomy.ex b/app/lib/app/compliance/taxonomy.ex
+new file mode 100644
+index 0000000..5478234
+--- /dev/null
++++ b/app/lib/app/compliance/taxonomy.ex
+@@ -0,0 +1,15 @@
++defmodule GA.Compliance.Taxonomy do
++  @moduledoc """
++  Behaviour for framework event taxonomies used by compliance action mapping.
++  """
++
++  @typedoc """
++  Nested taxonomy tree where leaf nodes are action string lists.
+ succeeded in 53ms:
+(eval):5: parse error near `end'
+commit e244df8b174e096e9a519a1b37c35bb867a76ae4
+Author: Thomas Brewer <thomas.brewer@hatchcare.com>
+Date:   Thu Mar 5 21:41:38 2026 -0500
+
+    feat(regulatory-event-taxonomies): implement changes
+
+diff --git a/openspec/changes/regulatory-event-taxonomies/tasks.md b/openspec/changes/regulatory-event-taxonomies/tasks.md
+index 355a8e0..2a66cb5 100644
+--- a/openspec/changes/regulatory-event-taxonomies/tasks.md
++++ b/openspec/changes/regulatory-event-taxonomies/tasks.md
+@@ -1,84 +1,84 @@
+ ## 1. Taxonomy Behaviour and Registry
+ 
+-- [ ] 1.1 Create `lib/app/compliance/taxonomy.ex` with `GA.Compliance.Taxonomy` behaviour — define callbacks `framework/0`, `taxonomy_version/0`, `taxonomy/0`, `actions/0`
+-- [ ] 1.2 Implement `GA.Compliance.Taxonomy.get/1` — registry lookup from framework string to module
+-- [ ] 1.3 Implement `GA.Compliance.Taxonomy.list_frameworks/0` — returns sorted list of registered framework identifiers
+-- [ ] 1.4 Implement `GA.Compliance.Taxonomy.resolve_path/2` — resolve dot-separated path (with wildcard support) to list of actions
++- [x] 1.1 Create `lib/app/compliance/taxonomy.ex` with `GA.Compliance.Taxonomy` behaviour — define callbacks `framework/0`, `taxonomy_version/0`, `taxonomy/0`, `actions/0`
++- [x] 1.2 Implement `GA.Compliance.Taxonomy.get/1` — registry lookup from framework string to module
+exec
+/bin/zsh -lc 'rg --files app/lib/app/compliance' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "rg --files app/lib/app_web/schemas | rg 'taxonomy|action_mapping'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "rg --files app/priv/repo/migrations | rg 'account_compliance_frameworks|account_action_mappings|compliance_framework'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "rg --files app/lib/app_web/controllers | rg 'taxonomy|action_mapping|audit_log'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+(eval):5: parse error near `end'
+app/lib/app/compliance/frameworks/hipaa.ex
+app/lib/app/compliance/frameworks/soc2.ex
+app/lib/app/compliance/frameworks/pci_dss.ex
+app/lib/app/compliance/frameworks/iso27001.ex
+app/lib/app/compliance/frameworks/gdpr.ex
+app/lib/app/compliance/taxonomy.ex
+app/lib/app/compliance/extension_schema.ex
+app/lib/app/compliance/framework.ex
+app/lib/app/compliance/account_compliance_framework.ex
+ succeeded in 51ms:
+(eval):5: parse error near `end'
+app/lib/app_web/controllers/api/v1/audit_log_json.ex
+app/lib/app_web/controllers/api/v1/audit_log_controller.ex
+ exited 1 in 52ms:
+(eval):5: parse error near `end'
+ succeeded in 52ms:
+(eval):5: parse error near `end'
+app/priv/repo/migrations/20260305140000_create_account_compliance_frameworks.exs
+codex
+I’ve confirmed a major mismatch already: the commit marks all tasks complete, but only `taxonomy.ex` was added and the expected taxonomy/action-mapping files are mostly absent. I’m now doing a line-by-line pass over related compliance/audit modules to produce precise, defensible findings before I create `td` issues.
+exec
+/bin/zsh -lc "sed -n '1,260p' app/lib/app/compliance/extension_schema.ex" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "sed -n '1,260p' app/lib/app/compliance/framework.ex" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "sed -n '1,260p' app/lib/app/compliance/account_compliance_framework.ex" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "sed -n '1,260p' app/lib/app/compliance/frameworks/soc2.ex" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "sed -n '1,260p' app/lib/app/compliance/frameworks/hipaa.ex" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+(eval):5: parse error near `end'
+defmodule GA.Compliance.Framework do
+  @moduledoc """
+  Behaviour contract for built-in and custom compliance framework profiles.
+  """
+
+  @callback name() :: String.t()
+  @callback required_fields() :: [atom()]
+  @callback recommended_fields() :: [atom()]
+  @callback default_retention_days() :: pos_integer()
+  @callback verification_cadence_hours() :: pos_integer()
+  @callback extension_schema() :: map()
+  @callback event_taxonomy() :: [String.t()]
+end
+ succeeded in 52ms:
+(eval):5: parse error near `end'
+defmodule GA.Compliance.AccountComplianceFramework do
+  @moduledoc """
+  Account-level framework activation record with per-framework overrides.
+  """
+
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  @primary_key {:id, :binary_id, autogenerate: true}
+  @foreign_key_type :binary_id
+
+  @allowed_override_keys ~w(retention_days verification_cadence_hours additional_required_fields)
+
+  schema "account_compliance_frameworks" do
+    belongs_to(:account, GA.Accounts.Account)
+    field(:framework_id, :string)
+    field(:activated_at, :utc_datetime_usec)
+    field(:config_overrides, :map, default: %{})
+
+ succeeded in 52ms:
+(eval):5: parse error near `end'
+defmodule GA.Compliance.ExtensionSchema do
+  @moduledoc """
+  Validates framework-namespaced audit extensions.
+  """
+
+  import Ecto.Changeset, only: [add_error: 3, change: 2]
+
+  alias GA.Audit.Log
+  alias GA.Compliance
+
+  @type_errors %{
+    string: "string",
+    boolean: "boolean",
+    integer: "integer",
+    float: "float",
+    number: "number",
+    map: "object",
+    array: "array"
+  }
+ succeeded in 52ms:
+(eval):5: parse error near `end'
+defmodule GA.Compliance.Frameworks.HIPAA do
+  @moduledoc false
+  @behaviour GA.Compliance.Framework
+
+  @required_fields [
+    :actor_id,
+    :action,
+    :resource_type,
+    :resource_id,
+    :timestamp,
+    :outcome
+  ]
+
+  @extension_schema %{
+    required: %{
+      "phi_accessed" => :boolean,
+      "user_role" => :string
+    },
+    optional: %{
+ succeeded in 52ms:
+(eval):5: parse error near `end'
+defmodule GA.Compliance.Frameworks.SOC2 do
+  @moduledoc false
+  @behaviour GA.Compliance.Framework
+
+  @required_fields [
+    :actor_id,
+    :action,
+    :resource_type,
+    :resource_id,
+    :timestamp,
+    :outcome
+  ]
+
+  @impl true
+  def name, do: "SOC 2 Type II"
+
+  @impl true
+  def required_fields, do: @required_fields
+
+exec
+/bin/zsh -lc "sed -n '1,320p' app/lib/app/audit.ex" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "sed -n '1,260p' app/lib/app/audit/log.ex" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "sed -n '1,280p' app/lib/app_web/controllers/api/v1/audit_log_controller.ex" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+(eval):5: parse error near `end'
+defmodule GA.Audit do
+  @moduledoc """
+  Business logic for account-scoped append-only audit logs and checkpoints.
+  """
+
+  import Ecto.Changeset, only: [put_change: 3]
+  import Ecto.Query, warn: false
+
+  alias GA.Accounts
+  alias GA.Audit.{Chain, Checkpoint, Log, Verifier}
+  alias GA.Compliance
+  alias GA.Compliance.ExtensionSchema
+  alias GA.Repo
+
+  @default_limit 50
+  @max_limit 1000
+  @reserved_chain_keys [:account_id, :sequence_number, :checksum, :previous_checksum]
+
+  @doc """
+ succeeded in 53ms:
+(eval):5: parse error near `end'
+defmodule GA.Audit.Log do
+  @moduledoc """
+  Ecto schema for append-only audit log entries.
+  """
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  @primary_key {:id, :binary_id, autogenerate: true}
+  @foreign_key_type :binary_id
+
+  @valid_actions ~w(create read update delete export login logout)
+  @valid_outcomes ~w(success failure)
+
+  schema "audit_logs" do
+    belongs_to(:account, GA.Accounts.Account)
+
+    field(:sequence_number, :integer)
+    field(:checksum, :string)
+    field(:previous_checksum, :string)
+ succeeded in 53ms:
+(eval):5: parse error near `end'
+defmodule GAWeb.Api.V1.AuditLogController do
+  @moduledoc """
+  Account-scoped audit log endpoints.
+  """
+  use GAWeb, :controller
+  use OpenApiSpex.ControllerSpecs
+
+  alias GA.Audit
+  alias GAWeb.Api.V1.AuditLogJSON
+
+  alias GAWeb.Schemas.{
+    AuditLogListResponse,
+    AuditLogRequest,
+    AuditLogResponse,
+    ErrorResponse
+  }
+
+  action_fallback GAWeb.FallbackController
+
+exec
+/bin/zsh -lc "sed -n '320,520p' app/lib/app/audit.ex" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+(eval):5: parse error near `end'
+    end
+  end
+
+  defp normalize_attrs(attrs) when is_map(attrs), do: attrs
+  defp normalize_attrs(attrs) when is_list(attrs), do: Map.new(attrs)
+
+  defp drop_reserved_chain_keys(attrs) do
+    Enum.reduce(@reserved_chain_keys, attrs, fn key, acc ->
+      acc
+      |> Map.delete(key)
+      |> Map.delete(Atom.to_string(key))
+    end)
+  end
+
+  defp unwrap_tx_result({:ok, result}), do: {:ok, result}
+  defp unwrap_tx_result({:error, reason}), do: {:error, reason}
+
+  defp normalize_extensions_filter(%{} = extensions), do: extensions
+  defp normalize_extensions_filter(_), do: nil
+exec
+/bin/zsh -lc "sed -n '1,340p' app/lib/app/compliance.ex" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+(eval):5: parse error near `end'
+defmodule GA.Compliance do
+  @moduledoc """
+  Context for account-scoped compliance framework profiles.
+  """
+
+  import Ecto.Query, warn: false
+
+  alias GA.Compliance.AccountComplianceFramework
+  alias GA.Repo
+
+  @registry %{
+    "hipaa" => GA.Compliance.Frameworks.HIPAA,
+    "soc2" => GA.Compliance.Frameworks.SOC2,
+    "pci_dss" => GA.Compliance.Frameworks.PCIDSS,
+    "gdpr" => GA.Compliance.Frameworks.GDPR,
+    "iso27001" => GA.Compliance.Frameworks.ISO27001
+  }
+
+  @doc """
+exec
+/bin/zsh -lc "sed -n '1,220p' app/lib/app/compliance/frameworks/pci_dss.ex" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "sed -n '1,220p' app/lib/app/compliance/frameworks/iso27001.ex" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "sed -n '1,220p' app/lib/app/compliance/frameworks/gdpr.ex" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+(eval):5: parse error near `end'
+defmodule GA.Compliance.Frameworks.PCIDSS do
+  @moduledoc false
+  @behaviour GA.Compliance.Framework
+
+  @required_fields [
+    :actor_id,
+    :action,
+    :resource_type,
+    :resource_id,
+    :timestamp,
+    :outcome
+  ]
+
+  @impl true
+  def name, do: "PCI-DSS v4"
+
+  @impl true
+  def required_fields, do: @required_fields
+
+ succeeded in 52ms:
+(eval):5: parse error near `end'
+defmodule GA.Compliance.Frameworks.ISO27001 do
+  @moduledoc false
+  @behaviour GA.Compliance.Framework
+
+  @required_fields [
+    :actor_id,
+    :action,
+    :resource_type,
+    :resource_id,
+    :timestamp,
+    :outcome
+  ]
+
+  @impl true
+  def name, do: "ISO 27001"
+
+  @impl true
+  def required_fields, do: @required_fields
+
+ succeeded in 52ms:
+(eval):5: parse error near `end'
+defmodule GA.Compliance.Frameworks.GDPR do
+  @moduledoc false
+  @behaviour GA.Compliance.Framework
+
+  @required_fields [:actor_id, :action, :resource_type, :resource_id, :timestamp, :outcome]
+
+  @impl true
+  def name, do: "GDPR"
+
+  @impl true
+  def required_fields, do: @required_fields
+
+  @impl true
+  def recommended_fields, do: [:source_ip, :session_id, :user_agent]
+
+  @impl true
+  def default_retention_days, do: 1825
+
+  @impl true
+exec
+/bin/zsh -lc 'rg -n "taxonomy|action_mapping|category" app/test' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "rg --files app/test | rg 'compliance|audit'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'rg -n "action-mappings|taxonomies|category" app/lib/app_web/router.ex app/lib/app_web/controllers/api/v1/audit_log_controller.ex' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 50ms:
+(eval):5: parse error near `end'
+app/test/app_web/controllers/audit_log_controller_test.exs
+app/test/app/compliance_test.exs
+app/test/app/compliance/extension_schema_test.exs
+app/test/app/audit/schema_migration_test.exs
+app/test/app/audit/chain_test.exs
+app/test/app/audit/checkpoint_test.exs
+app/test/app/audit/verifier_test.exs
+app/test/app/audit/log_test.exs
+app/test/app/audit/context_test.exs
+app/test/app/audit/checkpoint_worker_test.exs
+ exited 1 in 50ms:
+(eval):5: parse error near `end'
+ exited 1 in 53ms:
+(eval):5: parse error near `end'
+codex
+I’ve now confirmed there are no taxonomy/action-mapping routes, schemas, or tests in the current codebase. Next I’m resolving the `td` epic for this change and creating one review-finding issue per concrete gap with file/line evidence.
+exec
+/bin/zsh -lc 'td --version' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+(eval):5: parse error near `end'
+td version 0.37.0
+exec
+/bin/zsh -lc 'td list --type epic' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 53ms:
+(eval):5: parse error near `end'
+td-372f04  [P2]  Regulatory Event Taxonomies  epic  [open]
+exec
+/bin/zsh -lc 'td show td-372f04' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 53ms:
+(eval):5: parse error near `end'
+td-372f04: Regulatory Event Taxonomies
+Status: [open]
+Type: epic | Priority: P2
+Labels: regulatory-event-taxonomies
+
+Description:
+Adds per-framework regulatory event taxonomies so accounts can map custom actions, optionally enforce strict validation, and query audit logs by taxonomy categories instead of only freeform action names.
+
+Artifacts:
+- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md
+- Design: openspec/changes/regulatory-event-taxonomies/design.md
+- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md
+- Specs: openspec/changes/regulatory-event-taxonomies/specs/
+
+
+STORIES:
+  ├── task td-ec4315: Implement taxonomy registry lookup (get/1) [in_progress] ●
+  ├── task td-24859a: Implement taxonomy path resolver (resolve_path/2) [in_progress] ●
+  ├── task td-6b057a: Implement taxonomy framework listing (list_frameworks/0) [in_progress] ●
+exec
+/bin/zsh -lc 'td list --help' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+(eval):5: parse error near `end'
+List issues matching given filters
+
+Usage:
+  td list [filters] [flags]
+
+Aliases:
+  list, ls
+
+Flags:
+  -a, --all                  Include closed and deferred issues
+      --closed string        Closed date filter
+      --created string       Created date filter
+      --deferred             Show only currently deferred tasks
+      --due-soon             Show tasks due within 3 days
+      --epic string          Filter by epic (shows all tasks within epic)
+  -f, --filter string        TDQ query expression (e.g., 'status=open AND type=bug')
+      --format string        Output format (short, long, json)
+  -h, --help                 help for list
+  -i, --id stringArray       Filter by issue IDs
+exec
+/bin/zsh -lc 'td list --epic td-372f04 --status in_progress --json' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 53ms:
+Total output lines: 1053
+
+(eval):5: parse error near `end'
+[
+  {
+    "id": "td-ec4315",
+    "title": "Implement taxonomy registry lookup (get/1)",
+    "description": "Source task: 1.2 Implement GA.Compliance.Taxonomy.get/1 — registry lookup from framework string to module\n\nSection: 1. Taxonomy Behaviour and Registry\n\nArtifacts:\n- Tasks: openspec/changes/regulatory-event-taxonomies/tasks.md\n- Proposal: openspec/changes/regulatory-event-taxonomies/proposal.md\n- Design: openspec/changes/regulatory-event-taxonomies/design.md\n- Spec: openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md",
+    "status": "in_progress",
+    "type": "task",
+    "priority": "P2",
+    "points": 0,
+    "labels": [
+      "backend"
+    ],
+    "parent_id": "td-372f04",
+    "implementer_session": "ses_0de317",
+    "creator_session": "ses_0de317",
+    "reviewer_session": "",
+    "created_at": "2026-03-05T21:28:50.780042-05:00",
+exec
+/bin/zsh -lc "td list --epic td-372f04 --status in_progress --json -n 200 | jq -r '.[].id'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 53ms:
+(eval):5: parse error near `end'
+td-ec4315
+td-24859a
+td-6b057a
+td-bad096
+td-4ce32f
+td-e25bea
+td-0057a2
+td-ddc195
+td-eb1a29
+td-a0219d
+td-ae223e
+td-d0f7f6
+td-5d8730
+td-47c49b
+td-457864
+td-d70ed8
+td-8fe4ad
+td-67a63f
+td-4edc22
+codex
+I resolved epic `td-372f04` and identified 54 child issues still in `in_progress`. I’m now bulk-transitioning those to `in_review` as required before filing new review-finding issues.
+exec
+/bin/zsh -lc 'td update td-ec4315 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-24859a --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-6b057a --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-bad096 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-4ce32f --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-e25bea --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-0057a2 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-ddc195 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-eb1a29 --status in_review' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 130ms:
+UPDATED td-24859a
+ succeeded in 91ms:
+(eval):5: parse error near `end'
+UPDATED td-bad096
+ succeeded in 99ms:
+UPDATED td-e25bea
+ succeeded in 174ms:
+UPDATED td-ec4315
+ succeeded in 182ms:
+UPDATED td-6b057a
+ succeeded in 205ms:
+UPDATED td-0057a2
+ succeeded in 262ms:
+UPDATED td-ddc195
+ succeeded in 313ms:
+UPDATED td-eb1a29
+ succeeded in 418ms:
+UPDATED td-4ce32f
+exec
+/bin/zsh -lc 'td update td-a0219d --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-ae223e --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-d70ed8 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-5d8730 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-d0f7f6 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-47c49b --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-67a63f --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-457864 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-8fe4ad --status in_review' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 107ms:
+(eval):5: parse error near `end'
+UPDATED td-a0219d
+ succeeded in 65ms:
+(eval):5: parse error near `end'
+UPDATED td-8fe4ad
+ succeeded in 86ms:
+(eval):5: parse error near `end'
+UPDATED td-5d8730
+ succeeded in 104ms:
+UPDATED td-d70ed8
+ succeeded in 137ms:
+UPDATED td-47c49b
+ succeeded in 163ms:
+UPDATED td-67a63f
+ succeeded in 216ms:
+UPDATED td-d0f7f6
+ succeeded in 284ms:
+(eval):5: parse error near `end'
+UPDATED td-ae223e
+ succeeded in 318ms:
+UPDATED td-457864
+codex
+Status transition is proceeding cleanly; I’ve moved the first two batches to `in_review`. Continuing through the remaining backlog now, then I’ll create new `review-finding` issues for concrete gaps.
+exec
+/bin/zsh -lc 'td update td-4edc22 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-b05c26 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-53f7cc --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-d58caa --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-f7e37c --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-a258a0 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-e0c65e --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-535802 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-cfd396 --status in_review' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 75ms:
+(eval):5: parse error near `end'
+UPDATED td-4edc22
+ succeeded in 95ms:
+(eval):5: parse error near `end'
+UPDATED td-b05c26
+ succeeded in 77ms:
+(eval):5: parse error near `end'
+UPDATED td-53f7cc
+ succeeded in 98ms:
+UPDATED td-cfd396
+ succeeded in 156ms:
+UPDATED td-535802
+ succeeded in 208ms:
+UPDATED td-d58caa
+ succeeded in 303ms:
+UPDATED td-a258a0
+ succeeded in 362ms:
+UPDATED td-f7e37c
+ succeeded in 468ms:
+UPDATED td-e0c65e
+exec
+/bin/zsh -lc 'td update td-5ca94c --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-7ede6f --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-205a42 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-28a1fb --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-d8490b --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-b3b8cf --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-22b6ac --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-608d90 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-8827f0 --status in_review' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 83ms:
+(eval):5: parse error near `end'
+UPDATED td-5ca94c
+ succeeded in 98ms:
+(eval):5: parse error near `end'
+UPDATED td-7ede6f
+ succeeded in 74ms:
+(eval):5: parse error near `end'
+UPDATED td-205a42
+ succeeded in 73ms:
+(eval):5: parse error near `end'
+UPDATED td-8827f0
+ succeeded in 124ms:
+UPDATED td-d8490b
+ succeeded in 154ms:
+UPDATED td-22b6ac
+ succeeded in 200ms:
+UPDATED td-608d90
+ succeeded in 311ms:
+UPDATED td-28a1fb
+ succeeded in 413ms:
+UPDATED td-b3b8cf
+exec
+/bin/zsh -lc 'td update td-6f3c86 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-61b460 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-2006fe --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-05c367 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-aea0cb --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-ea4b4e --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-49feea --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-5c9c28 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-3d8cd6 --status in_review' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 86ms:
+(eval):5: parse error near `end'
+UPDATED td-5c9c28
+ succeeded in 99ms:
+UPDATED td-ea4b4e
+ succeeded in 142ms:
+UPDATED td-05c367
+ succeeded in 160ms:
+UPDATED td-49feea
+ succeeded in 210ms:
+UPDATED td-3d8cd6
+ succeeded in 269ms:
+UPDATED td-2006fe
+ succeeded in 320ms:
+UPDATED td-aea0cb
+ succeeded in 378ms:
+(eval):5: parse error near `end'
+UPDATED td-61b460
+ succeeded in 432ms:
+(eval):5: parse error near `end'
+UPDATED td-6f3c86
+codex
+Transitioning the final batch now. After this I’ll verify zero `in_progress` issues remain under the epic, then file the new review findings.
+exec
+/bin/zsh -lc 'td update td-f7b4a2 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-75aa70 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-a025c0 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-4a6bbb --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-46af9c --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-ccadd3 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-b4a403 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-129466 --status in_review' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'td update td-e57dc8 --status in_review' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 83ms:
+(eval):5: parse error near `end'
+UPDATED td-f7b4a2
+ succeeded in 72ms:
+(eval):5: parse error near `end'
+UPDATED td-4a6bbb
+ succeeded in 63ms:
+(eval):5: parse error near `end'
+UPDATED td-46af9c
+ succeeded in 92ms:
+(eval):5: parse error near `end'
+UPDATED td-a025c0
+ succeeded in 101ms:
+UPDATED td-e57dc8
+ succeeded in 136ms:
+(eval):5: parse error near `end'
+UPDATED td-75aa70
+ succeeded in 160ms:
+UPDATED td-b4a403
+ succeeded in 208ms:
+UPDATED td-ccadd3
+ succeeded in 253ms:
+UPDATED td-129466
+exec
+/bin/zsh -lc "td list --epic td-372f04 --status in_progress --json -n 200 | jq 'length'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 53ms:
+(eval):5: parse error near `end'
+0
+exec
+/bin/zsh -lc "nl -ba app/lib/app_web/controllers/api/v1/audit_log_controller.ex | sed -n '1,260p'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "nl -ba app/lib/app/audit.ex | sed -n '1,360p'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "nl -ba app/lib/app/compliance/taxonomy.ex | sed -n '1,220p'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "nl -ba app/lib/app/compliance.ex | sed -n '1,320p'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "nl -ba app/lib/app/audit/log.ex | sed -n '1,220p'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 53ms:
+(eval):5: parse error near `end'
+     1	defmodule GA.Compliance.Taxonomy do
+     2	  @moduledoc """
+     3	  Behaviour for framework event taxonomies used by compliance action mapping.
+     4	  """
+     5	
+     6	  @typedoc """
+     7	  Nested taxonomy tree where leaf nodes are action string lists.
+     8	  """
+     9	  @type taxonomy_tree :: %{optional(String.t()) => taxonomy_tree() | [String.t()]}
+    10	
+    11	  @callback framework() :: String.t()
+    12	  @callback taxonomy_version() :: String.t()
+    13	  @callback taxonomy() :: taxonomy_tree()
+    14	  @callback actions() :: [String.t()]
+    15	end
+ succeeded in 53ms:
+(eval):5: parse error near `end'
+     1	defmodule GA.Audit do
+     2	  @moduledoc """
+     3	  Business logic for account-scoped append-only audit logs and checkpoints.
+     4	  """
+     5	
+     6	  import Ecto.Changeset, only: [put_change: 3]
+     7	  import Ecto.Query, warn: false
+     8	
+     9	  alias GA.Accounts
+    10	  alias GA.Audit.{Chain, Checkpoint, Log, Verifier}
+    11	  alias GA.Compliance
+    12	  alias GA.Compliance.ExtensionSchema
+    13	  alias GA.Repo
+    14	
+    15	  @default_limit 50
+    16	  @max_limit 1000
+    17	  @reserved_chain_keys [:account_id, :sequence_number, :checksum, :previous_checksum]
+    18	
+    19	  @doc """
+ succeeded in 53ms:
+(eval):5: parse error near `end'
+     1	defmodule GAWeb.Api.V1.AuditLogController do
+     2	  @moduledoc """
+     3	  Account-scoped audit log endpoints.
+     4	  """
+     5	  use GAWeb, :controller
+     6	  use OpenApiSpex.ControllerSpecs
+     7	
+     8	  alias GA.Audit
+     9	  alias GAWeb.Api.V1.AuditLogJSON
+    10	
+    11	  alias GAWeb.Schemas.{
+    12	    AuditLogListResponse,
+    13	    AuditLogRequest,
+    14	    AuditLogResponse,
+    15	    ErrorResponse
+    16	  }
+    17	
+    18	  action_fallback GAWeb.FallbackController
+    19	
+ succeeded in 53ms:
+(eval):5: parse error near `end'
+     1	defmodule GA.Audit.Log do
+     2	  @moduledoc """
+     3	  Ecto schema for append-only audit log entries.
+     4	  """
+     5	  use Ecto.Schema
+     6	  import Ecto.Changeset
+     7	
+     8	  @primary_key {:id, :binary_id, autogenerate: true}
+     9	  @foreign_key_type :binary_id
+    10	
+    11	  @valid_actions ~w(create read update delete export login logout)
+    12	  @valid_outcomes ~w(success failure)
+    13	
+    14	  schema "audit_logs" do
+    15	    belongs_to(:account, GA.Accounts.Account)
+    16	
+    17	    field(:sequence_number, :integer)
+    18	    field(:checksum, :string)
+    19	    field(:previous_checksum, :string)
+ succeeded in 53ms:
+(eval):5: parse error near `end'
+     1	defmodule GA.Compliance do
+     2	  @moduledoc """
+     3	  Context for account-scoped compliance framework profiles.
+     4	  """
+     5	
+     6	  import Ecto.Query, warn: false
+     7	
+     8	  alias GA.Compliance.AccountComplianceFramework
+     9	  alias GA.Repo
+    10	
+    11	  @registry %{
+    12	    "hipaa" => GA.Compliance.Frameworks.HIPAA,
+    13	    "soc2" => GA.Compliance.Frameworks.SOC2,
+    14	    "pci_dss" => GA.Compliance.Frameworks.PCIDSS,
+    15	    "gdpr" => GA.Compliance.Frameworks.GDPR,
+    16	    "iso27001" => GA.Compliance.Frameworks.ISO27001
+    17	  }
+    18	
+    19	  @doc """
+exec
+/bin/zsh -lc "nl -ba app/lib/app_web/router.ex | sed -n '1,320p'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 53ms:
+(eval):5: parse error near `end'
+     1	defmodule GAWeb.Router do
+     2	  use GAWeb, :router
+     3	
+     4	  import GAWeb.UserAuth
+     5	
+     6	  pipeline :browser do
+     7	    plug :accepts, ["html"]
+     8	    plug :fetch_session
+     9	    plug :fetch_live_flash
+    10	    plug :put_root_layout, html: {GAWeb.Layouts, :root}
+    11	    plug :protect_from_forgery
+    12	    plug :put_secure_browser_headers
+    13	    plug :fetch_current_scope_for_user
+    14	  end
+    15	
+    16	  # Base API pipeline - no auth, just JSON + OpenAPI spec injection
+    17	  pipeline :api do
+    18	    plug :accepts, ["json"]
+    19	    plug CORSPlug
+exec
+/bin/zsh -lc "nl -ba app/priv/repo/migrations/20260305140000_create_account_compliance_frameworks.exs | sed -n '1,260p'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+(eval):5: parse error near `end'
+     1	defmodule GA.Repo.Migrations.CreateAccountComplianceFrameworks do
+     2	  use Ecto.Migration
+     3	
+     4	  def change do
+     5	    create table(:account_compliance_frameworks, primary_key: false) do
+     6	      add(:id, :binary_id, primary_key: true)
+     7	
+     8	      add(:account_id, references(:accounts, type: :binary_id, on_delete: :delete_all),
+     9	        null: false
+    10	      )
+    11	
+    12	      add(:framework_id, :string, null: false)
+    13	
+    14	      add(:activated_at, :utc_datetime_usec,
+    15	        null: false,
+    16	        default: fragment("(now() at time zone 'utc')")
+    17	      )
+    18	
+    19	      add(:config_overrides, :map, null: false, default: %{})
+codex
+I’m now consolidating findings into severity tiers with exact code references. After that, I’ll create one `td` `review-finding` issue per finding and attach them to `td-372f04`.
+exec
+/bin/zsh -lc "nl -ba app/test/app/compliance_test.exs | sed -n '1,340p'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "nl -ba app/test/app/audit/context_test.exs | sed -n '1,360p'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "nl -ba app/test/app_web/controllers/audit_log_controller_test.exs | sed -n '1,360p'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 51ms:
+(eval):5: parse error near `end'
+     1	defmodule GA.ComplianceTest do
+     2	  use GA.DataCase, async: true
+     3	
+     4	  alias GA.Accounts
+     5	  alias GA.Compliance
+     6	
+     7	  describe "framework registry" do
+     8	    test "returns built-in framework mappings" do
+     9	      registry = Compliance.registry()
+    10	
+    11	      assert registry["hipaa"] == GA.Compliance.Frameworks.HIPAA
+    12	      assert registry["soc2"] == GA.Compliance.Frameworks.SOC2
+    13	      assert registry["pci_dss"] == GA.Compliance.Frameworks.PCIDSS
+    14	      assert registry["gdpr"] == GA.Compliance.Frameworks.GDPR
+    15	      assert registry["iso27001"] == GA.Compliance.Frameworks.ISO27001
+    16	    end
+    17	
+    18	    test "get_framework/1 resolves known and unknown IDs" do
+    19	      assert {:ok, GA.Compliance.Frameworks.SOC2} = Compliance.get_framework("soc2")
+ succeeded in 51ms:
+(eval):5: parse error near `end'
+     1	defmodule GA.Audit.ContextTest do
+     2	  use GA.DataCase, async: false
+     3	
+     4	  import Ecto.Query
+     5	
+     6	  alias GA.Accounts
+     7	  alias GA.Audit
+     8	  alias GA.Audit.{Chain, Checkpoint, Log}
+     9	  alias GA.Compliance
+    10	  alias GA.Repo
+    11	
+    12	  describe "create_log_entry/2" do
+    13	    test "creates genesis entry with sequence 1 and nil previous_checksum" do
+    14	      account = account_fixture()
+    15	
+    16	      assert {:ok, log} = Audit.create_log_entry(account.id, valid_attrs())
+    17	      assert log.account_id == account.id
+    18	      assert log.sequence_number == 1
+    19	      assert is_nil(log.previous_checksum)
+ succeeded in 53ms:
+(eval):5: parse error near `end'
+     1	defmodule GAWeb.Api.V1.AuditLogControllerTest do
+     2	  use GAWeb.ConnCase, async: false
+     3	
+     4	  import GA.AccountsFixtures
+     5	
+     6	  alias GA.Accounts
+     7	  alias GA.Audit
+     8	  alias GA.Compliance
+     9	
+    10	  describe "POST /api/v1/audit-logs" do
+    11	    test "returns 201 for valid payload with private key", %{conn: conn} do
+    12	      %{account: account, private_token: private_token} = account_api_context()
+    13	
+    14	      assert {:ok, _association} = Compliance.activate_framework(account.id, "hipaa")
+    15	
+    16	      payload =
+    17	        valid_audit_payload(%{
+    18	          "resource_id" => "patient-123",
+    19	          "extensions" => %{"hipaa" => %{"phi_accessed" => true, "user_role" => "admin"}}
+exec
+/bin/zsh -lc 'cd app && mix test test/app/compliance_test.exs test/app/audit/context_test.exs test/app_web/controllers/audit_log_controller_test.exs' in /Users/tbrewer/projects/goodway/goodaudit exited 1 in 282ms:
+Error! Failed to load module 'elixir' because it requires a more recent Erlang/OTP version or its .beam file was corrupted.
+(You are running Erlang/OTP 27.)
+
+Runtime terminating during boot ({undef,[{init,start_it,1,[]},{init,start_em,1,[]},{init,do_boot,3,[]}]})
+
+Crash dump is being written to: erl_crash.dump...done
+exec
+/bin/zsh -lc "nl -ba openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md | sed -n '1,320p'" in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc "nl -ba openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md | sed -n '1,260p'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+(eval):5: parse error near `end'
+     1	## ADDED Requirements
+     2	
+     3	### Requirement: Taxonomy behaviour contract
+     4	
+     5	A `GA.Compliance.Taxonomy` behaviour MUST define callbacks that all framework taxonomy modules implement: `framework/0` returning the framework identifier string, `taxonomy_version/0` returning a semantic version string, `taxonomy/0` returning the full taxonomy tree as `%{category => %{subcategory => [action_name]}}`, and `actions/0` returning a flat list of all action names in the taxonomy.
+     6	
+     7	#### Scenario: Behaviour enforcement
+     8	- **WHEN** a new taxonomy module is created without implementing all callbacks
+     9	- **THEN** a compilation warning is raised for each missing callback
+    10	
+    11	#### Scenario: Taxonomy structure
+    12	- **WHEN** `taxonomy/0` is called on any framework module
+    13	- **THEN** it returns a map where keys are category strings, values are maps of subcategory strings to lists of action name strings
+    14	
+    15	### Requirement: HIPAA taxonomy
+    16	
+    17	`GA.Compliance.Taxonomies.HIPAA` MUST implement the `GA.Compliance.Taxonomy` behaviour with framework `"hipaa"` and define the following taxonomy tree:
+    18	
+    19	- `"access"` -> `"phi"` -> `["phi_read", "phi_write", "phi_delete"]`; `"system"` -> `["login", "logout", "session_timeout"]`
+ succeeded in 52ms:
+(eval):5: parse error near `end'
+     1	## ADDED Requirements
+     2	
+     3	### Requirement: Action mapping schema
+     4	
+     5	The `account_action_mappings` table MUST have columns: `id` (binary_id, primary key), `account_id` (binary_id, references accounts, not null), `custom_action` (string, not null), `framework` (string, not null), `taxonomy_path` (string, not null, dot-separated like `"access.phi.phi_read"`), `taxonomy_version` (string, not null), `created_at` (utc_datetime_usec, not null). A unique index MUST exist on `[account_id, custom_action, framework]`.
+     6	
+     7	#### Scenario: Schema structure
+     8	- **WHEN** the migration runs
+     9	- **THEN** the `account_action_mappings` table is created with all specified columns and the unique index
+    10	
+    11	#### Scenario: Duplicate mapping prevention
+    12	- **WHEN** a mapping is inserted for `(account_id, "patient_chart_viewed", "hipaa")` and another insert is attempted for the same triple
+    13	- **THEN** the second insert fails with a unique constraint violation
+    14	
+    15	### Requirement: Account compliance frameworks join table
+    16	
+    17	The `account_compliance_frameworks` table MUST have columns: `id` (binary_id, primary key), `account_id` (binary_id, references accounts, not null), `framework` (string, not null), `action_validation_mode` (string, not null, default `"flexible"`), `enabled_at` (utc_datetime_usec, not null). A unique index MUST exist on `[account_id, framework]`. Valid values for `action_validation_mode` are `"flexible"` and `"strict"`.
+    18	
+    19	#### Scenario: Default validation mode
+exec
+/bin/zsh -lc "nl -ba openspec/changes/regulatory-event-taxonomies/specs/taxonomy-aware-querying/spec.md | sed -n '1,320p'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 53ms:
+(eval):5: parse error near `end'
+     1	## ADDED Requirements
+     2	
+     3	### Requirement: Category filter on list_logs
+     4	
+     5	`list_logs(account_id, opts)` MUST accept a `category` filter option. The category filter value is a string in the format `"framework:pattern"` where `framework` is a registered framework identifier and `pattern` is a dot-separated taxonomy path that may end with `"*"` for wildcard matching. Examples: `"hipaa:access.*"`, `"hipaa:access.phi.*"`, `"hipaa:access.phi.phi_read"`, `"soc2:change.*"`.
+     6	
+     7	#### Scenario: Category filter with category wildcard
+     8	- **WHEN** `list_logs(account_id, category: "hipaa:access.*")` is called
+     9	- **THEN** the query resolves `"access.*"` against the HIPAA taxonomy to find all access actions, also finds custom actions mapped to any HIPAA access path for this account, and returns entries where `action` is in the combined set
+    10	
+    11	#### Scenario: Category filter with subcategory wildcard
+    12	- **WHEN** `list_logs(account_id, category: "hipaa:access.phi.*")` is called
+    13	- **THEN** only entries whose `action` matches PHI-specific access actions (`"phi_read"`, `"phi_write"`, `"phi_delete"`) or custom actions mapped to `"access.phi.*"` paths are returned
+    14	
+    15	#### Scenario: Category filter with exact path
+    16	- **WHEN** `list_logs(account_id, category: "hipaa:access.phi.phi_read")` is called
+    17	- **THEN** only entries whose `action` is `"phi_read"` or custom actions mapped to `"access.phi.phi_read"` are returned
+    18	
+    19	#### Scenario: Category filter combined with other filters
+exec
+/bin/zsh -lc "nl -ba app/lib/app/compliance/account_compliance_framework.ex | sed -n '1,260p'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 53ms:
+(eval):5: parse error near `end'
+     1	defmodule GA.Compliance.AccountComplianceFramework do
+     2	  @moduledoc """
+     3	  Account-level framework activation record with per-framework overrides.
+     4	  """
+     5	
+     6	  use Ecto.Schema
+     7	  import Ecto.Changeset
+     8	
+     9	  @primary_key {:id, :binary_id, autogenerate: true}
+    10	  @foreign_key_type :binary_id
+    11	
+    12	  @allowed_override_keys ~w(retention_days verification_cadence_hours additional_required_fields)
+    13	
+    14	  schema "account_compliance_frameworks" do
+    15	    belongs_to(:account, GA.Accounts.Account)
+    16	    field(:framework_id, :string)
+    17	    field(:activated_at, :utc_datetime_usec)
+    18	    field(:config_overrides, :map, default: %{})
+    19	
+exec
+/bin/zsh -lc "rg -n \"GA\\.Compliance\\.Taxonomy|ActionMapping|category\" app/test/app app/test/app_web/controllers" in /Users/tbrewer/projects/goodway/goodaudit exited 1 in 53ms:
+(eval):5: parse error near `end'
+exec
+/bin/zsh -lc 'td create --help' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 53ms:
+(eval):5: parse error near `end'
+Create a new issue with optional flags for type, priority, labels, and more.
+
+Usage:
+  td create [title] [flags]
+
+Aliases:
+  create, add, new
+
+Flags:
+      --acceptance string    Acceptance criteria
+      --blocks string        Issues this blocks
+      --body string          Alias for --description
+      --defer string         Defer until date (e.g., +7d, monday, 2026-03-01)
+      --depends-on string    Issues this depends on
+      --desc string          Alias for --description
+  -d, --description string   Description text
+      --due string           Due date (e.g., friday, +2w, 2026-03-15)
+      --epic string          Parent issue ID (alias for --parent)
+  -h, --help                 help for create
+codex
+I’ve finished the analysis pass and I’m creating the triage issues now. I’m keeping them one finding per issue with `review-finding` labels, priority, evidence, and acceptance criteria.
+exec
+/bin/zsh -lc 'td create "Implement taxonomy registry APIs in GA.Compliance.Taxonomy" -t bug -p P1 --epic td-372f04 -l "review-finding,code-quality" -d $'"'Missing get/1, list_frameworks/0, and resolve_path/2 in taxonomy module.\\nEvidence:\\n- app/lib/app/compliance/taxonomy.ex:11 shows only callback declarations.\\n- openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md:103 requires get/1 and list_frameworks/0.\\n- openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md:119 requires resolve_path/2 wildcard resolution.\\nImpact: taxonomy lookup and wildcard category resolution are not executable.\\nFound by: Code Quality, Security, Test Coverage, Fresh Eyes (manual fallback).' --acceptance "'$'"'1) Add get/1, list_frameworks/0, and resolve_path/2 to GA.Compliance.Taxonomy.\\n2) get/1 returns {:ok, module} for known frameworks and {:error, :unknown_framework} otherwise.\\n3) resolve_path/2 supports exact paths and wildcards and returns {:error, :invalid_path} for unknown paths.\\n4) Add tests for known/unknown lookup and path resolution cases.'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 140ms:
+CREATED td-b023d5
+exec
+/bin/zsh -lc 'td create "Add framework taxonomy modules implementing GA.Compliance.Taxonomy" -t bug -p P1 --epic td-372f04 -l "review-finding,code-quality" -d $'"'Required taxonomy modules are missing or incompatible with the new behavior contract.\\nEvidence:\\n- app/lib/app/compliance/frameworks/hipaa.ex:3 implements GA.Compliance.Framework, not GA.Compliance.Taxonomy.\\n- app/lib/app/compliance/frameworks/hipaa.ex:48 exposes flat event_taxonomy/0 instead of taxonomy/0 tree + taxonomy_version/0.\\n- openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md:17 defines required GA.Compliance.Taxonomies.* modules and structures.\\nImpact: framework taxonomies cannot serve category/subcategory/action traversal required by mapping and querying.\\nFound by: Code Quality, Test Coverage, Fresh Eyes (manual fallback).' --acceptance "'$'"'1) Add GA.Compliance.Taxonomies.HIPAA/SOC2/PCIDSS/GDPR/ISO27001 modules.\\n2) Each module implements framework/0, taxonomy_version/0, taxonomy/0, and actions/0 per behavior.\\n3) taxonomy/0 returns category->subcategory->actions map shape from the spec.\\n4) Add tests covering taxonomy shape, flattened actions, and version format.'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 77ms:
+(eval):5: parse error near `end'
+CREATED td-1ad243
+exec
+/bin/zsh -lc 'td create "Create account_action_mappings schema and ActionMapping context" -t bug -p P1 --epic td-372f04 -l "review-finding,code-quality" -d $'"'Action mapping persistence and context APIs are not present.\\nEvidence:\\n- app/priv/repo/migrations contains create_account_compliance_frameworks only; no migration for account_action_mappings.\\n- app/lib/app/compliance/action_mapping.ex is missing.\\n- openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md:3 requires account_action_mappings schema and CRUD/resolve APIs.\\nImpact: custom action mapping, strict-mode allowlists, and taxonomy-aware querying cannot work.\\nFound by: Code Quality, Security, Test Coverage, Fresh Eyes (manual fallback).' --acceptance "'$'"'1) Add migration creating account_action_mappings with required columns and unique index.\\n2) Add ActionMapping Ecto schema with framework and taxonomy_path validation.\\n3) Implement create_mapping/list_mappings/update_mapping/delete_mapping/resolve_actions/validate_actions APIs in GA.Compliance.ActionMapping.\\n4) Add tests for CRUD, account isolation, duplicate prevention, and resolution behavior.'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 78ms:
+(eval):5: parse error near `end'
+CREATED td-4d64e7
+exec
+/bin/zsh -lc 'td create "Implement strict/flexible action validation in log ingestion" -t bug -p P1 --epic td-372f04 -l "review-finding,security" -d $'"'Strict/flexible framework action validation is not implemented; action validation remains static and global.\\nEvidence:\\n- app/lib/app/audit/log.ex:11 hardcodes @valid_actions list.\\n- app/lib/app/audit/log.ex:75 still enforces validate_inclusion(:action, @valid_actions).\\n- app/lib/app/audit.ex:22-75 inserts entries without strict-mode taxonomy/mapping validation step.\\n- openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md:107 requires strict-mode behavior by framework.\\nImpact: framework-specific strict-mode controls are impossible and custom mapped actions are rejected.\\nFound by: Security, Code Quality, Test Coverage, Fresh Eyes (manual fallback).' --acceptance "'$'"'1) Add strict-mode validation helper in GA.Compliance for account/framework action checks.\\n2) Integrate strict-mode check in GA.Audit.create_log_entry/2 before insert.\\n3) Relax GA.Audit.Log static action inclusion when taxonomy validation is active.\\n4) Add tests for strict canonical action, strict mapped action, unknown strict action, and flexible mode pass-through.'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 71ms:
+(eval):5: parse error near `end'
+CREATED td-ba323f
+exec
+/bin/zsh -lc 'td create "Implement taxonomy category filtering in GA.Audit and API" -t bug -p P1 --epic td-372f04 -l "review-finding,code-quality" -d $'"'Category filtering by taxonomy pattern is missing from both domain query code and HTTP parameter handling.\\nEvidence:\\n- app/lib/app/audit.ex:83 list_logs/2 always returns tuple and has no category error path.\\n- app/lib/app/audit.ex:250 apply_filters/2 does not read :category.\\n- app/lib/app_web/controllers/api/v1/audit_log_controller.ex:49 operation params exclude category.\\n- app/lib/app_web/controllers/api/v1/audit_log_controller.ex:112 build_list_opts/1 does not parse category.\\n- openspec/changes/regulatory-event-taxonomies/specs/taxonomy-aware-querying/spec.md:3 and :71 require category support and validation errors.\\nImpact: required taxonomy-aware querying capability is absent.\\nFound by: Code Quality, Test Coverage, Fresh Eyes (manual fallback).' --acceptance "'$'"'1) Parse framework:pattern category values in list_logs and controller.\\n2) Resolve category to canonical + mapped actions via taxonomy + ActionMapping data.\\n3) Return {:error, :unknown_framework|:invalid_category_path|:invalid_category_format} for invalid category inputs.\\n4) Wire API responses to return HTTP 422 for invalid category values and add pagination tests.'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 75ms:
+(eval):5: parse error near `end'
+CREATED td-61f88d
+exec
+/bin/zsh -lc 'td create "Add taxonomy and action-mapping API surface" -t bug -p P2 --epic td-372f04 -l "review-finding,api" -d $'"'Required taxonomy and action-mapping endpoints/controllers/schemas are not present.\\nEvidence:\\n- app/lib/app_web/router.ex:87-103 defines audit/checkpoint/verify routes only (no /taxonomies or /action-mappings).\\n- app/lib/app_web/controllers/api/v1 contains audit/checkpoint/verification controllers only; taxonomy/action-mapping controllers are missing.\\n- app/lib/app_web/schemas has no taxonomy/action_mapping response/request schemas.\\n- openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md:151 and specs/action-mapping/spec.md:143 require these endpoints.\\nImpact: external API contract for taxonomy discovery and mapping CRUD is unavailable.\\nFound by: Code Quality, Test Coverage, Fresh Eyes (manual fallback).' --acceptance "'$'"'1) Add TaxonomyController and TaxonomyJSON with index/show endpoints.\\n2) Add ActionMappingController and ActionMappingJSON with CRUD + validate endpoints.\\n3) Add router entries for /api/v1/taxonomies and /api/v1/action-mappings paths with correct auth scopes.\\n4) Add/extend OpenAPI schemas and operation annotations; add controller tests for auth + happy/validation paths.'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 69ms:
+(eval):5: parse error near `end'
+CREATED td-d0d68a
+exec
+/bin/zsh -lc 'td create "Align account_compliance_frameworks with validation-mode contract" -t task -p P2 --epic td-372f04 -l "review-finding,code-quality" -d $'"'The account framework schema uses legacy fields and lacks action_validation_mode semantics required by this change.\\nEvidence:\\n- app/priv/repo/migrations/20260305140000_create_account_compliance_frameworks.exs:12-20 defines framework_id/activated_at/config_overrides only.\\n- app/lib/app/compliance/account_compliance_framework.ex:16-18 uses framework_id/activated_at/config_overrides fields.\\n- openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md:15 requires framework/action_validation_mode/enabled_at with strict|flexible validation mode.\\nImpact: strict-mode policy cannot be configured per framework as specified.\\nFound by: Code Quality, Security, Fresh Eyes (manual fallback).' --acceptance "'$'"'1) Add/adjust persistence layer to include framework, action_validation_mode, and enabled_at semantics.\\n2) Enforce allowed values for action_validation_mode (strict, flexible) with default flexible.\\n3) Keep migration/backfill path safe for existing data.\\n4) Update Compliance context APIs and tests to use the new fields consistently.'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 73ms:
+(eval):5: parse error near `end'
+CREATED td-3a74b5
+exec
+/bin/zsh -lc 'td create "Add test coverage for taxonomy and mapping requirements" -t task -p P2 --epic td-372f04 -l "review-finding,testing" -d $'"'Automated tests for the new taxonomy/mapping/category capabilities are missing.\\nEvidence:\\n- app/test/app/compliance_test.exs:7-159 tests legacy GA.Compliance.Framework profiles, not GA.Compliance.Taxonomy modules.\\n- app/test/app/audit/context_test.exs:195-313 covers extension validation, not strict-mode action mapping rules.\\n- app/test/app_web/controllers/audit_log_controller_test.exs:87-219 exercises current filters but no category query parameter handling.\\n- openspec/changes/regulatory-event-taxonomies/tasks.md:10.* marks these test tasks complete despite absent coverage.\\nImpact: regressions in taxonomy/mapping behavior will go undetected.\\nFound by: Test Coverage, Code Quality, Fresh Eyes (manual fallback).' --acceptance "'$'"'1) Add unit tests for taxonomy modules, registry lookup, and path resolution.\\n2) Add context tests for action mapping CRUD/resolve/validate_actions and strict-mode enforcement.\\n3) Add API tests for taxonomies and action-mappings endpoints plus audit category filter validation.\\n4) Ensure failing cases from specs are asserted (unknown framework, invalid path/format, account isolation).'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 158ms:
+CREATED td-1e6d98
+exec
+/bin/zsh -lc 'td create "Reconcile tasks.md completion with actual implementation state" -t chore -p P3 --epic td-372f04 -l "review-finding,documentation" -d $'"'The change checklist is marked complete while most deliverables are not present in code.\\nEvidence:\\n- openspec/changes/regulatory-event-taxonomies/tasks.md:1-84 marks all sections 1-10 as [x].\\n- commit e244df8 only introduces app/lib/app/compliance/taxonomy.ex and checklist toggles, with no matching API/migration/controller/test additions for most tasks.\\nImpact: handoff and release readiness signals are unreliable, increasing landing risk.\\nFound by: Fresh Eyes, Code Quality (manual fallback).' --acceptance "'$'"'1) Audit each checklist item against repository state and set accurate completion status.\\n2) Link each completed checkbox to concrete implementing commits/files.\\n3) Leave incomplete tasks unchecked and/or reference follow-up td issues.\\n4) Add a lightweight verification step before marking future tasks complete.'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 67ms:
+(eval):5: parse error near `end'
+CREATED td-3e8fe7
+exec
+/bin/zsh -lc "td list --epic td-372f04 --labels review-finding --json -n 200 | jq -r '.[] | \"\\(.id)\\t\\(.priority)\\t\\(.type)\\t\\(.title)\"'" in /Users/tbrewer/projects/goodway/goodaudit succeeded in 53ms:
+(eval):5: parse error near `end'
+td-b023d5	P1	bug	Implement taxonomy registry APIs in GA.Compliance.Taxonomy
+td-1ad243	P1	bug	Add framework taxonomy modules implementing GA.Compliance.Taxonomy
+td-4d64e7	P1	bug	Create account_action_mappings schema and ActionMapping context
+td-ba323f	P1	bug	Implement strict/flexible action validation in log ingestion
+td-61f88d	P1	bug	Implement taxonomy category filtering in GA.Audit and API
+td-d0d68a	P2	bug	Add taxonomy and action-mapping API surface
+td-3a74b5	P2	task	Align account_compliance_frameworks with validation-mode contract
+td-1e6d98	P2	task	Add test coverage for taxonomy and mapping requirements
+td-3e8fe7	P3	chore	Reconcile tasks.md completion with actual implementation state
+codex
+Completed `/pre-landing-check` for `openspec/changes/regulatory-event-taxonomies` using best-judgment fallback (no specialist subagent tool available here), and triaged findings into `td`.
+
+**Review Summary**
+Files reviewed from implementation scope: commit `e244df8` + linked change artifacts.  
+Specialist passes (manual fallback): code quality, security, test coverage, fresh-eyes.
+
+**CRITICAL (must fix)**
+1. Taxonomy runtime APIs are missing (`get/1`, `list_frameworks/0`, `resolve_path/2`).  
+   Evidence: [app/lib/app/compliance/taxonomy.ex:11](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/compliance/taxonomy.ex:11), [openspec/.../event-taxonomy-registry/spec.md:103](/Users/tbrewer/projects/goodway/goodaudit/openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md:103)
+2. Framework taxonomy modules required by spec are not implemented with `GA.Compliance.Taxonomy`.  
+   Evidence: [app/lib/app/compliance/frameworks/hipaa.ex:3](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/compliance/frameworks/hipaa.ex:3), [openspec/.../event-taxonomy-registry/spec.md:17](/Users/tbrewer/projects/goodway/goodaudit/openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md:17)
+3. `account_action_mappings` migration/schema/context APIs are missing.  
+   Evidence: [openspec/.../action-mapping/spec.md:3](/Users/tbrewer/projects/goodway/goodaudit/openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md:3), missing `app/lib/app/compliance/action_mapping.ex`
+4. Strict/flexible action validation is not integrated; action validation is still hardcoded.  
+   Evidence: [app/lib/app/audit/log.ex:11](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/audit/log.ex:11), [app/lib/app/audit/log.ex:75](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/audit/log.ex:75), [app/lib/app/audit.ex:22](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/audit.ex:22)
+5. Category filter support is absent in domain and API layers.  
+   Evidence: [app/lib/app/audit.ex:250](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/audit.ex:250), [app/lib/app_web/controllers/api/v1/audit_log_controller.ex:49](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app_web/controllers/api/v1/audit_log_controller.ex:49), [app/lib/app_web/controllers/api/v1/audit_log_controller.ex:112](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app_web/controllers/api/v1/audit_log_controller.ex:112)
+
+**WARNINGS (should fix)**
+6. Taxonomy/action-mapping API routes/controllers/schemas are missing.  
+   Evidence: [app/lib/app_web/router.ex:87](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app_web/router.ex:87)
+7. `account_compliance_frameworks` schema is misaligned with spec validation-mode contract.  
+   Evidence: [app/lib/app/compliance/account_compliance_framework.ex:16](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/compliance/account_compliance_framework.ex:16), [app/priv/repo/migrations/20260305140000_create_account_compliance_frameworks.exs:12](/Users/tbrewer/projects/goodway/goodaudit/app/priv/repo/migrations/20260305140000_create_account_compliance_frameworks.exs:12), [openspec/.../action-mapping/spec.md:15](/Users/tbrewer/projects/goodway/goodaudit/openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md:15)
+8. Test coverage for new taxonomy/mapping/category requirements is missing.  
+   Evidence: [app/test/app/compliance_test.exs:7](/Users/tbrewer/projects/goodway/goodaudit/app/test/app/compliance_test.exs:7), [app/test/app/audit/context_test.exs:195](/Users/tbrewer/projects/goodway/goodaudit/app/test/app/audit/context_test.exs:195), [app/test/app_web/controllers/audit_log_controller_test.exs:87](/Users/tbrewer/projects/goodway/goodaudit/app/test/app_web/controllers/audit_log_controller_test.exs:87)
+
+**SUGGESTION (consider)**
+9. Checklist status drift: tasks marked complete while implementation is largely absent.  
+   Evidence: [openspec/changes/regulatory-event-taxonomies/tasks.md:1](/Users/tbrewer/projects/goodway/goodaudit/openspec/changes/regulatory-event-taxonomies/tasks.md:1)
+
+**Triage Actions Completed**
+- Transitioned all epic child issues from `in_progress` to `in_review` under `td-372f04` (54 issues).
+- Created 9 `review-finding` issues under the epic:
+
+1. `td-b023d5` P1 bug - Implement taxonomy registry APIs in GA.Compliance.Taxonomy  
+2. `td-1ad243` P1 bug - Add framework taxonomy modules implementing GA.Compliance.Taxonomy  
+3. `td-4d64e7` P1 bug - Create account_action_mappings schema and ActionMapping context  
+4. `td-ba323f` P1 bug - Implement strict/flexible action validation in log ingestion  
+5. `td-61f88d` P1 bug - Implement taxonomy category filtering in GA.Audit and API  
+6. `td-d0d68a` P2 bug - Add taxonomy and action-mapping API surface  
+7. `td-3a74b5` P2 task - Align account_compliance_frameworks with validation-mode contract  
+8. `td-1e6d98` P2 task - Add test coverage for taxonomy and mapping requirements  
+9. `td-3e8fe7` P3 chore - Reconcile tasks.md completion with actual implementation state  
+
+Could not run test suite in this environment: `mix test` fails immediately due Erlang/Elixir runtime mismatch (`OTP 27` too old for installed Elixir build).
+tokens used
+98,026
+Completed `/pre-landing-check` for `openspec/changes/regulatory-event-taxonomies` using best-judgment fallback (no specialist subagent tool available here), and triaged findings into `td`.
+
+**Review Summary**
+Files reviewed from implementation scope: commit `e244df8` + linked change artifacts.  
+Specialist passes (manual fallback): code quality, security, test coverage, fresh-eyes.
+
+**CRITICAL (must fix)**
+1. Taxonomy runtime APIs are missing (`get/1`, `list_frameworks/0`, `resolve_path/2`).  
+   Evidence: [app/lib/app/compliance/taxonomy.ex:11](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/compliance/taxonomy.ex:11), [openspec/.../event-taxonomy-registry/spec.md:103](/Users/tbrewer/projects/goodway/goodaudit/openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md:103)
+2. Framework taxonomy modules required by spec are not implemented with `GA.Compliance.Taxonomy`.  
+   Evidence: [app/lib/app/compliance/frameworks/hipaa.ex:3](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/compliance/frameworks/hipaa.ex:3), [openspec/.../event-taxonomy-registry/spec.md:17](/Users/tbrewer/projects/goodway/goodaudit/openspec/changes/regulatory-event-taxonomies/specs/event-taxonomy-registry/spec.md:17)
+3. `account_action_mappings` migration/schema/context APIs are missing.  
+   Evidence: [openspec/.../action-mapping/spec.md:3](/Users/tbrewer/projects/goodway/goodaudit/openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md:3), missing `app/lib/app/compliance/action_mapping.ex`
+4. Strict/flexible action validation is not integrated; action validation is still hardcoded.  
+   Evidence: [app/lib/app/audit/log.ex:11](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/audit/log.ex:11), [app/lib/app/audit/log.ex:75](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/audit/log.ex:75), [app/lib/app/audit.ex:22](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/audit.ex:22)
+5. Category filter support is absent in domain and API layers.  
+   Evidence: [app/lib/app/audit.ex:250](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/audit.ex:250), [app/lib/app_web/controllers/api/v1/audit_log_controller.ex:49](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app_web/controllers/api/v1/audit_log_controller.ex:49), [app/lib/app_web/controllers/api/v1/audit_log_controller.ex:112](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app_web/controllers/api/v1/audit_log_controller.ex:112)
+
+**WARNINGS (should fix)**
+6. Taxonomy/action-mapping API routes/controllers/schemas are missing.  
+   Evidence: [app/lib/app_web/router.ex:87](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app_web/router.ex:87)
+7. `account_compliance_frameworks` schema is misaligned with spec validation-mode contract.  
+   Evidence: [app/lib/app/compliance/account_compliance_framework.ex:16](/Users/tbrewer/projects/goodway/goodaudit/app/lib/app/compliance/account_compliance_framework.ex:16), [app/priv/repo/migrations/20260305140000_create_account_compliance_frameworks.exs:12](/Users/tbrewer/projects/goodway/goodaudit/app/priv/repo/migrations/20260305140000_create_account_compliance_frameworks.exs:12), [openspec/.../action-mapping/spec.md:15](/Users/tbrewer/projects/goodway/goodaudit/openspec/changes/regulatory-event-taxonomies/specs/action-mapping/spec.md:15)
+8. Test coverage for new taxonomy/mapping/category requirements is missing.  
+   Evidence: [app/test/app/compliance_test.exs:7](/Users/tbrewer/projects/goodway/goodaudit/app/test/app/compliance_test.exs:7), [app/test/app/audit/context_test.exs:195](/Users/tbrewer/projects/goodway/goodaudit/app/test/app/audit/context_test.exs:195), [app/test/app_web/controllers/audit_log_controller_test.exs:87](/Users/tbrewer/projects/goodway/goodaudit/app/test/app_web/controllers/audit_log_controller_test.exs:87)
+
+**SUGGESTION (consider)**
+9. Checklist status drift: tasks marked complete while implementation is largely absent.  
+   Evidence: [openspec/changes/regulatory-event-taxonomies/tasks.md:1](/Users/tbrewer/projects/goodway/goodaudit/openspec/changes/regulatory-event-taxonomies/tasks.md:1)
+
+**Triage Actions Completed**
+- Transitioned all epic child issues from `in_progress` to `in_review` under `td-372f04` (54 issues).
+- Created 9 `review-finding` issues under the epic:
+
+1. `td-b023d5` P1 bug - Implement taxonomy registry APIs in GA.Compliance.Taxonomy  
+2. `td-1ad243` P1 bug - Add framework taxonomy modules implementing GA.Compliance.Taxonomy  
+3. `td-4d64e7` P1 bug - Create account_action_mappings schema and ActionMapping context  
+4. `td-ba323f` P1 bug - Implement strict/flexible action validation in log ingestion  
+5. `td-61f88d` P1 bug - Implement taxonomy category filtering in GA.Audit and API  
+6. `td-d0d68a` P2 bug - Add taxonomy and action-mapping API surface  
+7. `td-3a74b5` P2 task - Align account_compliance_frameworks with validation-mode contract  
+8. `td-1e6d98` P2 task - Add test coverage for taxonomy and mapping requirements  
+9. `td-3e8fe7` P3 chore - Reconcile tasks.md completion with actual implementation state  
+
+Could not run test suite in this environment: `mix test` fails immediately due Erlang/Elixir runtime mismatch (`OTP 27` too old for installed Elixir build).

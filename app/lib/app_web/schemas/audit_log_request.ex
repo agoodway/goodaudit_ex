@@ -10,10 +10,7 @@ defmodule GAWeb.Schemas.AuditLogRequest do
     type: :object,
     properties: %{
       actor_id: %Schema{type: :string},
-      action: %Schema{
-        type: :string,
-        enum: GA.Audit.Log.valid_actions()
-      },
+      action: %Schema{type: :string},
       resource_type: %Schema{type: :string},
       resource_id: %Schema{type: :string},
       timestamp: %Schema{type: :string, format: :"date-time", nullable: true},

@@ -6,6 +6,7 @@ defmodule GA.Audit.ContextTest do
   alias GA.Accounts
   alias GA.Audit
   alias GA.Audit.{Chain, Checkpoint, Log}
+  alias GA.Compliance.ActionMapping
   alias GA.Compliance
   alias GA.Repo
 
@@ -312,6 +313,96 @@ defmodule GA.Audit.ContextTest do
     end
   end
 
+  describe "strict-mode validation" do
+    test "accepts canonical taxonomy action for strict framework" do
+      account = account_fixture()
+      assert {:ok, _} = Compliance.activate_framework(account.id, "hipaa", action_validation_mode: "strict")
+
+      assert {:ok, log} =
+               Audit.create_log_entry(
+                 account.id,
+                 valid_attrs(%{
+                   action: "phi_read",
+                   extensions: hipaa_extensions()
+                 })
+               )
+
+      assert log.action == "phi_read"
+    end
+
+    test "accepts mapped action for strict framework" do
+      account = account_fixture()
+      assert {:ok, _} = Compliance.activate_framework(account.id, "hipaa", action_validation_mode: "strict")
+
+      assert {:ok, _mapping} =
+               ActionMapping.create_mapping(account.id, %{
+                 custom_action: "patient_chart_viewed",
+                 framework: "hipaa",
+                 taxonomy_path: "access.phi.phi_read"
+               })
+
+      assert {:ok, log} =
+               Audit.create_log_entry(
+                 account.id,
+                 valid_attrs(%{
+                   action: "patient_chart_viewed",
+                   extensions: hipaa_extensions()
+                 })
+               )
+
+      assert log.action == "patient_chart_viewed"
+    end
+
+    test "rejects unknown action for strict framework" do
+      account = account_fixture()
+      assert {:ok, _} = Compliance.activate_framework(account.id, "hipaa", action_validation_mode: "strict")
+
+      assert {:error, changeset} =
+               Audit.create_log_entry(
+                 account.id,
+                 valid_attrs(%{
+                   action: "random_action",
+                   extensions: hipaa_extensions()
+                 })
+               )
+
+      assert "is not recognized by strict-mode frameworks: hipaa" in errors_on(changeset).action
+    end
+
+    test "allows unknown action in flexible mode" do
+      account = account_fixture()
+      assert {:ok, _} = Compliance.activate_framework(account.id, "hipaa", action_validation_mode: "flexible")
+
+      assert {:ok, log} =
+               Audit.create_log_entry(
+                 account.id,
+                 valid_attrs(%{
+                   action: "random_action",
+                   extensions: hipaa_extensions()
+                 })
+               )
+
+      assert log.action == "random_action"
+    end
+
+    test "only strict frameworks enforce action recognition in mixed mode" do
+      account = account_fixture()
+      assert {:ok, _} = Compliance.activate_framework(account.id, "hipaa", action_validation_mode: "strict")
+      assert {:ok, _} = Compliance.activate_framework(account.id, "soc2", action_validation_mode: "flexible")
+
+      assert {:ok, log} =
+               Audit.create_log_entry(
+                 account.id,
+                 valid_attrs(%{
+                   action: "phi_write",
+                   extensions: hipaa_extensions()
+                 })
+               )
+
+      assert log.action == "phi_write"
+    end
+  end
+
   describe "list_logs/2" do
     test "enforces account isolation" do
       account_a = account_fixture()
@@ -467,6 +558,67 @@ defmodule GA.Audit.ContextTest do
         )
 
       assert Enum.map(filtered_entries, & &1.id) == [target.id]
+    end
+
+    test "filters by taxonomy category including mapped actions" do
+      account = account_fixture()
+
+      assert {:ok, _} =
+               ActionMapping.create_mapping(account.id, %{
+                 custom_action: "patient_chart_viewed",
+                 framework: "hipaa",
+                 taxonomy_path: "access.phi.phi_read"
+               })
+
+      assert {:ok, canonical} =
+               Audit.create_log_entry(account.id, valid_attrs(%{action: "phi_read", resource_id: "canonical"}))
+
+      assert {:ok, mapped} =
+               Audit.create_log_entry(
+                 account.id,
+                 valid_attrs(%{action: "patient_chart_viewed", resource_id: "mapped"})
+               )
+
+      assert {:ok, _other} =
+               Audit.create_log_entry(account.id, valid_attrs(%{action: "treatment", resource_id: "other"}))
+
+      {entries, next_cursor} = Audit.list_logs(account.id, category: "hipaa:access.phi.*")
+
+      assert next_cursor == nil
+      assert Enum.map(entries, & &1.id) == [canonical.id, mapped.id]
+    end
+
+    test "returns validation errors for invalid category filter values" do
+      account = account_fixture()
+
+      assert {:error, :invalid_category_format} = Audit.list_logs(account.id, category: "access.*")
+      assert {:error, :unknown_framework} = Audit.list_logs(account.id, category: "unknown:access.*")
+      assert {:error, :invalid_category_path} = Audit.list_logs(account.id, category: "hipaa:nonexistent.*")
+    end
+
+    test "supports cursor pagination with category filter" do
+      account = account_fixture()
+
+      for index <- 1..5 do
+        assert {:ok, _} =
+                 Audit.create_log_entry(
+                   account.id,
+                   valid_attrs(%{
+                     action: "phi_read",
+                     resource_id: "category-#{index}"
+                   })
+                 )
+      end
+
+      {page_1, cursor_1} = Audit.list_logs(account.id, category: "hipaa:access.*", limit: 2)
+      assert Enum.map(page_1, & &1.sequence_number) == [1, 2]
+      assert cursor_1 == 2
+
+      {page_2, cursor_2} =
+        Audit.list_logs(account.id, category: "hipaa:access.*", after_sequence: cursor_1, limit: 2)
+
+      assert Enum.map(page_2, & &1.sequence_number) == [3, 4]
+      assert cursor_2 == 4
     end
   end
 

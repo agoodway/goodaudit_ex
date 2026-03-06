@@ -69,10 +69,17 @@ defmodule GAWeb.Api.V1.AuditLogController do
         in: :query,
         schema: %OpenApiSpex.Schema{type: :string, format: :"date-time"},
         required: false
+      ],
+      category: [
+        in: :query,
+        schema: %OpenApiSpex.Schema{type: :string},
+        required: false,
+        description: "Taxonomy category filter in framework:pattern format (e.g. hipaa:access.*)"
       ]
     ],
     responses: [
       ok: {"Audit log list", "application/json", AuditLogListResponse},
+      unprocessable_entity: {"Invalid category filter", "application/json", ErrorResponse},
       unauthorized: {"Unauthorized", "application/json", ErrorResponse}
     ]
   )
@@ -80,11 +87,24 @@ defmodule GAWeb.Api.V1.AuditLogController do
   def index(conn, params) do
     account_id = conn.assigns.current_account.id
     opts = build_list_opts(params)
-    {logs, next_cursor} = Audit.list_logs(account_id, opts)
 
-    conn
-    |> put_view(json: AuditLogJSON)
-    |> render(:index, logs: logs, next_cursor: next_cursor)
+    case Audit.list_logs(account_id, opts) do
+      {logs, next_cursor} ->
+        conn
+        |> put_view(json: AuditLogJSON)
+        |> render(:index, logs: logs, next_cursor: next_cursor)
+
+      {:error, :invalid_category_format} ->
+        invalid_category_response(conn, "Invalid category format. Expected 'framework:pattern'")
+
+      {:error, :unknown_framework} ->
+        category = present_string(params["category"]) || ""
+        [framework | _rest] = String.split(category, ":", parts: 2)
+        invalid_category_response(conn, "Unknown framework: #{framework}")
+
+      {:error, :invalid_category_path} ->
+        invalid_category_response(conn, "Invalid category path for framework taxonomy")
+    end
   end
 
   operation(:show,
@@ -120,7 +140,8 @@ defmodule GAWeb.Api.V1.AuditLogController do
       {:outcome, present_string(params["outcome"])},
       {:extensions, parse_extensions(params["extensions"])},
       {:from, parse_datetime(params["from"])},
-      {:to, parse_datetime(params["to"])}
+      {:to, parse_datetime(params["to"])},
+      {:category, present_string(params["category"])}
     ]
     |> Enum.reject(fn {_key, value} -> is_nil(value) end)
   end
@@ -166,4 +187,10 @@ defmodule GAWeb.Api.V1.AuditLogController do
   end
 
   defp present_string(_), do: nil
+
+  defp invalid_category_response(conn, message) do
+    conn
+    |> put_status(:unprocessable_entity)
+    |> json(%{status: 422, message: message})
+  end
 end

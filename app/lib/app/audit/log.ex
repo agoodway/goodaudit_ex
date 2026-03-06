@@ -72,10 +72,9 @@ defmodule GA.Audit.Log do
       :timestamp,
       :outcome
     ])
-    |> validate_inclusion(:action, @valid_actions)
+    |> validate_length(:action, min: 1)
     |> validate_inclusion(:outcome, @valid_outcomes)
     |> validate_failure_reason()
-    |> check_constraint(:action, name: :audit_logs_action_valid_check)
     |> check_constraint(:outcome, name: :audit_logs_outcome_valid_check)
   end
 

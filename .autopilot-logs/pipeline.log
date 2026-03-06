@@ -1245,3 +1245,39 @@
 2026/03/05 21:40:58.904602 exec: codex exec --model gpt-5.3-codex --full-auto
 2026/03/05 21:40:58.904606 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/regulatory-event-taxonomies/phase-2-commit.log
 2026/03/05 21:40:58.905997 exec: process started pid=90418
+2026/03/05 21:41:48.803334 exec: process pid=90418 exited successfully
+2026/03/05 21:41:48.803435 [regulatory-event-taxonomies] phase 2: commit completed in 50s
+2026/03/05 21:41:48.803465 [regulatory-event-taxonomies] phase 2 completed in 3m 25s
+2026/03/05 21:41:48.803480 [regulatory-event-taxonomies] phase 3 (pre-landing-check) starting
+2026/03/05 21:41:48.803511 [regulatory-event-taxonomies] phase 3: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/regulatory-event-taxonomies/phase-3-pre-landing-check.log
+2026/03/05 21:41:48.803515 [regulatory-event-taxonomies] phase 3: prompt=Run /pre-landing-check for the change named "regulatory-event-taxonomies" located at openspec/changes/regulatory-event-taxonomies/. Do not ask me any questions — use your best judgment for any decisions.
+2026/03/05 21:41:48.803518 [regulatory-event-taxonomies] phase 3: launching codex session
+2026/03/05 21:41:48.803539 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 21:41:48.803543 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/regulatory-event-taxonomies/phase-3-pre-landing-check.log
+2026/03/05 21:41:48.804881 exec: process started pid=93683
+2026/03/05 21:48:37.526306 exec: process pid=93683 exited successfully
+2026/03/05 21:48:37.526562 [regulatory-event-taxonomies] phase 3: codex session completed in 6m 49s
+2026/03/05 21:48:37.526583 [regulatory-event-taxonomies] phase 3: running intermediate commit
+2026/03/05 21:48:37.526596 [regulatory-event-taxonomies] commit phase 3: launching codex session
+2026/03/05 21:48:37.526599 [regulatory-event-taxonomies] commit phase 3: prompt=Run /git commit with the message "chore(regulatory-event-taxonomies): code review findings". Do not ask me any questions.
+2026/03/05 21:48:37.526625 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 21:48:37.526629 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/regulatory-event-taxonomies/phase-3-commit.log
+2026/03/05 21:48:37.528076 exec: process started pid=13176
+2026/03/05 21:49:17.769850 exec: process pid=13176 exited successfully
+2026/03/05 21:49:17.769955 [regulatory-event-taxonomies] phase 3: commit completed in 40s
+2026/03/05 21:49:17.769980 [regulatory-event-taxonomies] phase 3 completed in 6m 49s
+2026/03/05 21:49:17.769996 [regulatory-event-taxonomies] phase 4 (prepare-for-landing) starting
+2026/03/05 21:49:17.770027 [regulatory-event-taxonomies] phase 4: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/regulatory-event-taxonomies/phase-4-prepare-for-landing.log
+2026/03/05 21:49:17.770031 [regulatory-event-taxonomies] phase 4: prompt=Run /prepare-for-landing for the change named "regulatory-event-taxonomies" located at openspec/changes/regulatory-event-taxonomies/. Do not ask me any questions — use your best judgment for any decisions.
+2026/03/05 21:49:17.770034 [regulatory-event-taxonomies] phase 4: launching codex session
+2026/03/05 21:49:17.770059 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 21:49:17.770062 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/regulatory-event-taxonomies/phase-4-prepare-for-landing.log
+2026/03/05 21:49:17.771531 exec: process started pid=16099
+2026/03/05 22:07:38.173070 exec: process pid=16099 exited successfully
+2026/03/05 22:07:38.173333 [regulatory-event-taxonomies] phase 4: codex session completed in 18m 20s
+2026/03/05 22:07:38.173349 [regulatory-event-taxonomies] phase 4: running intermediate commit
+2026/03/05 22:07:38.173362 [regulatory-event-taxonomies] commit phase 4: launching codex session
+2026/03/05 22:07:38.173366 [regulatory-event-taxonomies] commit phase 4: prompt=Run /git commit with the message "fix(regulatory-event-taxonomies): address review findings". Do not ask me any questions.
+2026/03/05 22:07:38.173384 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 22:07:38.173388 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/regulatory-event-taxonomies/phase-4-commit.log
+2026/03/05 22:07:38.174836 exec: process started pid=92355

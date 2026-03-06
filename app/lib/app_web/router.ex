@@ -88,6 +88,10 @@ defmodule GAWeb.Router do
     pipe_through :api_authenticated
 
     resources "/audit-logs", AuditLogController, only: [:index, :show]
+    get "/taxonomies", TaxonomyController, :index
+    get "/taxonomies/:framework", TaxonomyController, :show
+    get "/action-mappings", ActionMappingController, :index
+    post "/action-mappings/validate", ActionMappingController, :validate
     resources "/checkpoints", CheckpointController, only: [:index]
     post "/verify", VerificationController, :create
   end
@@ -99,6 +103,9 @@ defmodule GAWeb.Router do
     pipe_through :api_write
 
     resources "/audit-logs", AuditLogController, only: [:create]
+    post "/action-mappings", ActionMappingController, :create
+    put "/action-mappings/:id", ActionMappingController, :update
+    delete "/action-mappings/:id", ActionMappingController, :delete
     resources "/checkpoints", CheckpointController, only: [:create]
   end
 

@@ -9,6 +9,7 @@ defmodule GA.Audit do
   alias GA.Accounts
   alias GA.Audit.{Chain, Checkpoint, Log, Verifier}
   alias GA.Compliance
+  alias GA.Compliance.ActionMapping
   alias GA.Compliance.ExtensionSchema
   alias GA.Repo
 
@@ -26,7 +27,7 @@ defmodule GA.Audit do
 
     framework_ids =
       active_frameworks
-      |> Enum.map(& &1.framework_id)
+      |> Enum.map(& &1.framework)
       |> Enum.sort()
 
     additional_required_by_framework = additional_required_fields_by_framework(active_frameworks)
@@ -36,7 +37,8 @@ defmodule GA.Audit do
              framework_ids,
              get_opt(attrs, :extensions),
              additional_required_by_framework
-           ) do
+           ),
+         :ok <- Compliance.validate_action_for_strict_frameworks(account_id, get_opt(attrs, :action)) do
       attrs =
         attrs
         |> Map.delete("extensions")
@@ -81,19 +83,21 @@ defmodule GA.Audit do
   Lists account-scoped audit entries with cursor pagination and optional filters.
   """
   def list_logs(account_id, opts \\ []) when is_binary(account_id) do
-    limit = opts |> get_opt(:limit) |> normalize_limit()
+    with {:ok, category_actions} <- resolve_category_actions(account_id, get_opt(opts, :category)) do
+      limit = opts |> get_opt(:limit) |> normalize_limit()
 
-    query =
-      from(log in Log,
-        where: log.account_id == ^account_id,
-        order_by: [asc: log.sequence_number]
-      )
-      |> apply_filters(opts)
-      |> limit(^(limit + 1))
+      query =
+        from(log in Log,
+          where: log.account_id == ^account_id,
+          order_by: [asc: log.sequence_number]
+        )
+        |> apply_filters(opts, category_actions)
+        |> limit(^(limit + 1))
 
-    query
-    |> Repo.all()
-    |> paginate(limit)
+      query
+      |> Repo.all()
+      |> paginate(limit)
+    end
   end
 
   @doc """
@@ -247,8 +251,11 @@ defmodule GA.Audit do
     |> Repo.one()
   end
 
-  defp apply_filters(query, opts) do
+  defp apply_filters(query, opts, category_actions) do
     query
+    |> maybe_filter(category_actions, fn q, actions ->
+      where(q, [log], log.action in ^actions)
+    end)
     |> maybe_filter(get_opt(opts, :after_sequence), fn q, value ->
       where(q, [log], log.sequence_number > ^value)
     end)
@@ -352,7 +359,7 @@ defmodule GA.Audit do
       if required_fields == [] do
         acc
       else
-        Map.put(acc, association.framework_id, required_fields)
+        Map.put(acc, association.framework, required_fields)
       end
     end)
   end
@@ -408,4 +415,29 @@ defmodule GA.Audit do
   end
 
   defp extension_value(_extensions, _framework_id, _field), do: nil
+
+  defp resolve_category_actions(_account_id, nil), do: {:ok, nil}
+
+  defp resolve_category_actions(account_id, category_filter) when is_binary(category_filter) do
+    with {:ok, framework, pattern} <- parse_category_filter(category_filter),
+         {:ok, resolved} <- ActionMapping.resolve_actions(account_id, framework, pattern) do
+      {:ok, Enum.uniq(resolved.taxonomy_actions ++ resolved.mapped_actions)}
+    else
+      {:error, :invalid_category_format} -> {:error, :invalid_category_format}
+      {:error, :unknown_framework} -> {:error, :unknown_framework}
+      {:error, :invalid_path} -> {:error, :invalid_category_path}
+    end
+  end
+
+  defp resolve_category_actions(_account_id, _category_filter), do: {:error, :invalid_category_format}
+
+  defp parse_category_filter(value) when is_binary(value) do
+    case String.split(value, ":", parts: 2) do
+      [framework, pattern] when framework != "" and pattern != "" ->
+        {:ok, framework, pattern}
+
+      _ ->
+        {:error, :invalid_category_format}
+    end
+  end
 end

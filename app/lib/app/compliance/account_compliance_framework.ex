@@ -9,12 +9,14 @@ defmodule GA.Compliance.AccountComplianceFramework do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
 
+  @action_validation_modes ~w(flexible strict)
   @allowed_override_keys ~w(retention_days verification_cadence_hours additional_required_fields)
 
   schema "account_compliance_frameworks" do
     belongs_to(:account, GA.Accounts.Account)
-    field(:framework_id, :string)
-    field(:activated_at, :utc_datetime_usec)
+    field(:framework, :string)
+    field(:action_validation_mode, :string, default: "flexible")
+    field(:enabled_at, :utc_datetime_usec)
     field(:config_overrides, :map, default: %{})
 
     timestamps(type: :utc_datetime_usec)
@@ -28,13 +30,20 @@ defmodule GA.Compliance.AccountComplianceFramework do
       Keyword.get(opts, :valid_framework_ids, Map.keys(GA.Compliance.registry()))
 
     association
-    |> cast(attrs, [:account_id, :framework_id, :activated_at, :config_overrides])
-    |> validate_required([:account_id, :framework_id, :activated_at])
-    |> validate_inclusion(:framework_id, valid_framework_ids)
+    |> cast(attrs, [
+      :account_id,
+      :framework,
+      :action_validation_mode,
+      :enabled_at,
+      :config_overrides
+    ])
+    |> validate_required([:account_id, :framework, :enabled_at, :action_validation_mode])
+    |> validate_inclusion(:framework, valid_framework_ids)
+    |> validate_inclusion(:action_validation_mode, @action_validation_modes)
     |> validate_config_overrides()
     |> foreign_key_constraint(:account_id)
-    |> unique_constraint(:framework_id,
-      name: :account_compliance_frameworks_account_id_framework_id_index
+    |> unique_constraint(:framework,
+      name: :account_compliance_frameworks_account_id_framework_index
     )
   end
 

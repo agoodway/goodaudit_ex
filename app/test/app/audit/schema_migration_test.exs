@@ -120,8 +120,9 @@ defmodule GA.Audit.SchemaMigrationTest do
 
     defaults = %{
       id: Ecto.UUID.generate(),
-      framework_id: "hipaa",
-      activated_at: now,
+      framework: "hipaa",
+      action_validation_mode: "flexible",
+      enabled_at: now,
       config_overrides: %{},
       inserted_at: now,
       updated_at: now
@@ -133,16 +134,17 @@ defmodule GA.Audit.SchemaMigrationTest do
       Repo,
       """
       INSERT INTO account_compliance_frameworks (
-        id, account_id, framework_id, activated_at, config_overrides, inserted_at, updated_at
+        id, account_id, framework, action_validation_mode, enabled_at, config_overrides, inserted_at, updated_at
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7
+        $1, $2, $3, $4, $5, $6, $7, $8
       )
       """,
       [
         attrs.id,
         attrs.account_id,
-        attrs.framework_id,
-        attrs.activated_at,
+        attrs.framework,
+        attrs.action_validation_mode,
+        attrs.enabled_at,
         attrs.config_overrides,
         attrs.inserted_at,
         attrs.updated_at
@@ -317,10 +319,10 @@ defmodule GA.Audit.SchemaMigrationTest do
              })
   end
 
-  test "audit_logs action check constraint rejects invalid action" do
+  test "audit_logs accepts custom action values for taxonomy-aware validation" do
     account = account_fixture()
 
-    assert {:error, %Postgrex.Error{postgres: %{code: :check_violation}}} =
+    assert {:ok, _result} =
              insert_audit_log(%{
                account_id: account.id,
                action: "archive"
@@ -422,19 +424,19 @@ defmodule GA.Audit.SchemaMigrationTest do
     assert index_def =~ "WHERE ((extensions -> 'hipaa'::text) IS NOT NULL)"
   end
 
-  test "duplicate [account_id, framework_id] in account_compliance_frameworks is rejected" do
+  test "duplicate [account_id, framework] in account_compliance_frameworks is rejected" do
     account = account_fixture()
 
     assert {:ok, _result} =
              insert_account_framework(%{
                account_id: account.id,
-               framework_id: "hipaa"
+               framework: "hipaa"
              })
 
     assert {:error, %Postgrex.Error{postgres: %{code: :unique_violation}}} =
              insert_account_framework(%{
                account_id: account.id,
-               framework_id: "hipaa"
+               framework: "hipaa"
              })
   end
 

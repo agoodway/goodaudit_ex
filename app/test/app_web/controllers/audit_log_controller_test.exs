@@ -5,6 +5,7 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
 
   alias GA.Accounts
   alias GA.Audit
+  alias GA.Compliance.ActionMapping
   alias GA.Compliance
 
   describe "POST /api/v1/audit-logs" do
@@ -216,6 +217,63 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
       assert Enum.map(response["data"], & &1["resource_id"]) == ["a-only"]
       assert Enum.all?(response["data"], &(&1["account_id"] == account_a.id))
     end
+
+    test "supports taxonomy category filtering with mapped actions", %{conn: conn} do
+      %{account: account, public_token: public_token} = account_api_context()
+
+      assert {:ok, _mapping} =
+               ActionMapping.create_mapping(account.id, %{
+                 custom_action: "patient_chart_viewed",
+                 framework: "hipaa",
+                 taxonomy_path: "access.phi.phi_read"
+               })
+
+      assert {:ok, _} =
+               Audit.create_log_entry(account.id, valid_audit_attrs(%{action: "phi_read", resource_id: "canonical"}))
+
+      assert {:ok, _} =
+               Audit.create_log_entry(
+                 account.id,
+                 valid_audit_attrs(%{action: "patient_chart_viewed", resource_id: "mapped"})
+               )
+
+      assert {:ok, _} =
+               Audit.create_log_entry(account.id, valid_audit_attrs(%{action: "treatment", resource_id: "other"}))
+
+      response =
+        conn
+        |> api_key_conn(public_token)
+        |> get("/api/v1/audit-logs", %{"category" => "hipaa:access.phi.*"})
+        |> json_response(200)
+
+      assert Enum.map(response["data"], & &1["resource_id"]) == ["canonical", "mapped"]
+    end
+
+    test "returns 422 for invalid category format", %{conn: conn} do
+      %{public_token: public_token} = account_api_context()
+
+      response =
+        conn
+        |> api_key_conn(public_token)
+        |> get("/api/v1/audit-logs", %{"category" => "badformat"})
+        |> json_response(422)
+
+      assert response["status"] == 422
+      assert response["message"] == "Invalid category format. Expected 'framework:pattern'"
+    end
+
+    test "returns 422 for unknown framework in category", %{conn: conn} do
+      %{public_token: public_token} = account_api_context()
+
+      response =
+        conn
+        |> api_key_conn(public_token)
+        |> get("/api/v1/audit-logs", %{"category" => "unknown:access.*"})
+        |> json_response(422)
+
+      assert response["status"] == 422
+      assert response["message"] == "Unknown framework: unknown"
+    end
   end
 
   describe "GET /api/v1/audit-logs/:id" do
@@ -313,6 +371,11 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
       post_422_description =
         get_in(spec, ["paths", "/api/v1/audit-logs", "post", "responses", "422", "description"])
 
+      category_param =
+        spec
+        |> get_in(["paths", "/api/v1/audit-logs", "get", "parameters"])
+        |> Enum.find(&(&1["name"] == "category"))
+
       assert is_map(response_fields)
       assert is_map(list_fields)
       assert Map.has_key?(response_fields, "actor_id")
@@ -322,6 +385,8 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
       assert Map.has_key?(response_fields, "frameworks")
       assert Map.has_key?(list_fields, "frameworks")
       assert post_422_description =~ "hipaa.user_role is required"
+      assert is_map(category_param)
+      assert category_param["description"] =~ "framework:pattern"
     end
   end
 

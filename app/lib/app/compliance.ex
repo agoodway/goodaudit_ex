@@ -6,6 +6,7 @@ defmodule GA.Compliance do
   import Ecto.Query, warn: false
 
   alias GA.Compliance.AccountComplianceFramework
+  alias GA.Compliance.ActionMapping
   alias GA.Repo
 
   @registry %{
@@ -13,6 +14,7 @@ defmodule GA.Compliance do
     "soc2" => GA.Compliance.Frameworks.SOC2,
     "pci_dss" => GA.Compliance.Frameworks.PCIDSS,
     "gdpr" => GA.Compliance.Frameworks.GDPR,
+    "iso_27001" => GA.Compliance.Frameworks.ISO27001,
     "iso27001" => GA.Compliance.Frameworks.ISO27001
   }
 
@@ -56,7 +58,7 @@ defmodule GA.Compliance do
   def list_active_frameworks(account_id) when is_binary(account_id) do
     from(association in AccountComplianceFramework,
       where: association.account_id == ^account_id,
-      order_by: [asc: association.activated_at, asc: association.framework_id]
+      order_by: [asc: association.enabled_at, asc: association.framework]
     )
     |> Repo.all()
   end
@@ -69,8 +71,8 @@ defmodule GA.Compliance do
   def active_framework_ids(account_id) when is_binary(account_id) do
     from(association in AccountComplianceFramework,
       where: association.account_id == ^account_id,
-      order_by: [asc: association.activated_at, asc: association.framework_id],
-      select: association.framework_id
+      order_by: [asc: association.enabled_at, asc: association.framework],
+      select: association.framework
     )
     |> Repo.all()
   end
@@ -80,14 +82,15 @@ defmodule GA.Compliance do
   @doc """
   Activates a compliance framework for an account.
   """
-  def activate_framework(account_id, framework_id, opts \\ [])
+  def activate_framework(account_id, framework, opts \\ [])
 
-  def activate_framework(account_id, framework_id, opts)
-      when is_binary(account_id) and is_binary(framework_id) do
+  def activate_framework(account_id, framework, opts)
+      when is_binary(account_id) and is_binary(framework) do
     attrs = %{
       account_id: account_id,
-      framework_id: framework_id,
-      activated_at: DateTime.utc_now() |> DateTime.truncate(:microsecond),
+      framework: framework,
+      action_validation_mode: action_validation_mode_from_opts(opts),
+      enabled_at: DateTime.utc_now() |> DateTime.truncate(:microsecond),
       config_overrides: config_overrides_from_opts(opts)
     }
 
@@ -96,7 +99,7 @@ defmodule GA.Compliance do
     |> Repo.insert()
   end
 
-  def activate_framework(_account_id, _framework_id, _opts) do
+  def activate_framework(_account_id, _framework, _opts) do
     %AccountComplianceFramework{}
     |> AccountComplianceFramework.changeset(%{}, valid_framework_ids: Map.keys(@registry))
     |> then(&{:error, &1})
@@ -105,29 +108,27 @@ defmodule GA.Compliance do
   @doc """
   Deactivates a framework for an account.
   """
-  def deactivate_framework(account_id, framework_id)
-      when is_binary(account_id) and is_binary(framework_id) do
+  def deactivate_framework(account_id, framework) when is_binary(account_id) and is_binary(framework) do
     case Repo.get_by(AccountComplianceFramework,
            account_id: account_id,
-           framework_id: framework_id
+           framework: framework
          ) do
       nil -> {:error, :not_found}
       association -> Repo.delete(association)
     end
   end
 
-  def deactivate_framework(_account_id, _framework_id), do: {:error, :not_found}
+  def deactivate_framework(_account_id, _framework), do: {:error, :not_found}
 
   @doc """
   Returns the effective runtime config for an active framework association.
   """
-  def effective_config(account_id, framework_id)
-      when is_binary(account_id) and is_binary(framework_id) do
-    with {:ok, module} <- get_framework(framework_id),
+  def effective_config(account_id, framework) when is_binary(account_id) and is_binary(framework) do
+    with {:ok, module} <- get_framework(framework),
          %AccountComplianceFramework{} = association <-
            Repo.get_by(AccountComplianceFramework,
              account_id: account_id,
-             framework_id: framework_id
+             framework: framework
            ) do
       overrides = association.config_overrides || %{}
 
@@ -149,7 +150,47 @@ defmodule GA.Compliance do
     end
   end
 
-  def effective_config(_account_id, _framework_id), do: {:error, :not_active}
+  def effective_config(_account_id, _framework), do: {:error, :not_active}
+
+  @doc """
+  Validates an action against all strict-mode frameworks enabled for an account.
+  """
+  @spec validate_action_for_strict_frameworks(String.t(), String.t() | nil) ::
+          :ok | {:error, Ecto.Changeset.t()}
+  def validate_action_for_strict_frameworks(account_id, action)
+      when is_binary(account_id) and is_binary(action) do
+    strict_frameworks =
+      from(association in AccountComplianceFramework,
+        where:
+          association.account_id == ^account_id and
+            association.action_validation_mode == "strict",
+        select: association.framework
+      )
+      |> Repo.all()
+      |> Enum.uniq()
+
+    unknown_frameworks =
+      Enum.reduce(strict_frameworks, [], fn framework, acc ->
+        with {:ok, module} <- GA.Compliance.Taxonomy.get(framework),
+             false <- action in module.actions(),
+             false <- ActionMapping.mapped_action?(account_id, framework, action) do
+          [framework | acc]
+        else
+          _ -> acc
+        end
+      end)
+      |> Enum.sort()
+
+    case unknown_frameworks do
+      [] ->
+        :ok
+
+      frameworks ->
+        {:error, strict_action_error_changeset(action, frameworks)}
+    end
+  end
+
+  def validate_action_for_strict_frameworks(_account_id, _action), do: :ok
 
   defp config_overrides_from_opts(opts) when is_list(opts),
     do: Keyword.get(opts, :config_overrides, %{})
@@ -158,4 +199,21 @@ defmodule GA.Compliance do
     do: Map.get(opts, :config_overrides, %{})
 
   defp config_overrides_from_opts(_opts), do: %{}
+
+  defp action_validation_mode_from_opts(opts) when is_list(opts),
+    do: opts |> Keyword.get(:action_validation_mode, "flexible") |> to_string()
+
+  defp action_validation_mode_from_opts(opts) when is_map(opts),
+    do: opts |> Map.get(:action_validation_mode, "flexible") |> to_string()
+
+  defp action_validation_mode_from_opts(_opts), do: "flexible"
+
+  defp strict_action_error_changeset(action, frameworks) do
+    %GA.Audit.Log{}
+    |> Ecto.Changeset.change(%{action: action})
+    |> Ecto.Changeset.add_error(
+      :action,
+      "is not recognized by strict-mode frameworks: #{Enum.join(frameworks, ", ")}"
+    )
+  end
 end
