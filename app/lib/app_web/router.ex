@@ -63,6 +63,7 @@ defmodule GAWeb.Router do
       ],
       layout: {GAWeb.Layouts, :dashboard} do
       live "/", DashboardLive, :index
+      live "/audit-logs", AuditLogLive.Index, :index
       live "/api-keys", ApiKeyLive.Index, :index
     end
   end
