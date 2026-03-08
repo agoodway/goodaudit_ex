@@ -98,6 +98,52 @@ defmodule GAWeb.ComplianceLiveTest do
       assert updated.action_validation_mode == "strict"
       assert updated.config_overrides["retention_days"] == 3650
     end
+
+    test "additional_required_fields are parsed, trimmed, and saved", %{conn: conn, account: account} do
+      {:ok, _} = Compliance.activate_framework(account.id, "hipaa")
+
+      {:ok, view, _html} = live(conn, compliance_path(account))
+
+      # Enter comma-separated fields with whitespace
+      view
+      |> element("#framework-hipaa input[name=additional_required_fields]")
+      |> render_change(%{"additional_required_fields" => " department , location ,  team "})
+
+      # Click save
+      view
+      |> element("#framework-hipaa button", "Save")
+      |> render_click()
+
+      {:ok, updated} = Compliance.get_active_framework(account.id, "hipaa")
+      assert updated.config_overrides["additional_required_fields"] == ["department", "location", "team"]
+    end
+  end
+
+  describe "dirty state tracking" do
+    test "save button is disabled initially and enabled after field change", %{conn: conn, account: account} do
+      {:ok, _} = Compliance.activate_framework(account.id, "hipaa")
+
+      {:ok, view, _html} = live(conn, compliance_path(account))
+
+      # Save button should be disabled initially (clean state)
+      assert has_element?(view, "#framework-hipaa button[disabled]", "Save")
+
+      # Change a field
+      view
+      |> element("#framework-hipaa input[name=retention_days]")
+      |> render_change(%{"retention_days" => "999"})
+
+      # Save button should be enabled (dirty state)
+      refute has_element?(view, "#framework-hipaa button[disabled]", "Save")
+
+      # Revert to original value (empty = default)
+      view
+      |> element("#framework-hipaa input[name=retention_days]")
+      |> render_change(%{"retention_days" => ""})
+
+      # Save button should be disabled again (clean state)
+      assert has_element?(view, "#framework-hipaa button[disabled]", "Save")
+    end
   end
 
   describe "read-only view for non-admin users" do
@@ -125,9 +171,11 @@ defmodule GAWeb.ComplianceLiveTest do
       {:ok, _} = Accounts.add_user_to_account(account, member, :member)
       member_conn = log_in_user(conn, member)
 
-      {:ok, _view, _html} = live(member_conn, compliance_path(account))
+      {:ok, _view, html} = live(member_conn, compliance_path(account))
 
-      # The toggle should not be rendered for members, so framework stays inactive
+      # Toggle element is not rendered for non-admin members (client-side guard)
+      refute html =~ ~s(phx-click="toggle_framework")
+      # Server-side guard also prevents mutations via authorized?/1 re-check
       assert Compliance.active_framework_ids(account.id) == []
     end
   end

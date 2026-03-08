@@ -14,8 +14,7 @@ defmodule GA.Compliance do
     "soc2" => GA.Compliance.Frameworks.SOC2,
     "pci_dss" => GA.Compliance.Frameworks.PCIDSS,
     "gdpr" => GA.Compliance.Frameworks.GDPR,
-    "iso_27001" => GA.Compliance.Frameworks.ISO27001,
-    "iso27001" => GA.Compliance.Frameworks.ISO27001
+    "iso_27001" => GA.Compliance.Frameworks.ISO27001
   }
 
   @doc """
@@ -163,7 +162,7 @@ defmodule GA.Compliance do
       association ->
         association
         |> AccountComplianceFramework.changeset(
-          Map.take(attrs, [:action_validation_mode, :config_overrides, "action_validation_mode", "config_overrides"]),
+          Map.take(attrs, [:action_validation_mode, :config_overrides]),
           valid_framework_ids: Map.keys(@registry)
         )
         |> Repo.update()

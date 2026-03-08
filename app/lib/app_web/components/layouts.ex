@@ -168,7 +168,7 @@ defmodule GAWeb.Layouts do
           </p>
           <ul role="list" class="space-y-0.5">
             <.sidebar_nav_item
-              href={"#{@account_base}/compliance"}
+              href={~p"/dashboard/accounts/#{@current_account}/compliance"}
               icon="hero-shield-check"
               label="Compliance"
               active={@active_nav == :compliance}

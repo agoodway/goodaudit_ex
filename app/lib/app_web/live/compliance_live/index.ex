@@ -14,7 +14,7 @@ defmodule GAWeb.ComplianceLive.Index do
     account = socket.assigns.current_account
     user = socket.assigns.current_scope.user
     membership = Accounts.get_account_user(user, account)
-    can_edit? = AccountUser.admin?(membership)
+    can_edit? = membership != nil and AccountUser.admin?(membership)
 
     frameworks = load_frameworks(account.id)
 
@@ -53,6 +53,8 @@ defmodule GAWeb.ComplianceLive.Index do
           association={Map.get(@frameworks, framework_id)}
           can_edit?={@can_edit?}
           account_id={@current_account.id}
+          current_user={@current_scope.user}
+          current_account={@current_account}
         />
       </div>
     </div>
@@ -60,18 +62,15 @@ defmodule GAWeb.ComplianceLive.Index do
   end
 
   @impl true
-  def handle_info({:framework_updated, framework_id}, socket) do
-    account_id = socket.assigns.current_account.id
+  def handle_info({:framework_updated, framework_id, nil}, socket) do
+    frameworks = Map.delete(socket.assigns.frameworks, framework_id)
+    {:noreply, assign(socket, frameworks: frameworks)}
+  end
 
-    case Compliance.get_active_framework(account_id, framework_id) do
-      {:ok, association} ->
-        frameworks = Map.put(socket.assigns.frameworks, framework_id, association)
-        {:noreply, assign(socket, frameworks: frameworks)}
-
-      {:error, :not_found} ->
-        frameworks = Map.delete(socket.assigns.frameworks, framework_id)
-        {:noreply, assign(socket, frameworks: frameworks)}
-    end
+  @impl true
+  def handle_info({:framework_updated, framework_id, association}, socket) do
+    frameworks = Map.put(socket.assigns.frameworks, framework_id, association)
+    {:noreply, assign(socket, frameworks: frameworks)}
   end
 
   defp load_frameworks(account_id) do
@@ -81,7 +80,6 @@ defmodule GAWeb.ComplianceLive.Index do
 
   defp sorted_registry do
     Compliance.registry()
-    |> Enum.uniq_by(fn {_id, mod} -> mod end)
     |> Enum.sort_by(fn {_id, mod} -> mod.name() end)
   end
 end

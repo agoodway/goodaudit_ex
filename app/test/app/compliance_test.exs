@@ -179,6 +179,20 @@ defmodule GA.ComplianceTest do
       account = account_fixture()
       assert {:error, :not_active} = Compliance.effective_config(account.id, "hipaa")
     end
+
+    test "effective_config/2 returns framework defaults when config_overrides is empty" do
+      account = account_fixture()
+      {:ok, _} = Compliance.activate_framework(account.id, "hipaa")
+
+      assert {:ok, config} = Compliance.effective_config(account.id, "hipaa")
+
+      assert config.retention_days == GA.Compliance.Frameworks.HIPAA.default_retention_days()
+
+      assert config.verification_cadence_hours ==
+               GA.Compliance.Frameworks.HIPAA.verification_cadence_hours()
+
+      assert :actor_id in config.required_fields
+    end
   end
 
   describe "get_active_framework/2" do
@@ -241,6 +255,21 @@ defmodule GA.ComplianceTest do
                Compliance.update_framework_config(account.id, "hipaa", %{
                  action_validation_mode: "strict"
                })
+    end
+  end
+
+  describe "count_active_frameworks/1" do
+    test "returns 0 with no frameworks" do
+      account = account_fixture()
+      assert Compliance.count_active_frameworks(account.id) == 0
+    end
+
+    test "returns correct count after activating frameworks" do
+      account = account_fixture()
+      {:ok, _} = Compliance.activate_framework(account.id, "hipaa")
+      {:ok, _} = Compliance.activate_framework(account.id, "soc2")
+
+      assert Compliance.count_active_frameworks(account.id) == 2
     end
   end
 

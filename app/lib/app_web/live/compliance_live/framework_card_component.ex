@@ -5,17 +5,30 @@ defmodule GAWeb.ComplianceLive.FrameworkCardComponent do
   """
   use GAWeb, :live_component
 
+  alias GA.Accounts
+  alias GA.Accounts.AccountUser
   alias GA.Compliance
 
   @impl true
   def update(assigns, socket) do
+    old_updated_at = socket.assigns[:association_updated_at]
+
+    new_updated_at =
+      case assigns[:association] do
+        nil -> nil
+        assoc -> assoc.updated_at
+      end
+
+    association_changed? = old_updated_at != new_updated_at
+
     socket = assign(socket, assigns)
+    socket = assign(socket, association_updated_at: new_updated_at)
 
     socket =
-      if Map.has_key?(socket.assigns, :form_data) do
-        socket
+      if not Map.has_key?(socket.assigns, :form_data) or association_changed? do
+        assign(socket, form_data: initial_form_data(assigns[:association] || socket.assigns[:association]), dirty?: false)
       else
-        assign(socket, form_data: initial_form_data(assigns.association), dirty?: false)
+        socket
       end
 
     {:ok, socket}
@@ -174,13 +187,19 @@ defmodule GAWeb.ComplianceLive.FrameworkCardComponent do
 
   @impl true
   def handle_event("toggle_framework", _params, socket) do
-    if not socket.assigns.can_edit? do
+    if not authorized?(socket) do
       {:noreply, put_flash(socket, :error, "You don't have permission to modify frameworks.")}
     else
       handle_toggle(socket)
     end
   end
 
+  @impl true
+  def handle_event("update_field", _params, socket) when not socket.assigns.can_edit? do
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_event("update_field", params, socket) do
     form_data = update_form_data(socket.assigns.form_data, params)
     original = initial_form_data(socket.assigns.association)
@@ -189,8 +208,9 @@ defmodule GAWeb.ComplianceLive.FrameworkCardComponent do
     {:noreply, assign(socket, form_data: form_data, dirty?: dirty?)}
   end
 
+  @impl true
   def handle_event("save", _params, socket) do
-    if not socket.assigns.can_edit? do
+    if not authorized?(socket) do
       {:noreply, put_flash(socket, :error, "You don't have permission to modify frameworks.")}
     else
       handle_save(socket)
@@ -203,7 +223,7 @@ defmodule GAWeb.ComplianceLive.FrameworkCardComponent do
 
     case Compliance.activate_framework(account_id, framework_id) do
       {:ok, association} ->
-        send(self(), {:framework_updated, framework_id})
+        send(self(), {:framework_updated, framework_id, association})
 
         {:noreply,
          socket
@@ -223,7 +243,7 @@ defmodule GAWeb.ComplianceLive.FrameworkCardComponent do
 
     case Compliance.deactivate_framework(account_id, framework_id) do
       {:ok, _} ->
-        send(self(), {:framework_updated, framework_id})
+        send(self(), {:framework_updated, framework_id, nil})
 
         {:noreply,
          socket
@@ -249,7 +269,7 @@ defmodule GAWeb.ComplianceLive.FrameworkCardComponent do
 
     case Compliance.update_framework_config(account_id, framework_id, attrs) do
       {:ok, association} ->
-        send(self(), {:framework_updated, framework_id})
+        send(self(), {:framework_updated, framework_id, association})
 
         {:noreply,
          socket
@@ -323,7 +343,7 @@ defmodule GAWeb.ComplianceLive.FrameworkCardComponent do
   defp maybe_put_integer(map, key, value) when is_binary(value) do
     case Integer.parse(value) do
       {int, ""} -> Map.put(map, key, int)
-      _ -> Map.put(map, key, value)
+      _ -> map
     end
   end
 
@@ -359,4 +379,16 @@ defmodule GAWeb.ComplianceLive.FrameworkCardComponent do
   end
 
   defp changeset_error_message(_), do: "unknown error"
+
+  defp authorized?(socket) do
+    user = socket.assigns[:current_user]
+    account = socket.assigns[:current_account]
+
+    if user && account do
+      membership = Accounts.get_account_user(user, account)
+      membership != nil and AccountUser.admin?(membership)
+    else
+      socket.assigns.can_edit?
+    end
+  end
 end

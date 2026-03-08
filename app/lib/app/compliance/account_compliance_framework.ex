@@ -84,10 +84,15 @@ defmodule GA.Compliance.AccountComplianceFramework do
     end
   end
 
+  @max_retention_days 36_500
+  @max_verification_cadence_hours 8_760
+  @max_additional_fields 50
+
   defp validate_retention_days(overrides) do
     case Map.get(overrides, "retention_days") do
       nil -> :ok
-      value when is_integer(value) and value > 0 -> :ok
+      value when is_integer(value) and value > 0 and value <= @max_retention_days -> :ok
+      value when is_integer(value) and value > @max_retention_days -> {:error, "retention_days must not exceed #{@max_retention_days}"}
       _ -> {:error, "retention_days must be a positive integer"}
     end
   end
@@ -95,7 +100,8 @@ defmodule GA.Compliance.AccountComplianceFramework do
   defp validate_verification_cadence(overrides) do
     case Map.get(overrides, "verification_cadence_hours") do
       nil -> :ok
-      value when is_integer(value) and value > 0 -> :ok
+      value when is_integer(value) and value > 0 and value <= @max_verification_cadence_hours -> :ok
+      value when is_integer(value) and value > @max_verification_cadence_hours -> {:error, "verification_cadence_hours must not exceed #{@max_verification_cadence_hours}"}
       _ -> {:error, "verification_cadence_hours must be a positive integer"}
     end
   end
@@ -104,6 +110,9 @@ defmodule GA.Compliance.AccountComplianceFramework do
     case Map.get(overrides, "additional_required_fields") do
       nil ->
         :ok
+
+      value when is_list(value) and length(value) > @max_additional_fields ->
+        {:error, "additional_required_fields must not exceed #{@max_additional_fields} entries"}
 
       value when is_list(value) ->
         if Enum.all?(value, &valid_override_field?/1) do

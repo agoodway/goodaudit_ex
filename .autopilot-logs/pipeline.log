@@ -1372,3 +1372,32 @@
 2026/03/07 20:16:16.809753 exec: claude --print --model opus --dangerously-skip-permissions
 2026/03/07 20:16:16.809757 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/live-dashboard-metrics/phase-4-prepare-for-landing.log
 2026/03/07 20:16:16.811376 exec: process started pid=97168
+2026/03/07 21:38:07.775301 === Pipeline started ===
+2026/03/07 21:38:07.777168   project_dir=/Users/tbrewer/projects/goodway/goodaudit
+2026/03/07 21:38:07.777173   log_dir=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs
+2026/03/07 21:38:07.777175   changes=[compliance-framework-settings account-settings]
+2026/03/07 21:38:07.777190   backend=claude model=opus start_phase=4
+2026/03/07 21:38:07.777195   phase_timeout=45m0s
+2026/03/07 21:38:07.777197   auto_approve=true dry_run=false no_commit=false show_output=false
+2026/03/07 21:38:07.777214 preflight: starting health check
+2026/03/07 21:38:07.777843 exec: claude --print --model opus --dangerously-skip-permissions
+2026/03/07 21:38:07.777847 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/preflight.log
+2026/03/07 21:38:07.779977 exec: process started pid=49198
+2026/03/07 21:38:17.040684 exec: process pid=49198 exited successfully
+2026/03/07 21:38:17.040995 preflight: passed
+2026/03/07 21:38:17.041023 --- Change 1/2: compliance-framework-settings (start_phase=4) ---
+2026/03/07 21:38:17.041047 [compliance-framework-settings] phase 4 (prepare-for-landing) starting
+2026/03/07 21:38:17.041082 [compliance-framework-settings] phase 4: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/compliance-framework-settings/phase-4-prepare-for-landing.log
+2026/03/07 21:38:17.041087 [compliance-framework-settings] phase 4: prompt=Run /prepare-for-landing for the change named "compliance-framework-settings" located at openspec/changes/compliance-framework-settings/. Do not ask me any questions — use your best judgment for any decisions.
+2026/03/07 21:38:17.041108 [compliance-framework-settings] phase 4: launching claude session
+2026/03/07 21:38:17.041124 exec: claude --print --model opus --dangerously-skip-permissions
+2026/03/07 21:38:17.041127 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/compliance-framework-settings/phase-4-prepare-for-landing.log
+2026/03/07 21:38:17.042498 exec: process started pid=50568
+2026/03/07 21:47:23.643658 exec: process pid=50568 exited successfully
+2026/03/07 21:47:23.643763 [compliance-framework-settings] phase 4: claude session completed in 9m 7s
+2026/03/07 21:47:23.643782 [compliance-framework-settings] phase 4: running intermediate commit
+2026/03/07 21:47:23.643939 [compliance-framework-settings] commit phase 4: launching claude session
+2026/03/07 21:47:23.643942 [compliance-framework-settings] commit phase 4: prompt=Run /git commit with the message "fix(compliance-framework-settings): address review findings". Do not ask me any questions.
+2026/03/07 21:47:23.643958 exec: claude --print --model opus --dangerously-skip-permissions
+2026/03/07 21:47:23.643961 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/compliance-framework-settings/phase-4-commit.log
+2026/03/07 21:47:23.645394 exec: process started pid=73568
