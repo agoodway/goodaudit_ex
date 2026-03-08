@@ -1,0 +1,19 @@
+phase: 3 (pre-landing-check)
+change: account-settings
+epic: td-be148e
+branch: feat/live-dashboard-metrics
+date: 2026-03-07
+
+specialists: Elixir Code Quality, Security Engineer, Quality Engineer (Test Coverage), Codex Fresh Eyes
+
+findings: 17
+  critical: 5 (IDOR role change, IDOR member removal, missing server-side auth, HMAC key plaintext push, role allowlist)
+  warning: 7 (sudo_mode, member rename, slug error display, non-member default, clipboard broken, empty slug, soft-delete)
+  suggestion: 5 (subquery optimization, role assign, error logging, slug dedup, exhaustive patterns)
+
+issues_created: 17
+  P0: td-4e2ed5, td-616a23, td-1037d1
+  P1: td-e3db75, td-8a9d9a
+  P2: td-83db58, td-1fe485, td-190e4c, td-602a54, td-c86959, td-2ed0df, td-8e4e5c
+  P3: td-117e1d, td-70bd01, td-4947c4
+  P4: td-0d961f, td-6df9ad
