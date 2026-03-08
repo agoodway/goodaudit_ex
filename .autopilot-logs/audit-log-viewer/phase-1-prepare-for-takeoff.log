@@ -1,0 +1,14 @@
+Import complete. Here's the summary:
+
+**Epic:** `td-722692` — Audit Log Viewer
+
+**30 issues created** (1 epic + 29 tasks):
+- **2 route/navigation** tasks (`frontend`) — unblocked
+- **5 LiveView logic** tasks (`frontend`) — unblocked
+- **6 template** tasks (`frontend`) — depend on LiveView core
+- **4 detail expansion** tasks (`frontend`) — depend on LiveView core
+- **4 JSON export** tasks (`frontend`) — depend on LiveView + filter mapping
+- **8 test** tasks (`test`) — depend on their respective implementation tasks
+- **1 review gate** (`review`) — blocks until all 29 tasks complete
+
+All 29 checkboxes in `tasks.md` marked as imported.

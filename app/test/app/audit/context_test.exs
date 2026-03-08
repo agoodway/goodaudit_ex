@@ -271,7 +271,11 @@ defmodule GA.Audit.ContextTest do
 
       assert "hipaa.phi_accessed is required" in errors_on(nil_changeset).extensions
 
-      attrs = valid_attrs(%{extensions: %{"hipaa" => %{"phi_accessed" => false, "user_role" => "admin"}}})
+      attrs =
+        valid_attrs(%{
+          extensions: %{"hipaa" => %{"phi_accessed" => false, "user_role" => "admin"}}
+        })
+
       assert {:ok, _log} = Audit.create_log_entry(account.id, attrs)
     end
 
@@ -316,7 +320,11 @@ defmodule GA.Audit.ContextTest do
   describe "strict-mode validation" do
     test "accepts canonical taxonomy action for strict framework" do
       account = account_fixture()
-      assert {:ok, _} = Compliance.activate_framework(account.id, "hipaa", action_validation_mode: "strict")
+
+      assert {:ok, _} =
+               Compliance.activate_framework(account.id, "hipaa",
+                 action_validation_mode: "strict"
+               )
 
       assert {:ok, log} =
                Audit.create_log_entry(
@@ -332,7 +340,11 @@ defmodule GA.Audit.ContextTest do
 
     test "accepts mapped action for strict framework" do
       account = account_fixture()
-      assert {:ok, _} = Compliance.activate_framework(account.id, "hipaa", action_validation_mode: "strict")
+
+      assert {:ok, _} =
+               Compliance.activate_framework(account.id, "hipaa",
+                 action_validation_mode: "strict"
+               )
 
       assert {:ok, _mapping} =
                ActionMapping.create_mapping(account.id, %{
@@ -355,7 +367,11 @@ defmodule GA.Audit.ContextTest do
 
     test "rejects unknown action for strict framework" do
       account = account_fixture()
-      assert {:ok, _} = Compliance.activate_framework(account.id, "hipaa", action_validation_mode: "strict")
+
+      assert {:ok, _} =
+               Compliance.activate_framework(account.id, "hipaa",
+                 action_validation_mode: "strict"
+               )
 
       assert {:error, changeset} =
                Audit.create_log_entry(
@@ -371,7 +387,11 @@ defmodule GA.Audit.ContextTest do
 
     test "allows unknown action in flexible mode" do
       account = account_fixture()
-      assert {:ok, _} = Compliance.activate_framework(account.id, "hipaa", action_validation_mode: "flexible")
+
+      assert {:ok, _} =
+               Compliance.activate_framework(account.id, "hipaa",
+                 action_validation_mode: "flexible"
+               )
 
       assert {:ok, log} =
                Audit.create_log_entry(
@@ -387,8 +407,16 @@ defmodule GA.Audit.ContextTest do
 
     test "only strict frameworks enforce action recognition in mixed mode" do
       account = account_fixture()
-      assert {:ok, _} = Compliance.activate_framework(account.id, "hipaa", action_validation_mode: "strict")
-      assert {:ok, _} = Compliance.activate_framework(account.id, "soc2", action_validation_mode: "flexible")
+
+      assert {:ok, _} =
+               Compliance.activate_framework(account.id, "hipaa",
+                 action_validation_mode: "strict"
+               )
+
+      assert {:ok, _} =
+               Compliance.activate_framework(account.id, "soc2",
+                 action_validation_mode: "flexible"
+               )
 
       assert {:ok, log} =
                Audit.create_log_entry(
@@ -571,7 +599,10 @@ defmodule GA.Audit.ContextTest do
                })
 
       assert {:ok, canonical} =
-               Audit.create_log_entry(account.id, valid_attrs(%{action: "phi_read", resource_id: "canonical"}))
+               Audit.create_log_entry(
+                 account.id,
+                 valid_attrs(%{action: "phi_read", resource_id: "canonical"})
+               )
 
       assert {:ok, mapped} =
                Audit.create_log_entry(
@@ -580,7 +611,10 @@ defmodule GA.Audit.ContextTest do
                )
 
       assert {:ok, _other} =
-               Audit.create_log_entry(account.id, valid_attrs(%{action: "treatment", resource_id: "other"}))
+               Audit.create_log_entry(
+                 account.id,
+                 valid_attrs(%{action: "treatment", resource_id: "other"})
+               )
 
       {entries, next_cursor} = Audit.list_logs(account.id, category: "hipaa:access.phi.*")
 
@@ -591,9 +625,14 @@ defmodule GA.Audit.ContextTest do
     test "returns validation errors for invalid category filter values" do
       account = account_fixture()
 
-      assert {:error, :invalid_category_format} = Audit.list_logs(account.id, category: "access.*")
-      assert {:error, :unknown_framework} = Audit.list_logs(account.id, category: "unknown:access.*")
-      assert {:error, :invalid_category_path} = Audit.list_logs(account.id, category: "hipaa:nonexistent.*")
+      assert {:error, :invalid_category_format} =
+               Audit.list_logs(account.id, category: "access.*")
+
+      assert {:error, :unknown_framework} =
+               Audit.list_logs(account.id, category: "unknown:access.*")
+
+      assert {:error, :invalid_category_path} =
+               Audit.list_logs(account.id, category: "hipaa:nonexistent.*")
     end
 
     test "supports cursor pagination with category filter" do
@@ -615,7 +654,11 @@ defmodule GA.Audit.ContextTest do
       assert cursor_1 == 2
 
       {page_2, cursor_2} =
-        Audit.list_logs(account.id, category: "hipaa:access.*", after_sequence: cursor_1, limit: 2)
+        Audit.list_logs(account.id,
+          category: "hipaa:access.*",
+          after_sequence: cursor_1,
+          limit: 2
+        )
 
       assert Enum.map(page_2, & &1.sequence_number) == [3, 4]
       assert cursor_2 == 4

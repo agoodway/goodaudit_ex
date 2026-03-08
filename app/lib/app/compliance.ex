@@ -14,8 +14,7 @@ defmodule GA.Compliance do
     "soc2" => GA.Compliance.Frameworks.SOC2,
     "pci_dss" => GA.Compliance.Frameworks.PCIDSS,
     "gdpr" => GA.Compliance.Frameworks.GDPR,
-    "iso_27001" => GA.Compliance.Frameworks.ISO27001,
-    "iso27001" => GA.Compliance.Frameworks.ISO27001
+    "iso_27001" => GA.Compliance.Frameworks.ISO27001
   }
 
   @doc """
@@ -51,6 +50,17 @@ defmodule GA.Compliance do
   end
 
   def required_fields_for_frameworks(_framework_ids), do: []
+
+  @doc """
+  Counts active compliance frameworks for an account.
+  """
+  def count_active_frameworks(account_id) when is_binary(account_id) do
+    from(a in AccountComplianceFramework,
+      where: a.account_id == ^account_id,
+      select: count(a.id)
+    )
+    |> Repo.one()
+  end
 
   @doc """
   Returns active framework association records for an account.
@@ -108,7 +118,8 @@ defmodule GA.Compliance do
   @doc """
   Deactivates a framework for an account.
   """
-  def deactivate_framework(account_id, framework) when is_binary(account_id) and is_binary(framework) do
+  def deactivate_framework(account_id, framework)
+      when is_binary(account_id) and is_binary(framework) do
     case Repo.get_by(AccountComplianceFramework,
            account_id: account_id,
            framework: framework
@@ -121,9 +132,50 @@ defmodule GA.Compliance do
   def deactivate_framework(_account_id, _framework), do: {:error, :not_found}
 
   @doc """
+  Returns a single active framework association for an account.
+  """
+  def get_active_framework(account_id, framework)
+      when is_binary(account_id) and is_binary(framework) do
+    case Repo.get_by(AccountComplianceFramework,
+           account_id: account_id,
+           framework: framework
+         ) do
+      nil -> {:error, :not_found}
+      association -> {:ok, association}
+    end
+  end
+
+  def get_active_framework(_account_id, _framework), do: {:error, :not_found}
+
+  @doc """
+  Updates an active framework's settings (validation mode and config overrides).
+  """
+  def update_framework_config(account_id, framework, attrs)
+      when is_binary(account_id) and is_binary(framework) do
+    case Repo.get_by(AccountComplianceFramework,
+           account_id: account_id,
+           framework: framework
+         ) do
+      nil ->
+        {:error, :not_found}
+
+      association ->
+        association
+        |> AccountComplianceFramework.changeset(
+          Map.take(attrs, [:action_validation_mode, :config_overrides]),
+          valid_framework_ids: Map.keys(@registry)
+        )
+        |> Repo.update()
+    end
+  end
+
+  def update_framework_config(_account_id, _framework, _attrs), do: {:error, :not_found}
+
+  @doc """
   Returns the effective runtime config for an active framework association.
   """
-  def effective_config(account_id, framework) when is_binary(account_id) and is_binary(framework) do
+  def effective_config(account_id, framework)
+      when is_binary(account_id) and is_binary(framework) do
     with {:ok, module} <- get_framework(framework),
          %AccountComplianceFramework{} = association <-
            Repo.get_by(AccountComplianceFramework,

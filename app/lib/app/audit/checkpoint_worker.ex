@@ -77,6 +77,8 @@ defmodule GA.Audit.CheckpointWorker do
     |> Keyword.get(:interval_ms, @default_interval_ms)
   end
 
-  defp normalize_interval(interval_ms) when is_integer(interval_ms) and interval_ms > 0, do: interval_ms
+  defp normalize_interval(interval_ms) when is_integer(interval_ms) and interval_ms > 0,
+    do: interval_ms
+
   defp normalize_interval(_), do: @default_interval_ms
 end

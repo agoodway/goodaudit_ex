@@ -94,7 +94,10 @@ defmodule GA.Audit.ChainTest do
   end
 
   test "extensions key ordering independence yields same checksum" do
-    attrs_1 = Map.put(base_attrs(), :extensions, %{"hipaa" => %{"phi_accessed" => true, "user_role" => "admin"}})
+    attrs_1 =
+      Map.put(base_attrs(), :extensions, %{
+        "hipaa" => %{"phi_accessed" => true, "user_role" => "admin"}
+      })
 
     attrs_2 =
       Map.put(base_attrs(), :extensions, %{

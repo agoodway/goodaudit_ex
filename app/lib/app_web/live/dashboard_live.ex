@@ -4,14 +4,53 @@ defmodule GAWeb.DashboardLive do
   """
   use GAWeb, :live_view
 
+  require Logger
+
   @impl true
   def mount(_params, _session, socket) do
+    account_id = socket.assigns.current_account.id
+
+    tasks = [
+      Task.async(fn -> {:audit_log_count, GA.Audit.count_logs(account_id)} end),
+      Task.async(fn -> {:active_api_keys_count, GA.Accounts.count_active_api_keys(account_id)} end),
+      Task.async(fn ->
+        {:active_frameworks_count, GA.Compliance.count_active_frameworks(account_id)}
+      end),
+      Task.async(fn -> {:recent_logs, GA.Audit.recent_logs(account_id)} end)
+    ]
+
+    results = tasks |> Task.await_many(5_000) |> Map.new()
+
+    if connected?(socket), do: send(self(), :verify_chain)
+
     {:ok,
      assign(socket,
        page_title: "Dashboard",
        active_nav: :dashboard,
-       breadcrumbs: [%{label: "Dashboard"}]
+       breadcrumbs: [%{label: "Dashboard"}],
+       audit_log_count: results.audit_log_count,
+       active_api_keys_count: results.active_api_keys_count,
+       active_frameworks_count: results.active_frameworks_count,
+       recent_logs: results.recent_logs,
+       chain_status: :loading
      )}
+  end
+
+  @impl true
+  def handle_info(:verify_chain, socket) do
+    account_id = socket.assigns.current_account.id
+    chain_result = GA.Audit.verify_chain(account_id)
+    chain_status = chain_status(chain_result)
+    {:noreply, assign(socket, chain_status: chain_status)}
+  end
+
+  defp chain_status(%{total_entries: 0}), do: :no_logs
+  defp chain_status(%{valid: true}), do: :verified
+  defp chain_status(%{valid: false}), do: :broken
+
+  defp chain_status({:error, reason}) do
+    Logger.error("Chain verification failed: #{inspect(reason)}")
+    :error
   end
 
   @impl true
@@ -34,23 +73,32 @@ defmodule GAWeb.DashboardLive do
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 animate-fade-up animate-delay-1">
         <div class="dash-card">
           <div class="dash-card-body">
-            <p class="metric-label">Compliance Score</p>
+            <p class="metric-label">Active Frameworks</p>
             <div class="mt-2 flex items-baseline gap-2">
-              <span class="metric-value text-primary">98%</span>
-              <span class="flex items-center gap-1 text-xs font-mono text-success">
-                <.icon name="hero-arrow-up-mini" class="size-3" /> 2.1%
-              </span>
+              <span class="metric-value text-primary">{@active_frameworks_count}</span>
+              <%= if @active_frameworks_count > 0 do %>
+                <span class="flex items-center gap-1 text-xs font-mono text-success">
+                  <span class="status-dot status-dot--ok" /> configured
+                </span>
+              <% else %>
+                <span class="text-xs font-mono text-base-content/30">none configured</span>
+              <% end %>
             </div>
           </div>
         </div>
 
         <div class="dash-card">
           <div class="dash-card-body">
-            <p class="metric-label">Open Findings</p>
+            <p class="metric-label">Chain Status</p>
             <div class="mt-2 flex items-baseline gap-2">
-              <span class="metric-value">3</span>
-              <span class="flex items-center gap-1 text-xs font-mono text-warning">
-                <span class="status-dot status-dot--warn status-dot--pulse" /> needs review
+              <span class={[
+                "metric-value",
+                chain_status_color(@chain_status)
+              ]}>
+                {chain_status_label(@chain_status)}
+              </span>
+              <span class="flex items-center gap-1 text-xs font-mono">
+                <span class={chain_status_dot_classes(@chain_status)} />
               </span>
             </div>
           </div>
@@ -60,7 +108,7 @@ defmodule GAWeb.DashboardLive do
           <div class="dash-card-body">
             <p class="metric-label">Audit Logs</p>
             <div class="mt-2 flex items-baseline gap-2">
-              <span class="metric-value">1,247</span>
+              <span class="metric-value">{format_number(@audit_log_count)}</span>
               <span class="text-xs font-mono text-base-content/30">last 30d</span>
             </div>
           </div>
@@ -70,10 +118,14 @@ defmodule GAWeb.DashboardLive do
           <div class="dash-card-body">
             <p class="metric-label">API Keys</p>
             <div class="mt-2 flex items-baseline gap-2">
-              <span class="metric-value">2</span>
-              <span class="flex items-center gap-1 text-xs font-mono text-success">
-                <span class="status-dot status-dot--ok" /> all active
-              </span>
+              <span class="metric-value">{@active_api_keys_count}</span>
+              <%= if @active_api_keys_count > 0 do %>
+                <span class="flex items-center gap-1 text-xs font-mono text-success">
+                  <span class="status-dot status-dot--ok" /> active
+                </span>
+              <% else %>
+                <span class="text-xs font-mono text-base-content/30">none active</span>
+              <% end %>
             </div>
           </div>
         </div>
@@ -85,49 +137,29 @@ defmodule GAWeb.DashboardLive do
         <div class="dash-card lg:col-span-2">
           <div class="dash-card-header">Recent Activity</div>
           <div class="divide-y divide-base-300/60">
-            <.activity_row
-              icon="hero-shield-check"
-              icon_color="text-success"
-              title="SOC 2 evidence collected"
-              detail="Access control policy reviewed and approved"
-              time="2 hours ago"
-            />
-            <.activity_row
-              icon="hero-key"
-              icon_color="text-primary"
-              title="API key created"
-              detail="Production API key — ga_pk_prod_..."
-              time="5 hours ago"
-            />
-            <.activity_row
-              icon="hero-exclamation-triangle"
-              icon_color="text-warning"
-              title="Finding opened"
-              detail="Missing encryption at rest for user PII"
-              time="1 day ago"
-            />
-            <.activity_row
-              icon="hero-document-check"
-              icon_color="text-info"
-              title="Policy updated"
-              detail="Data retention policy v2.3 published"
-              time="2 days ago"
-            />
+            <%= if @recent_logs == [] do %>
+              <div class="px-5 py-8 text-center">
+                <p class="text-sm text-base-content/40">No audit log entries yet</p>
+              </div>
+            <% else %>
+              <.activity_row
+                :for={log <- @recent_logs}
+                icon={action_icon(log.action)}
+                icon_color={action_color(log.action)}
+                title={log.action}
+                detail={format_activity_detail(log)}
+                time={relative_time(log.inserted_at)}
+              />
+            <% end %>
           </div>
         </div>
 
-        <%!-- Quick actions / status panel --%>
+        <%!-- System Status — placeholder until health check system is built --%>
         <div class="dash-card">
           <div class="dash-card-header">System Status</div>
-          <div class="dash-card-body space-y-4">
-            <.status_row label="API" status="operational" />
-            <.status_row label="Audit Pipeline" status="operational" />
-            <.status_row label="Evidence Store" status="operational" />
-            <.status_row label="Webhook Delivery" status="degraded" />
-          </div>
-          <div class="border-t border-base-300 px-5 py-3">
-            <p class="text-[0.625rem] font-mono uppercase tracking-wider text-base-content/30">
-              Last checked: 2 min ago
+          <div class="dash-card-body">
+            <p class="text-sm text-base-content/40 py-4 text-center">
+              Health checks coming soon
             </p>
           </div>
         </div>
@@ -142,7 +174,7 @@ defmodule GAWeb.DashboardLive do
               number="01"
               title="Configure Framework"
               description="Set up your compliance framework (SOC 2, ISO 27001, etc.)"
-              complete={false}
+              complete={@active_frameworks_count > 0}
             />
             <.setup_step
               number="02"
@@ -154,7 +186,7 @@ defmodule GAWeb.DashboardLive do
               number="03"
               title="Create API Key"
               description="Generate an API key for programmatic audit log ingestion"
-              complete={true}
+              complete={@active_api_keys_count > 0}
             />
           </div>
         </div>
@@ -162,6 +194,93 @@ defmodule GAWeb.DashboardLive do
     </div>
     """
   end
+
+  # --- Helper functions ---
+
+  defp action_icon(action) when is_binary(action) do
+    cond do
+      action_contains?(action, ~w(create)) -> "hero-plus-circle"
+      action_contains?(action, ~w(delete)) -> "hero-trash"
+      action_contains?(action, ~w(update)) -> "hero-pencil-square"
+      action_contains?(action, ~w(login logout auth)) -> "hero-key"
+      action_contains?(action, ~w(access read)) -> "hero-eye"
+      action_contains?(action, ~w(export)) -> "hero-arrow-down-tray"
+      true -> "hero-document-text"
+    end
+  end
+
+  defp action_icon(_), do: "hero-document-text"
+
+  defp action_color(action) when is_binary(action) do
+    cond do
+      action_contains?(action, ~w(create)) -> "text-success"
+      action_contains?(action, ~w(delete)) -> "text-error"
+      action_contains?(action, ~w(update export)) -> "text-info"
+      action_contains?(action, ~w(login logout auth)) -> "text-primary"
+      action_contains?(action, ~w(access read)) -> "text-warning"
+      true -> "text-base-content/50"
+    end
+  end
+
+  defp action_color(_), do: "text-base-content/50"
+
+  defp action_contains?(action, keywords) do
+    tokens = String.split(action, ~r/[._]/)
+    Enum.any?(keywords, fn kw -> Enum.any?(tokens, &String.starts_with?(&1, kw)) end)
+  end
+
+  @doc false
+  def relative_time(datetime) do
+    now = DateTime.utc_now()
+    diff = DateTime.diff(now, datetime, :second)
+
+    cond do
+      diff < 60 -> "just now"
+      diff < 3600 -> "#{div(diff, 60)} min ago"
+      diff < 86400 -> "#{div(diff, 3600)} hours ago"
+      diff < 2_592_000 -> "#{div(diff, 86400)} days ago"
+      true -> Calendar.strftime(datetime, "%b %d, %Y")
+    end
+  end
+
+  defp format_activity_detail(log) do
+    parts =
+      [log.resource_type, log.actor_id]
+      |> Enum.reject(&is_nil/1)
+      |> Enum.join(" \u00b7 ")
+
+    if parts == "", do: "\u2014", else: parts
+  end
+
+  @doc false
+  def format_number(n) when is_integer(n) and n >= 1000 do
+    Integer.to_string(n)
+    |> String.graphemes()
+    |> Enum.reverse()
+    |> Enum.chunk_every(3)
+    |> Enum.map_join(",", &Enum.join/1)
+    |> String.reverse()
+  end
+
+  def format_number(n) when is_integer(n), do: Integer.to_string(n)
+
+  defp chain_status_label(:verified), do: "verified"
+  defp chain_status_label(:broken), do: "broken"
+  defp chain_status_label(:no_logs), do: "no logs"
+  defp chain_status_label(:loading), do: "checking…"
+  defp chain_status_label(:error), do: "unavailable"
+
+  defp chain_status_color(:verified), do: "text-success"
+  defp chain_status_color(:broken), do: "text-error"
+  defp chain_status_color(:no_logs), do: "text-base-content/40"
+  defp chain_status_color(:loading), do: "text-base-content/40"
+  defp chain_status_color(:error), do: "text-warning"
+
+  defp chain_status_dot_classes(:verified), do: "status-dot status-dot--ok"
+  defp chain_status_dot_classes(:broken), do: "status-dot status-dot--error status-dot--pulse"
+  defp chain_status_dot_classes(:no_logs), do: ""
+  defp chain_status_dot_classes(:loading), do: ""
+  defp chain_status_dot_classes(:error), do: "status-dot status-dot--warn"
 
   # --- Dashboard components ---
 
@@ -182,29 +301,6 @@ defmodule GAWeb.DashboardLive do
         <p class="text-xs text-base-content/40 mt-0.5 truncate">{@detail}</p>
       </div>
       <span class="text-[0.625rem] font-mono text-base-content/30 shrink-0 mt-0.5">{@time}</span>
-    </div>
-    """
-  end
-
-  attr :label, :string, required: true
-  attr :status, :string, required: true
-
-  defp status_row(assigns) do
-    ~H"""
-    <div class="flex items-center justify-between">
-      <span class="text-xs font-medium text-base-content/60">{@label}</span>
-      <div class="flex items-center gap-1.5">
-        <span class={[
-          "status-dot",
-          if(@status == "operational", do: "status-dot--ok", else: "status-dot--warn status-dot--pulse")
-        ]} />
-        <span class={[
-          "text-[0.625rem] font-mono uppercase tracking-wider",
-          if(@status == "operational", do: "text-success", else: "text-warning")
-        ]}>
-          {@status}
-        </span>
-      </div>
     </div>
     """
   end

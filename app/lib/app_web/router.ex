@@ -51,6 +51,13 @@ defmodule GAWeb.Router do
   # Dashboard Routes
   # ============================================
 
+  # Account-scoped dashboard downloads (regular controllers)
+  scope "/dashboard/accounts/:account_id", GAWeb do
+    pipe_through [:browser, :require_authenticated_user, :load_account]
+
+    get "/audit-logs/export", AuditLogExportController, :export
+  end
+
   # Account-scoped dashboard (LiveView)
   scope "/dashboard/accounts/:account_id", GAWeb do
     pipe_through [:browser, :require_authenticated_user]
@@ -63,7 +70,12 @@ defmodule GAWeb.Router do
       ],
       layout: {GAWeb.Layouts, :dashboard} do
       live "/", DashboardLive, :index
+      live "/audit-logs", AuditLogLive.Index, :index
       live "/api-keys", ApiKeyLive.Index, :index
+      live "/compliance", ComplianceLive.Index, :index
+      live "/settings", SettingsLive.Index, :general
+      live "/settings/members", SettingsLive.Index, :members
+      live "/settings/security", SettingsLive.Index, :security
     end
   end
 

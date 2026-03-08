@@ -139,6 +139,12 @@ defmodule GAWeb.Layouts do
               label="Dashboard"
               active={@active_nav == :dashboard}
             />
+            <.sidebar_nav_item
+              href={~p"/dashboard/accounts/#{@current_account}/audit-logs"}
+              icon="hero-document-text"
+              label="Audit Logs"
+              active={@active_nav == :audit_logs}
+            />
           </ul>
         </li>
 
@@ -156,11 +162,25 @@ defmodule GAWeb.Layouts do
           </ul>
         </li>
 
+        <li>
+          <p class="px-2 mb-2 font-mono text-[0.6rem] font-semibold uppercase tracking-[0.15em] text-white/25">
+            Configuration
+          </p>
+          <ul role="list" class="space-y-0.5">
+            <.sidebar_nav_item
+              href={~p"/dashboard/accounts/#{@current_account}/compliance"}
+              icon="hero-shield-check"
+              label="Compliance"
+              active={@active_nav == :compliance}
+            />
+          </ul>
+        </li>
+
         <%!-- Bottom section --%>
         <li class="mt-auto">
           <ul role="list" class="space-y-0.5">
             <.sidebar_nav_item
-              href={~p"/users/settings"}
+              href={"#{@account_base}/settings"}
               icon="hero-cog-6-tooth"
               label="Settings"
               active={@active_nav == :settings}
@@ -199,7 +219,8 @@ defmodule GAWeb.Layouts do
         class={[
           "group flex items-center gap-x-2.5 rounded px-2 py-1.5 text-[0.8125rem] font-medium transition-colors",
           if(@active,
-            do: "bg-white/[0.08] text-white border-l-2 border-emerald-400 -ml-px pl-[calc(0.5rem-1px)]",
+            do:
+              "bg-white/[0.08] text-white border-l-2 border-emerald-400 -ml-px pl-[calc(0.5rem-1px)]",
             else: "text-white/50 hover:bg-white/[0.04] hover:text-white/70"
           )
         ]}

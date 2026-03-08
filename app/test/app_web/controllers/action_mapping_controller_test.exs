@@ -8,7 +8,8 @@ defmodule GAWeb.Api.V1.ActionMappingControllerTest do
 
   describe "action mapping CRUD + validation endpoints" do
     test "supports create/list/update/delete and dry-run validate", %{conn: conn} do
-      %{account: account, public_token: public_token, private_token: private_token} = account_api_context()
+      %{account: account, public_token: public_token, private_token: private_token} =
+        account_api_context()
 
       create_response =
         conn
@@ -43,9 +44,13 @@ defmodule GAWeb.Api.V1.ActionMappingControllerTest do
       assert update_response["data"]["taxonomy_path"] == "access.phi.phi_write"
 
       assert {:ok, _} =
-               Audit.create_log_entry(account.id, valid_audit_attrs(%{action: "patient_chart_viewed"}))
+               Audit.create_log_entry(
+                 account.id,
+                 valid_audit_attrs(%{action: "patient_chart_viewed"})
+               )
 
-      assert {:ok, _} = Audit.create_log_entry(account.id, valid_audit_attrs(%{action: "custom_event"}))
+      assert {:ok, _} =
+               Audit.create_log_entry(account.id, valid_audit_attrs(%{action: "custom_event"}))
 
       validate_response =
         conn
@@ -96,7 +101,7 @@ defmodule GAWeb.Api.V1.ActionMappingControllerTest do
         |> json_response(422)
 
       assert unknown_framework_response["status"] == 422
-      assert unknown_framework_response["message"] == "Unknown framework: unknown"
+      assert unknown_framework_response["message"] == "Unknown or unsupported framework"
     end
   end
 
@@ -131,7 +136,9 @@ defmodule GAWeb.Api.V1.ActionMappingControllerTest do
     user = user || user_fixture()
 
     {:ok, account} =
-      Accounts.create_account(%{name: "Action Mapping API Account #{System.unique_integer([:positive])}"})
+      Accounts.create_account(%{
+        name: "Action Mapping API Account #{System.unique_integer([:positive])}"
+      })
 
     {:ok, account_user} = Accounts.add_user_to_account(account, user, :owner)
 

@@ -62,7 +62,9 @@ defmodule GAWeb.Api.V1.TaxonomyControllerTest do
     user = user || user_fixture()
 
     {:ok, account} =
-      Accounts.create_account(%{name: "Taxonomy API Account #{System.unique_integer([:positive])}"})
+      Accounts.create_account(%{
+        name: "Taxonomy API Account #{System.unique_integer([:positive])}"
+      })
 
     {:ok, account_user} = Accounts.add_user_to_account(account, user, :owner)
 

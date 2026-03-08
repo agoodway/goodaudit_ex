@@ -4,6 +4,7 @@ defmodule GA.Accounts do
   """
 
   import Ecto.Query, warn: false
+  require Logger
   alias GA.Repo
 
   alias GA.Accounts.{Account, AccountUser, ApiKey, User, UserToken, UserNotifier}
@@ -368,6 +369,63 @@ defmodule GA.Accounts do
     |> Repo.insert()
   end
 
+  @doc "Update an account's attributes. Re-derives slug when name changes."
+  def update_account(%Account{} = account, attrs) do
+    changeset =
+      account
+      |> Account.changeset(attrs)
+      |> maybe_rederive_slug()
+
+    Repo.update(changeset)
+  end
+
+  @doc "Delete an account. Cascades to account_users and api_keys."
+  def delete_account(%Account{} = account) do
+    Logger.warning("Account deletion initiated",
+      account_id: account.id,
+      account_name: account.name,
+      account_slug: account.slug
+    )
+
+    Repo.delete(account)
+  end
+
+  @doc "Rotate the HMAC key for an account. Generates a new 32-byte key."
+  def rotate_hmac_key(%Account{} = account) do
+    account
+    |> Ecto.Changeset.change(hmac_key: :crypto.strong_rand_bytes(32))
+    |> Repo.update()
+  end
+
+  @doc "List all members of an account with preloaded users, ordered by role then email."
+  def list_account_members(%Account{} = account) do
+    role_order = dynamic([au], fragment("CASE ? WHEN 'owner' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END", au.role))
+
+    AccountUser
+    |> where([au], au.account_id == ^account.id)
+    |> join(:inner, [au], u in assoc(au, :user))
+    |> preload([au, u], user: u)
+    |> order_by([au], ^role_order)
+    |> order_by([au, u], asc: u.email)
+    |> Repo.all()
+  end
+
+  defp maybe_rederive_slug(changeset) do
+    case Ecto.Changeset.get_change(changeset, :name) do
+      nil ->
+        changeset
+
+      name ->
+        case Account.slugify(name) do
+          "" ->
+            Ecto.Changeset.add_error(changeset, :name, "must contain at least one alphanumeric character")
+
+          slug ->
+            Ecto.Changeset.put_change(changeset, :slug, slug)
+        end
+    end
+  end
+
   # ============================================
   # AccountUser (Membership) Functions
   # ============================================
@@ -381,6 +439,14 @@ defmodule GA.Accounts do
   def get_account_user!(id) do
     AccountUser
     |> Repo.get!(id)
+    |> Repo.preload([:user, :account])
+  end
+
+  @doc "Get account_user by ID scoped to a specific account."
+  def get_account_user!(id, %Account{} = account) do
+    AccountUser
+    |> where([au], au.id == ^id and au.account_id == ^account.id)
+    |> Repo.one!()
     |> Repo.preload([:user, :account])
   end
 
@@ -413,6 +479,23 @@ defmodule GA.Accounts do
   # ============================================
   # API Key Functions
   # ============================================
+
+  @doc "Counts active (non-revoked, non-expired) API keys for an account."
+  def count_active_api_keys(account_id) when is_binary(account_id) do
+    now = DateTime.utc_now()
+
+    from(k in ApiKey,
+      join: au in AccountUser,
+      on: k.account_user_id == au.id,
+      where: au.account_id == ^account_id,
+      where: k.status == :active,
+      where: is_nil(k.expires_at) or k.expires_at > ^now,
+      select: count(k.id)
+    )
+    |> Repo.one()
+  end
+
+  def count_active_api_keys(_), do: 0
 
   @doc "Verify an API token and return the key with account_user preloaded."
   def verify_api_token(token) do

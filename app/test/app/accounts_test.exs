@@ -394,4 +394,82 @@ defmodule GA.AccountsTest do
       refute inspect(%User{password: "123456"}) =~ "password: \"123456\""
     end
   end
+
+  describe "list_account_members/1" do
+    test "returns members with preloaded users ordered by role then email" do
+      owner = user_fixture(email: "owner@example.com")
+      {:ok, account} = Accounts.create_account(owner, %{name: "Test Account"})
+
+      admin = user_fixture(email: "admin@example.com")
+      member = user_fixture(email: "member@example.com")
+      {:ok, _} = Accounts.add_user_to_account(account, admin, :admin)
+      {:ok, _} = Accounts.add_user_to_account(account, member, :member)
+
+      members = Accounts.list_account_members(account)
+
+      assert length(members) == 3
+      assert [first, second, third] = members
+      assert first.role == :owner
+      assert first.user.email == "owner@example.com"
+      assert second.role == :admin
+      assert second.user.email == "admin@example.com"
+      assert third.role == :member
+      assert third.user.email == "member@example.com"
+    end
+
+    test "returns empty list for account with no members" do
+      owner = user_fixture()
+      {:ok, account} = Accounts.create_account(owner, %{name: "Empty Account"})
+      # Remove the owner to test empty case
+      Accounts.remove_user_from_account(account, owner)
+
+      assert Accounts.list_account_members(account) == []
+    end
+  end
+
+  describe "update_account/2" do
+    test "updates account name and re-derives slug" do
+      user = user_fixture()
+      {:ok, account} = Accounts.create_account(user, %{name: "Original Name"})
+
+      assert {:ok, updated} = Accounts.update_account(account, %{name: "New Name"})
+      assert updated.name == "New Name"
+      assert updated.slug == "new-name"
+    end
+
+    test "returns error changeset for invalid attrs" do
+      user = user_fixture()
+      {:ok, account} = Accounts.create_account(user, %{name: "Test"})
+
+      assert {:error, %Ecto.Changeset{}} = Accounts.update_account(account, %{name: ""})
+    end
+  end
+
+  describe "delete_account/1" do
+    test "deletes the account and cascades to account_users and api_keys" do
+      user = user_fixture()
+      {:ok, account} = Accounts.create_account(user, %{name: "Delete Me"})
+
+      membership = Accounts.get_account_user(user, account)
+      {:ok, {_api_key, _token}} = Accounts.create_api_key(membership, %{name: "test", type: :public})
+
+      assert {:ok, _} = Accounts.delete_account(account)
+      assert is_nil(Accounts.get_account(account.id))
+      assert is_nil(Accounts.get_account_user(user, account))
+    end
+  end
+
+  describe "rotate_hmac_key/1" do
+    test "generates a new 32-byte key that differs from the old one" do
+      user = user_fixture()
+      {:ok, account} = Accounts.create_account(user, %{name: "HMAC Test"})
+
+      {:ok, old_key} = Accounts.get_hmac_key(account.id)
+      assert {:ok, updated} = Accounts.rotate_hmac_key(account)
+
+      {:ok, new_key} = Accounts.get_hmac_key(updated.id)
+      assert byte_size(new_key) == 32
+      assert new_key != old_key
+    end
+  end
 end

@@ -1,0 +1,34 @@
+Takeoff complete for **Compliance Framework Settings**. Here's the summary:
+
+**Branch:** `feat/live-dashboard-metrics` (reused from prior change)
+**Work session:** `ws-0a40` — "Epic: Compliance Framework Settings"
+**Issues started:** 23
+**Issues skipped:** 1 (review gate `td-37e3a6`)
+**All 23 issues submitted for review.**
+
+### What was implemented:
+
+**Backend (2 issues):**
+- `GA.Compliance.get_active_framework/2` — returns `{:ok, association}` or `{:error, :not_found}`
+- `GA.Compliance.update_framework_config/3` — updates validation mode and config overrides on active frameworks
+
+**Router & Navigation (2 issues):**
+- Added `live "/compliance"` route in `:account_scoped` live session
+- Added "Configuration" sidebar section with "Compliance" nav item (`hero-shield-check`)
+
+**LiveView & Components (11 issues):**
+- `ComplianceLive.Index` — mounts with all frameworks, determines `can_edit?` from account membership role
+- `FrameworkCardComponent` — stateful LiveComponent with:
+  - Active/Inactive badge and toggle
+  - Expandable settings panel (validation mode, retention days, verification cadence, additional required fields)
+  - Framework defaults as placeholder text
+  - Save button with change detection (disabled when clean)
+  - Toggle activation/deactivation with confirmation
+  - Read-only view for non-admin members
+  - Strict mode warning text
+  - Responsive 2-column grid layout
+
+**Tests (8 issues):**
+- 4 context function tests (get_active_framework, update_framework_config)
+- 7 LiveView tests (mount, activation, deactivation, settings save, read-only view, sidebar nav)
+- **27 tests, 0 failures**

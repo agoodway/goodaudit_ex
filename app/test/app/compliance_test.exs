@@ -38,7 +38,10 @@ defmodule GA.ComplianceTest do
     test "built-in modules expose expected callback values" do
       assert GA.Compliance.Frameworks.HIPAA.name() == "HIPAA"
       assert :actor_id in GA.Compliance.Frameworks.HIPAA.required_fields()
-      assert GA.Compliance.Frameworks.HIPAA.extension_schema().required["phi_accessed"] == :boolean
+
+      assert GA.Compliance.Frameworks.HIPAA.extension_schema().required["phi_accessed"] ==
+               :boolean
+
       assert GA.Compliance.Frameworks.HIPAA.default_retention_days() == 2555
       assert GA.Compliance.Frameworks.HIPAA.verification_cadence_hours() == 24
 
@@ -111,12 +114,16 @@ defmodule GA.ComplianceTest do
       account = account_fixture()
 
       assert {:ok, strict} =
-               Compliance.activate_framework(account.id, "hipaa", action_validation_mode: "strict")
+               Compliance.activate_framework(account.id, "hipaa",
+                 action_validation_mode: "strict"
+               )
 
       assert strict.action_validation_mode == "strict"
 
       assert {:error, changeset} =
-               Compliance.activate_framework(account.id, "soc2", action_validation_mode: "invalid")
+               Compliance.activate_framework(account.id, "soc2",
+                 action_validation_mode: "invalid"
+               )
 
       assert "is invalid" in errors_on(changeset).action_validation_mode
     end
@@ -171,6 +178,98 @@ defmodule GA.ComplianceTest do
     test "effective_config/2 returns not_active when framework is not activated" do
       account = account_fixture()
       assert {:error, :not_active} = Compliance.effective_config(account.id, "hipaa")
+    end
+
+    test "effective_config/2 returns framework defaults when config_overrides is empty" do
+      account = account_fixture()
+      {:ok, _} = Compliance.activate_framework(account.id, "hipaa")
+
+      assert {:ok, config} = Compliance.effective_config(account.id, "hipaa")
+
+      assert config.retention_days == GA.Compliance.Frameworks.HIPAA.default_retention_days()
+
+      assert config.verification_cadence_hours ==
+               GA.Compliance.Frameworks.HIPAA.verification_cadence_hours()
+
+      assert :actor_id in config.required_fields
+    end
+  end
+
+  describe "get_active_framework/2" do
+    test "returns association when active" do
+      account = account_fixture()
+      {:ok, activated} = Compliance.activate_framework(account.id, "hipaa")
+
+      assert {:ok, found} = Compliance.get_active_framework(account.id, "hipaa")
+      assert found.id == activated.id
+      assert found.framework == "hipaa"
+    end
+
+    test "returns not_found when not active" do
+      account = account_fixture()
+      assert {:error, :not_found} = Compliance.get_active_framework(account.id, "hipaa")
+    end
+  end
+
+  describe "update_framework_config/3" do
+    test "updates validation mode from flexible to strict" do
+      account = account_fixture()
+      {:ok, _} = Compliance.activate_framework(account.id, "hipaa")
+
+      assert {:ok, updated} =
+               Compliance.update_framework_config(account.id, "hipaa", %{
+                 action_validation_mode: "strict"
+               })
+
+      assert updated.action_validation_mode == "strict"
+    end
+
+    test "updates config_overrides retention_days" do
+      account = account_fixture()
+      {:ok, _} = Compliance.activate_framework(account.id, "hipaa")
+
+      assert {:ok, updated} =
+               Compliance.update_framework_config(account.id, "hipaa", %{
+                 config_overrides: %{"retention_days" => 3650}
+               })
+
+      assert updated.config_overrides["retention_days"] == 3650
+    end
+
+    test "rejects invalid override key" do
+      account = account_fixture()
+      {:ok, _} = Compliance.activate_framework(account.id, "hipaa")
+
+      assert {:error, changeset} =
+               Compliance.update_framework_config(account.id, "hipaa", %{
+                 config_overrides: %{"bad_key" => "value"}
+               })
+
+      assert "contains unsupported keys: bad_key" in errors_on(changeset).config_overrides
+    end
+
+    test "returns not_found for non-existent framework" do
+      account = account_fixture()
+
+      assert {:error, :not_found} =
+               Compliance.update_framework_config(account.id, "hipaa", %{
+                 action_validation_mode: "strict"
+               })
+    end
+  end
+
+  describe "count_active_frameworks/1" do
+    test "returns 0 with no frameworks" do
+      account = account_fixture()
+      assert Compliance.count_active_frameworks(account.id) == 0
+    end
+
+    test "returns correct count after activating frameworks" do
+      account = account_fixture()
+      {:ok, _} = Compliance.activate_framework(account.id, "hipaa")
+      {:ok, _} = Compliance.activate_framework(account.id, "soc2")
+
+      assert Compliance.count_active_frameworks(account.id) == 2
     end
   end
 

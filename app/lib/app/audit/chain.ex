@@ -71,7 +71,8 @@ defmodule GA.Audit.Chain do
     extensions = canonical_extensions(get_value(normalized_attrs, "extensions"))
     metadata = canonical_metadata(get_value(normalized_attrs, "metadata"))
 
-    ([Enum.at(fields, 0), Enum.at(fields, 1), previous] ++ Enum.drop(fields, 2) ++
+    ([Enum.at(fields, 0), Enum.at(fields, 1), previous] ++
+       Enum.drop(fields, 2) ++
        [extensions, metadata])
     |> Enum.map(&reject_payload_delimiter!/1)
     |> Enum.join("|")

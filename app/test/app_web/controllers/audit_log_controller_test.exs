@@ -229,7 +229,10 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
                })
 
       assert {:ok, _} =
-               Audit.create_log_entry(account.id, valid_audit_attrs(%{action: "phi_read", resource_id: "canonical"}))
+               Audit.create_log_entry(
+                 account.id,
+                 valid_audit_attrs(%{action: "phi_read", resource_id: "canonical"})
+               )
 
       assert {:ok, _} =
                Audit.create_log_entry(
@@ -238,7 +241,10 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
                )
 
       assert {:ok, _} =
-               Audit.create_log_entry(account.id, valid_audit_attrs(%{action: "treatment", resource_id: "other"}))
+               Audit.create_log_entry(
+                 account.id,
+                 valid_audit_attrs(%{action: "treatment", resource_id: "other"})
+               )
 
       response =
         conn

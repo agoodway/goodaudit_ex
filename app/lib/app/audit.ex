@@ -15,7 +15,48 @@ defmodule GA.Audit do
 
   @default_limit 50
   @max_limit 1000
+  @max_export_limit 10_000
   @reserved_chain_keys [:account_id, :sequence_number, :checksum, :previous_checksum]
+
+  @doc """
+  Counts audit log entries for an account within a time window.
+  Defaults to the last 30 days. Pass `since:` to override.
+  """
+  def count_logs(account_id, opts \\ []) when is_binary(account_id) do
+    since = Keyword.get(opts, :since, DateTime.add(DateTime.utc_now(), -30, :day))
+
+    from(log in Log,
+      where: log.account_id == ^account_id and log.timestamp >= ^since,
+      select: count(log.id)
+    )
+    |> Repo.one()
+  end
+
+  @doc """
+  Returns the most recent audit log entries for an account, ordered newest first.
+  """
+  @recent_logs_max_limit 100
+
+  def recent_logs(account_id, limit \\ 5) when is_binary(account_id) do
+    clamped_limit = limit |> max(1) |> min(@recent_logs_max_limit)
+
+    from(log in Log,
+      where: log.account_id == ^account_id,
+      order_by: [desc: log.inserted_at, desc: log.sequence_number],
+      limit: ^clamped_limit,
+      select:
+        struct(log, [
+          :id,
+          :account_id,
+          :action,
+          :resource_type,
+          :actor_id,
+          :inserted_at,
+          :sequence_number
+        ])
+    )
+    |> Repo.all()
+  end
 
   @doc """
   Creates a new audit log entry with per-account chain fields in a single transaction.
@@ -38,7 +79,8 @@ defmodule GA.Audit do
              get_opt(attrs, :extensions),
              additional_required_by_framework
            ),
-         :ok <- Compliance.validate_action_for_strict_frameworks(account_id, get_opt(attrs, :action)) do
+         :ok <-
+           Compliance.validate_action_for_strict_frameworks(account_id, get_opt(attrs, :action)) do
       attrs =
         attrs
         |> Map.delete("extensions")
@@ -78,6 +120,35 @@ defmodule GA.Audit do
   end
 
   def create_log_entry(_, _), do: {:error, :invalid_arguments}
+
+  @doc """
+  Exports account-scoped audit entries with a higher limit cap (#{@max_export_limit}).
+  Ignores cursor/pagination — always starts from the beginning.
+  Returns `{entries, truncated?}`.
+  """
+  def export_logs(account_id, opts \\ []) when is_binary(account_id) do
+    with {:ok, category_actions} <- resolve_category_actions(account_id, get_opt(opts, :category)) do
+      limit = min(get_opt(opts, :limit) || @max_export_limit, @max_export_limit)
+
+      export_opts = opts |> Keyword.delete(:after_sequence)
+
+      query =
+        from(log in Log,
+          where: log.account_id == ^account_id,
+          order_by: [asc: log.sequence_number]
+        )
+        |> apply_filters(export_opts, category_actions)
+        |> limit(^(limit + 1))
+
+      entries = Repo.all(query)
+
+      if length(entries) > limit do
+        {Enum.take(entries, limit), true}
+      else
+        {entries, false}
+      end
+    end
+  end
 
   @doc """
   Lists account-scoped audit entries with cursor pagination and optional filters.
@@ -281,7 +352,7 @@ defmodule GA.Audit do
       where(q, [log], log.timestamp >= ^value)
     end)
     |> maybe_filter(get_opt(opts, :to), fn q, value ->
-      where(q, [log], log.timestamp <= ^value)
+      where(q, [log], log.timestamp < ^value)
     end)
   end
 
@@ -375,7 +446,10 @@ defmodule GA.Audit do
     |> put_if_missing(:source_ip, extension_value(extensions, "hipaa", "source_ip"))
     |> put_if_missing(:user_agent, extension_value(extensions, "hipaa", "user_agent"))
     |> put_if_missing(:failure_reason, extension_value(extensions, "hipaa", "failure_reason"))
-    |> put_if_missing(:phi_accessed, extension_value(extensions, "hipaa", "phi_accessed") || false)
+    |> put_if_missing(
+      :phi_accessed,
+      extension_value(extensions, "hipaa", "phi_accessed") || false
+    )
   end
 
   defp put_if_missing(attrs, _key, nil), do: attrs
@@ -429,7 +503,8 @@ defmodule GA.Audit do
     end
   end
 
-  defp resolve_category_actions(_account_id, _category_filter), do: {:error, :invalid_category_format}
+  defp resolve_category_actions(_account_id, _category_filter),
+    do: {:error, :invalid_category_format}
 
   defp parse_category_filter(value) when is_binary(value) do
     case String.split(value, ":", parts: 2) do

@@ -50,7 +50,8 @@ defmodule GAWeb.Api.V1.ActionMappingController do
 
   operation(:create,
     summary: "Create action mapping",
-    request_body: {"Action mapping payload", "application/json", ActionMappingRequest, required: true},
+    request_body:
+      {"Action mapping payload", "application/json", ActionMappingRequest, required: true},
     responses: [
       created: {"Action mapping", "application/json", ActionMappingResponse},
       unprocessable_entity: {"Validation error", "application/json", ErrorResponse},
@@ -154,7 +155,7 @@ defmodule GAWeb.Api.V1.ActionMappingController do
       {:error, :unknown_framework} ->
         conn
         |> put_status(:unprocessable_entity)
-        |> json(%{status: 422, message: "Unknown framework: #{framework}"})
+        |> json(%{status: 422, message: "Unknown or unsupported framework"})
     end
   end
 
