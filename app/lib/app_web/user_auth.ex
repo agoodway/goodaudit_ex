@@ -211,13 +211,26 @@ defmodule GAWeb.UserAuth do
   @doc """
   LiveView on_mount hooks for authentication and account loading.
 
+  - `:mount_current_scope` — loads the current user from the session token and assigns `current_scope`.
   - `:ensure_authenticated` — redirects to login if no current_scope is set.
   - `:load_account_context` — loads the account from URL params. Must be used after `:ensure_authenticated`.
   """
   def on_mount(action, params, session, socket)
 
+  def on_mount(:mount_current_scope, _params, session, socket) do
+    user =
+      with %{"user_token" => token} <- session,
+           {user, _token_inserted_at} <- Accounts.get_user_by_session_token(token) do
+        user
+      else
+        _ -> nil
+      end
+
+    {:cont, Phoenix.Component.assign(socket, :current_scope, Scope.for_user(user))}
+  end
+
   def on_mount(:ensure_authenticated, _params, _session, socket) do
-    if socket.assigns.current_scope && socket.assigns.current_scope.user do
+    if socket.assigns[:current_scope] && socket.assigns.current_scope.user do
       {:cont, socket}
     else
       socket =

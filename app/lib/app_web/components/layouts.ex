@@ -106,18 +106,30 @@ defmodule GAWeb.Layouts do
     assigns = assign(assigns, :account_base, account_dashboard_path(assigns[:current_account]))
 
     ~H"""
-    <%!-- Logo --%>
-    <div class="flex h-14 shrink-0 items-center px-5 border-b border-white/[0.06]">
-      <.link href={~p"/dashboard"} class="flex items-center gap-2.5">
-        <span class="text-sm font-bold tracking-tight text-white/90">GoodAudit</span>
+    <%!-- Brand --%>
+    <div class="flex h-14 shrink-0 items-center gap-3 px-5 border-b border-white/[0.06]">
+      <.link href={~p"/dashboard"} class="flex items-center gap-3 group">
+        <div class="flex h-7 w-7 items-center justify-center rounded bg-emerald-500/20 border border-emerald-400/30">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="text-emerald-400">
+            <path
+              d="M2 4h10M2 7h7M2 10h5"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
+          </svg>
+        </div>
+        <span class="font-mono text-xs font-bold tracking-wider text-white/80 uppercase group-hover:text-white transition-colors">
+          GoodAudit
+        </span>
       </.link>
     </div>
 
     <%!-- Navigation --%>
-    <nav class="flex flex-1 flex-col px-3 py-4">
-      <ul role="list" class="flex flex-1 flex-col gap-y-5">
+    <nav class="flex flex-1 flex-col px-3 py-5">
+      <ul role="list" class="flex flex-1 flex-col gap-y-6">
         <li>
-          <p class="px-2 mb-2 text-[0.65rem] font-semibold uppercase tracking-widest text-white/30">
+          <p class="px-2 mb-2 font-mono text-[0.6rem] font-semibold uppercase tracking-[0.15em] text-white/25">
             Overview
           </p>
           <ul role="list" class="space-y-0.5">
@@ -126,6 +138,20 @@ defmodule GAWeb.Layouts do
               icon="hero-squares-2x2"
               label="Dashboard"
               active={@active_nav == :dashboard}
+            />
+          </ul>
+        </li>
+
+        <li>
+          <p class="px-2 mb-2 font-mono text-[0.6rem] font-semibold uppercase tracking-[0.15em] text-white/25">
+            Developers
+          </p>
+          <ul role="list" class="space-y-0.5">
+            <.sidebar_nav_item
+              href={"#{@account_base}/api-keys"}
+              icon="hero-key"
+              label="API Keys"
+              active={@active_nav == :api_keys}
             />
           </ul>
         </li>
@@ -142,13 +168,13 @@ defmodule GAWeb.Layouts do
           </ul>
 
           <%!-- User info --%>
-          <div class="mt-3 pt-3 border-t border-white/[0.06]">
+          <div class="mt-4 pt-4 border-t border-white/[0.06]">
             <div class="flex items-center gap-2.5 px-2 py-1.5">
-              <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-white/70">
+              <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-white/[0.07] text-[0.65rem] font-mono font-bold text-white/50 border border-white/[0.08]">
                 {String.first(@current_scope.user.email) |> String.upcase()}
               </div>
               <div class="min-w-0 flex-1">
-                <p class="truncate text-xs font-medium text-white/70">
+                <p class="truncate text-xs text-white/50 font-mono">
                   {@current_scope.user.email}
                 </p>
               </div>
@@ -171,10 +197,10 @@ defmodule GAWeb.Layouts do
       <.link
         href={@href}
         class={[
-          "group flex items-center gap-x-2.5 rounded-md px-2 py-1.5 text-[0.8125rem] font-medium transition-colors",
+          "group flex items-center gap-x-2.5 rounded px-2 py-1.5 text-[0.8125rem] font-medium transition-colors",
           if(@active,
-            do: "bg-white/10 text-white",
-            else: "text-white/60 hover:bg-white/[0.06] hover:text-white/80"
+            do: "bg-white/[0.08] text-white border-l-2 border-emerald-400 -ml-px pl-[calc(0.5rem-1px)]",
+            else: "text-white/50 hover:bg-white/[0.04] hover:text-white/70"
           )
         ]}
       >
@@ -183,8 +209,8 @@ defmodule GAWeb.Layouts do
           class={[
             "size-[1.125rem] shrink-0",
             if(@active,
-              do: "text-primary",
-              else: "text-white/30 group-hover:text-white/60"
+              do: "text-emerald-400",
+              else: "text-white/25 group-hover:text-white/50"
             )
           ]}
         />
@@ -239,31 +265,32 @@ defmodule GAWeb.Layouts do
   """
   def theme_toggle(assigns) do
     ~H"""
-    <div class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full">
-      <div class="absolute w-1/3 h-full rounded-full border-1 border-base-200 bg-base-100 brightness-200 left-0 [[data-theme=light]_&]:left-1/3 [[data-theme=dark]_&]:left-2/3 transition-[left]" />
-
+    <div class="flex items-center gap-0.5 rounded border border-base-300 bg-base-200/50 p-0.5">
       <button
-        class="flex p-2 cursor-pointer w-1/3"
-        phx-click={JS.dispatch("phx:set-theme")}
-        data-phx-theme="system"
-      >
-        <.icon name="hero-computer-desktop-micro" class="size-4 opacity-75 hover:opacity-100" />
-      </button>
-
-      <button
-        class="flex p-2 cursor-pointer w-1/3"
+        class="flex items-center justify-center h-6 w-6 rounded-sm cursor-pointer transition-all hover:bg-base-300 [[data-theme=light]_&]:bg-base-100 [[data-theme=light]_&]:shadow-sm"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="light"
+        title="Light theme"
       >
-        <.icon name="hero-sun-micro" class="size-4 opacity-75 hover:opacity-100" />
+        <.icon name="hero-sun-micro" class="size-3.5 text-base-content/50" />
       </button>
 
       <button
-        class="flex p-2 cursor-pointer w-1/3"
+        class="flex items-center justify-center h-6 w-6 rounded-sm cursor-pointer transition-all hover:bg-base-300"
+        phx-click={JS.dispatch("phx:set-theme")}
+        data-phx-theme="system"
+        title="System theme"
+      >
+        <.icon name="hero-computer-desktop-micro" class="size-3.5 text-base-content/50" />
+      </button>
+
+      <button
+        class="flex items-center justify-center h-6 w-6 rounded-sm cursor-pointer transition-all hover:bg-base-300 [[data-theme=dark]_&]:bg-base-100 [[data-theme=dark]_&]:shadow-sm"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="dark"
+        title="Dark theme"
       >
-        <.icon name="hero-moon-micro" class="size-4 opacity-75 hover:opacity-100" />
+        <.icon name="hero-moon-micro" class="size-3.5 text-base-content/50" />
       </button>
     </div>
     """

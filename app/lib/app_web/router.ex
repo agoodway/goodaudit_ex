@@ -57,11 +57,13 @@ defmodule GAWeb.Router do
 
     live_session :account_scoped,
       on_mount: [
+        {GAWeb.UserAuth, :mount_current_scope},
         {GAWeb.UserAuth, :ensure_authenticated},
         {GAWeb.UserAuth, :load_account_context}
       ],
       layout: {GAWeb.Layouts, :dashboard} do
       live "/", DashboardLive, :index
+      live "/api-keys", ApiKeyLive.Index, :index
     end
   end
 

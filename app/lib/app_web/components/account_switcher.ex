@@ -14,45 +14,44 @@ defmodule GAWeb.Components.AccountSwitcher do
         <div class="dropdown dropdown-end">
           <button
             tabindex="0"
-            class="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-base-200 transition-colors group"
+            class="flex items-center gap-2 px-2 py-1 rounded hover:bg-base-200 transition-colors group cursor-pointer"
           >
-            <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-              <.icon name="hero-building-office" class="size-4 text-primary" />
+            <div class="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-base-300/80">
+              <.icon name="hero-building-office" class="size-3 text-base-content/50" />
             </div>
-            <div class="flex flex-col items-start min-w-0">
-              <span class="text-xs font-medium text-base-content/70 truncate max-w-[140px]">
-                {@current_account.name}
-              </span>
-              <span class="text-[10px] text-base-content/40">Switch account</span>
-            </div>
+            <span class="text-xs font-mono font-medium text-base-content/60 truncate max-w-[120px]">
+              {@current_account.name}
+            </span>
             <.icon
               name="hero-chevron-down-mini"
-              class="size-4 text-base-content/30 group-hover:text-base-content/50 transition-colors"
+              class="size-3 text-base-content/30 group-hover:text-base-content/50 transition-colors"
             />
           </button>
 
           <ul
             tabindex="0"
-            class="dropdown-content menu bg-base-100 rounded-lg z-[1] w-64 p-1.5 shadow-xl ring-1 ring-base-300/50 mt-2"
+            class="dropdown-content menu bg-base-100 rounded z-[1] w-56 p-1 shadow-xl ring-1 ring-base-300 mt-1"
           >
-            <li class="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-base-content/40">
-              Your Accounts
+            <li class="px-2 py-1.5">
+              <span class="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-base-content/35 pointer-events-none">
+                Your Accounts
+              </span>
             </li>
             <%= for {account, _role} <- @accessible_accounts do %>
               <li>
                 <.link
                   navigate={~p"/dashboard/accounts/#{account.id}"}
                   class={[
-                    "flex items-center justify-between px-2 py-2 rounded-md text-sm",
+                    "flex items-center justify-between px-2 py-1.5 rounded text-xs font-mono",
                     if(account.id == @current_account.id,
-                      do: "bg-primary/10 text-primary",
+                      do: "bg-primary/8 text-primary",
                       else: "hover:bg-base-200"
                     )
                   ]}
                 >
                   <span class="truncate">{account.name}</span>
                   <%= if account.id == @current_account.id do %>
-                    <.icon name="hero-check-mini" class="size-4 text-primary shrink-0" />
+                    <.icon name="hero-check-mini" class="size-3.5 text-primary shrink-0" />
                   <% end %>
                 </.link>
               </li>
@@ -60,11 +59,11 @@ defmodule GAWeb.Components.AccountSwitcher do
           </ul>
         </div>
       <% else %>
-        <div class="flex items-center gap-2 px-3 py-1.5">
-          <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-            <.icon name="hero-building-office" class="size-4 text-primary" />
+        <div class="flex items-center gap-2 px-2 py-1">
+          <div class="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-base-300/80">
+            <.icon name="hero-building-office" class="size-3 text-base-content/50" />
           </div>
-          <span class="text-sm font-medium text-base-content/70 truncate max-w-[140px]">
+          <span class="text-xs font-mono font-medium text-base-content/60 truncate max-w-[120px]">
             {@current_account.name}
           </span>
         </div>
