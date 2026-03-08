@@ -57,7 +57,10 @@ defmodule GAWeb.CoreComponents do
         @class
       ]}>
         <%!-- Header --%>
-        <div :if={@title != []} class="flex items-center justify-between px-5 py-3.5 border-b border-base-300">
+        <div
+          :if={@title != []}
+          class="flex items-center justify-between px-5 py-3.5 border-b border-base-300"
+        >
           <h3 class="text-sm font-semibold text-base-content">
             {render_slot(@title)}
           </h3>
@@ -78,7 +81,10 @@ defmodule GAWeb.CoreComponents do
         </div>
 
         <%!-- Actions --%>
-        <div :if={@actions != []} class="flex items-center justify-end gap-2 px-5 py-3.5 border-t border-base-300 bg-base-200/30">
+        <div
+          :if={@actions != []}
+          class="flex items-center justify-end gap-2 px-5 py-3.5 border-t border-base-300 bg-base-200/30"
+        >
           {render_slot(@actions)}
         </div>
       </div>
@@ -167,22 +173,30 @@ defmodule GAWeb.CoreComponents do
       <.button phx-click="go" variant="primary">Send!</.button>
       <.button navigate={~p"/"}>Home</.button>
   """
-  attr :rest, :global, include: ~w(href navigate patch method download name value disabled type form)
+  attr :rest, :global,
+    include: ~w(href navigate patch method download name value disabled type form)
+
   attr :class, :any, default: nil
   attr :variant, :string, values: ~w(primary danger ghost) ++ [nil], default: nil
   slot :inner_block, required: true
 
   def button(%{rest: rest} = assigns) do
-    base = "inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded border transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+    base =
+      "inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded border transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
 
     variant_classes = %{
-      "primary" => "bg-primary text-primary-content border-primary hover:brightness-110 active:brightness-95",
-      "danger" => "bg-error text-error-content border-error hover:brightness-110 active:brightness-95",
-      "ghost" => "bg-transparent text-base-content/60 border-transparent hover:bg-base-200 hover:text-base-content",
-      nil => "bg-base-100 text-base-content/70 border-base-300 hover:bg-base-200 hover:text-base-content active:bg-base-300"
+      "primary" =>
+        "bg-primary text-primary-content border-primary hover:brightness-110 active:brightness-95",
+      "danger" =>
+        "bg-error text-error-content border-error hover:brightness-110 active:brightness-95",
+      "ghost" =>
+        "bg-transparent text-base-content/60 border-transparent hover:bg-base-200 hover:text-base-content",
+      nil =>
+        "bg-base-100 text-base-content/70 border-base-300 hover:bg-base-200 hover:text-base-content active:bg-base-300"
     }
 
-    assigns = assign(assigns, :computed_class, [base, variant_classes[assigns.variant], assigns.class])
+    assigns =
+      assign(assigns, :computed_class, [base, variant_classes[assigns.variant], assigns.class])
 
     if rest[:href] || rest[:navigate] || rest[:patch] do
       ~H"""
@@ -297,7 +311,10 @@ defmodule GAWeb.CoreComponents do
           name={@name}
           value="true"
           checked={@checked}
-          class={@class || "h-4 w-4 rounded border-base-300 text-primary focus:ring-primary/20 cursor-pointer"}
+          class={
+            @class ||
+              "h-4 w-4 rounded border-base-300 text-primary focus:ring-primary/20 cursor-pointer"
+          }
           {@rest}
         />
         <span class="text-sm text-base-content/70 group-hover:text-base-content transition-colors">
@@ -315,7 +332,10 @@ defmodule GAWeb.CoreComponents do
     ~H"""
     <div class="mb-3">
       <label>
-        <span :if={@label} class="block mb-1.5 text-xs font-mono font-semibold uppercase tracking-wider text-base-content/50">
+        <span
+          :if={@label}
+          class="block mb-1.5 text-xs font-mono font-semibold uppercase tracking-wider text-base-content/50"
+        >
           {@label}
         </span>
         <select
@@ -340,7 +360,10 @@ defmodule GAWeb.CoreComponents do
     ~H"""
     <div class="mb-3">
       <label>
-        <span :if={@label} class="block mb-1.5 text-xs font-mono font-semibold uppercase tracking-wider text-base-content/50">
+        <span
+          :if={@label}
+          class="block mb-1.5 text-xs font-mono font-semibold uppercase tracking-wider text-base-content/50"
+        >
           {@label}
         </span>
         <textarea
@@ -364,7 +387,10 @@ defmodule GAWeb.CoreComponents do
     ~H"""
     <div class="mb-3">
       <label>
-        <span :if={@label} class="block mb-1.5 text-xs font-mono font-semibold uppercase tracking-wider text-base-content/50">
+        <span
+          :if={@label}
+          class="block mb-1.5 text-xs font-mono font-semibold uppercase tracking-wider text-base-content/50"
+        >
           {@label}
         </span>
         <input
@@ -390,7 +416,10 @@ defmodule GAWeb.CoreComponents do
     |> assign_new(:input_error, fn -> input_error_class() end)
   end
 
-  defp input_base_class, do: "w-full px-3 py-2 text-sm bg-base-100 border border-base-300 rounded text-base-content placeholder:text-base-content/30 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-colors"
+  defp input_base_class,
+    do:
+      "w-full px-3 py-2 text-sm bg-base-100 border border-base-300 rounded text-base-content placeholder:text-base-content/30 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-colors"
+
   defp input_error_class, do: "border-error/50 focus:border-error/50 focus:ring-error/20"
 
   defp error(assigns) do
@@ -561,7 +590,8 @@ defmodule GAWeb.CoreComponents do
   slot :inner_block, required: true
 
   def badge(assigns) do
-    base = "inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.625rem] font-mono font-semibold uppercase tracking-wider"
+    base =
+      "inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.625rem] font-mono font-semibold uppercase tracking-wider"
 
     variant_classes = %{
       "success" => "bg-success/10 text-success border border-success/20",
@@ -614,8 +644,7 @@ defmodule GAWeb.CoreComponents do
       to: selector,
       time: 200,
       transition:
-        {"transition-all ease-out duration-200",
-         "opacity-0 scale-[0.98]",
+        {"transition-all ease-out duration-200", "opacity-0 scale-[0.98]",
          "opacity-100 scale-100"}
     )
   end
@@ -625,9 +654,7 @@ defmodule GAWeb.CoreComponents do
       to: selector,
       time: 150,
       transition:
-        {"transition-all ease-in duration-150",
-         "opacity-100 scale-100",
-         "opacity-0 scale-[0.98]"}
+        {"transition-all ease-in duration-150", "opacity-100 scale-100", "opacity-0 scale-[0.98]"}
     )
   end
 

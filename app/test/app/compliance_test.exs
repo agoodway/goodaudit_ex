@@ -38,7 +38,10 @@ defmodule GA.ComplianceTest do
     test "built-in modules expose expected callback values" do
       assert GA.Compliance.Frameworks.HIPAA.name() == "HIPAA"
       assert :actor_id in GA.Compliance.Frameworks.HIPAA.required_fields()
-      assert GA.Compliance.Frameworks.HIPAA.extension_schema().required["phi_accessed"] == :boolean
+
+      assert GA.Compliance.Frameworks.HIPAA.extension_schema().required["phi_accessed"] ==
+               :boolean
+
       assert GA.Compliance.Frameworks.HIPAA.default_retention_days() == 2555
       assert GA.Compliance.Frameworks.HIPAA.verification_cadence_hours() == 24
 
@@ -111,12 +114,16 @@ defmodule GA.ComplianceTest do
       account = account_fixture()
 
       assert {:ok, strict} =
-               Compliance.activate_framework(account.id, "hipaa", action_validation_mode: "strict")
+               Compliance.activate_framework(account.id, "hipaa",
+                 action_validation_mode: "strict"
+               )
 
       assert strict.action_validation_mode == "strict"
 
       assert {:error, changeset} =
-               Compliance.activate_framework(account.id, "soc2", action_validation_mode: "invalid")
+               Compliance.activate_framework(account.id, "soc2",
+                 action_validation_mode: "invalid"
+               )
 
       assert "is invalid" in errors_on(changeset).action_validation_mode
     end

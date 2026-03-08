@@ -414,6 +414,21 @@ defmodule GA.Accounts do
   # API Key Functions
   # ============================================
 
+  @doc "Counts active (non-revoked, non-expired) API keys for an account."
+  def count_active_api_keys(account_id) when is_binary(account_id) do
+    now = DateTime.utc_now()
+
+    from(k in ApiKey,
+      join: au in AccountUser,
+      on: k.account_user_id == au.id,
+      where: au.account_id == ^account_id,
+      where: k.status == :active,
+      where: is_nil(k.expires_at) or k.expires_at > ^now,
+      select: count(k.id)
+    )
+    |> Repo.one()
+  end
+
   @doc "Verify an API token and return the key with account_user preloaded."
   def verify_api_token(token) do
     prefix = String.slice(token, 0, 12)

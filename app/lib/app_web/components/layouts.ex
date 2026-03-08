@@ -199,7 +199,8 @@ defmodule GAWeb.Layouts do
         class={[
           "group flex items-center gap-x-2.5 rounded px-2 py-1.5 text-[0.8125rem] font-medium transition-colors",
           if(@active,
-            do: "bg-white/[0.08] text-white border-l-2 border-emerald-400 -ml-px pl-[calc(0.5rem-1px)]",
+            do:
+              "bg-white/[0.08] text-white border-l-2 border-emerald-400 -ml-px pl-[calc(0.5rem-1px)]",
             else: "text-white/50 hover:bg-white/[0.04] hover:text-white/70"
           )
         ]}

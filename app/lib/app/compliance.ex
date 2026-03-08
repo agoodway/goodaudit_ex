@@ -53,6 +53,17 @@ defmodule GA.Compliance do
   def required_fields_for_frameworks(_framework_ids), do: []
 
   @doc """
+  Counts active compliance frameworks for an account.
+  """
+  def count_active_frameworks(account_id) when is_binary(account_id) do
+    from(a in AccountComplianceFramework,
+      where: a.account_id == ^account_id,
+      select: count(a.id)
+    )
+    |> Repo.one()
+  end
+
+  @doc """
   Returns active framework association records for an account.
   """
   def list_active_frameworks(account_id) when is_binary(account_id) do
@@ -108,7 +119,8 @@ defmodule GA.Compliance do
   @doc """
   Deactivates a framework for an account.
   """
-  def deactivate_framework(account_id, framework) when is_binary(account_id) and is_binary(framework) do
+  def deactivate_framework(account_id, framework)
+      when is_binary(account_id) and is_binary(framework) do
     case Repo.get_by(AccountComplianceFramework,
            account_id: account_id,
            framework: framework
@@ -123,7 +135,8 @@ defmodule GA.Compliance do
   @doc """
   Returns the effective runtime config for an active framework association.
   """
-  def effective_config(account_id, framework) when is_binary(account_id) and is_binary(framework) do
+  def effective_config(account_id, framework)
+      when is_binary(account_id) and is_binary(framework) do
     with {:ok, module} <- get_framework(framework),
          %AccountComplianceFramework{} = association <-
            Repo.get_by(AccountComplianceFramework,

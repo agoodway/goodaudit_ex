@@ -7,7 +7,14 @@ defmodule GA.Compliance.Taxonomies.GDPR do
       "lifecycle" => ["collection", "storage", "use", "disclosure", "erasure"]
     },
     "subject_request" => %{
-      "rights" => ["access", "rectification", "erasure", "portability", "restriction", "objection"]
+      "rights" => [
+        "access",
+        "rectification",
+        "erasure",
+        "portability",
+        "restriction",
+        "objection"
+      ]
     },
     "consent" => %{
       "management" => ["grant", "withdraw", "renewal"]

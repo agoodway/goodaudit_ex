@@ -18,6 +18,32 @@ defmodule GA.Audit do
   @reserved_chain_keys [:account_id, :sequence_number, :checksum, :previous_checksum]
 
   @doc """
+  Counts audit log entries for an account within a time window.
+  Defaults to the last 30 days. Pass `since:` to override.
+  """
+  def count_logs(account_id, opts \\ []) when is_binary(account_id) do
+    since = Keyword.get(opts, :since, DateTime.add(DateTime.utc_now(), -30, :day))
+
+    from(log in Log,
+      where: log.account_id == ^account_id and log.inserted_at >= ^since,
+      select: count(log.id)
+    )
+    |> Repo.one()
+  end
+
+  @doc """
+  Returns the most recent audit log entries for an account, ordered newest first.
+  """
+  def recent_logs(account_id, limit \\ 5) when is_binary(account_id) do
+    from(log in Log,
+      where: log.account_id == ^account_id,
+      order_by: [desc: log.inserted_at],
+      limit: ^limit
+    )
+    |> Repo.all()
+  end
+
+  @doc """
   Creates a new audit log entry with per-account chain fields in a single transaction.
   """
   def create_log_entry(account_id, attrs)
@@ -38,7 +64,8 @@ defmodule GA.Audit do
              get_opt(attrs, :extensions),
              additional_required_by_framework
            ),
-         :ok <- Compliance.validate_action_for_strict_frameworks(account_id, get_opt(attrs, :action)) do
+         :ok <-
+           Compliance.validate_action_for_strict_frameworks(account_id, get_opt(attrs, :action)) do
       attrs =
         attrs
         |> Map.delete("extensions")
@@ -375,7 +402,10 @@ defmodule GA.Audit do
     |> put_if_missing(:source_ip, extension_value(extensions, "hipaa", "source_ip"))
     |> put_if_missing(:user_agent, extension_value(extensions, "hipaa", "user_agent"))
     |> put_if_missing(:failure_reason, extension_value(extensions, "hipaa", "failure_reason"))
-    |> put_if_missing(:phi_accessed, extension_value(extensions, "hipaa", "phi_accessed") || false)
+    |> put_if_missing(
+      :phi_accessed,
+      extension_value(extensions, "hipaa", "phi_accessed") || false
+    )
   end
 
   defp put_if_missing(attrs, _key, nil), do: attrs
@@ -429,7 +459,8 @@ defmodule GA.Audit do
     end
   end
 
-  defp resolve_category_actions(_account_id, _category_filter), do: {:error, :invalid_category_format}
+  defp resolve_category_actions(_account_id, _category_filter),
+    do: {:error, :invalid_category_format}
 
   defp parse_category_filter(value) when is_binary(value) do
     case String.split(value, ":", parts: 2) do

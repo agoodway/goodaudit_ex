@@ -33,6 +33,12 @@ defmodule GA.Compliance.Frameworks.PCIDSS do
 
   @impl true
   def event_taxonomy do
-    ["cardholder.access", "cardholder.change", "payment.auth", "payment.capture", "payment.refund"]
+    [
+      "cardholder.access",
+      "cardholder.change",
+      "payment.auth",
+      "payment.capture",
+      "payment.refund"
+    ]
   end
 end

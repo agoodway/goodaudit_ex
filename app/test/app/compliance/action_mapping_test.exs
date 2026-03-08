@@ -58,7 +58,10 @@ defmodule GA.Compliance.ActionMappingTest do
       assert listed.id == mapping.id
       assert [hipaa_only] = ActionMapping.list_mappings(account.id, framework: "hipaa")
       assert hipaa_only.id == mapping.id
-      assert [action_only] = ActionMapping.list_mappings(account.id, custom_action: "patient_chart_viewed")
+
+      assert [action_only] =
+               ActionMapping.list_mappings(account.id, custom_action: "patient_chart_viewed")
+
       assert action_only.id == mapping.id
 
       assert {:ok, updated} =
@@ -118,7 +121,10 @@ defmodule GA.Compliance.ActionMappingTest do
                ActionMapping.resolve_actions(account.id, "hipaa", "access.nonexistent.*")
 
       assert {:ok, _} = Audit.create_log_entry(account.id, valid_attrs(%{action: "phi_read"}))
-      assert {:ok, _} = Audit.create_log_entry(account.id, valid_attrs(%{action: "patient_chart_viewed"}))
+
+      assert {:ok, _} =
+               Audit.create_log_entry(account.id, valid_attrs(%{action: "patient_chart_viewed"}))
+
       assert {:ok, _} = Audit.create_log_entry(account.id, valid_attrs(%{action: "custom_event"}))
 
       assert {:ok, report} = ActionMapping.validate_actions(account.id, "hipaa")
@@ -130,7 +136,9 @@ defmodule GA.Compliance.ActionMappingTest do
 
   defp account_fixture do
     {:ok, account} =
-      Accounts.create_account(%{name: "Action Mapping Account #{System.unique_integer([:positive])}"})
+      Accounts.create_account(%{
+        name: "Action Mapping Account #{System.unique_integer([:positive])}"
+      })
 
     account
   end

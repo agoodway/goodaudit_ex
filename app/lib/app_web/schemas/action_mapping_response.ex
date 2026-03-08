@@ -20,7 +20,14 @@ defmodule GAWeb.Schemas.ActionMappingResponse do
           taxonomy_version: %Schema{type: :string},
           created_at: %Schema{type: :string, format: :"date-time"}
         },
-        required: [:id, :custom_action, :framework, :taxonomy_path, :taxonomy_version, :created_at]
+        required: [
+          :id,
+          :custom_action,
+          :framework,
+          :taxonomy_path,
+          :taxonomy_version,
+          :created_at
+        ]
       }
     },
     required: [:data]

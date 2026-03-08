@@ -26,12 +26,19 @@ defmodule GA.Compliance.TaxonomyTest do
 
   describe "framework modules" do
     test "all modules expose taxonomy tree, flat actions, and semver version" do
-      for module <- [Taxonomies.HIPAA, Taxonomies.SOC2, Taxonomies.PCIDSS, Taxonomies.GDPR, Taxonomies.ISO27001] do
+      for module <- [
+            Taxonomies.HIPAA,
+            Taxonomies.SOC2,
+            Taxonomies.PCIDSS,
+            Taxonomies.GDPR,
+            Taxonomies.ISO27001
+          ] do
         taxonomy = module.taxonomy()
         actions = module.actions()
         version = module.taxonomy_version()
 
         assert is_map(taxonomy)
+
         assert Enum.all?(taxonomy, fn {category, subcategories} ->
                  is_binary(category) and is_map(subcategories) and
                    Enum.all?(subcategories, fn {subcategory, sub_actions} ->
@@ -67,7 +74,16 @@ defmodule GA.Compliance.TaxonomyTest do
       assert actions == ["phi_read", "phi_write", "phi_delete"]
 
       assert {:ok, actions} = Taxonomy.resolve_path(Taxonomies.HIPAA, "access.*")
-      assert Enum.sort(actions) == Enum.sort(["phi_read", "phi_write", "phi_delete", "login", "logout", "session_timeout"])
+
+      assert Enum.sort(actions) ==
+               Enum.sort([
+                 "phi_read",
+                 "phi_write",
+                 "phi_delete",
+                 "login",
+                 "logout",
+                 "session_timeout"
+               ])
 
       assert {:error, :invalid_path} =
                Taxonomy.resolve_path(Taxonomies.HIPAA, "access.nonexistent.*")

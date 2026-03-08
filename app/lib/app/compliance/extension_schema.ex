@@ -245,7 +245,10 @@ defmodule GA.Compliance.ExtensionSchema do
   defp normalize_schema_fields(_), do: %{}
 
   defp normalize_field_type(%{type: type}), do: normalize_field_type(type)
-  defp normalize_field_type(type) when type in [:string, :boolean, :integer, :float, :number, :map, :array], do: type
+
+  defp normalize_field_type(type)
+       when type in [:string, :boolean, :integer, :float, :number, :map, :array], do: type
+
   defp normalize_field_type("string"), do: :string
   defp normalize_field_type("boolean"), do: :boolean
   defp normalize_field_type("integer"), do: :integer
