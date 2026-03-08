@@ -1,6 +1,8 @@
 defmodule GAWeb.SettingsLive.SecurityComponent do
   use GAWeb, :live_component
 
+  require Logger
+
   alias GA.Accounts
 
   @impl true
@@ -22,7 +24,7 @@ defmodule GAWeb.SettingsLive.SecurityComponent do
       <div class="space-y-3">
         <h3 class="text-sm font-semibold text-base-content">HMAC Signing Key</h3>
         <div class="flex items-center gap-3">
-          <code class="text-sm font-mono bg-base-200 px-3 py-1.5 rounded">
+          <code id="hmac-key-display" class="text-sm font-mono bg-base-200 px-3 py-1.5 rounded select-all">
             <%= if @hmac_revealed do %>
               {Base.encode16(@hmac_key, case: :lower)}
             <% else %>
@@ -32,9 +34,9 @@ defmodule GAWeb.SettingsLive.SecurityComponent do
 
           <%= if @hmac_revealed do %>
             <button
+              type="button"
               class="btn btn-ghost btn-xs"
-              phx-click="copy_hmac"
-              phx-target={@myself}
+              phx-click={JS.dispatch("phx:copy", to: "#hmac-key-display")}
               title="Copy to clipboard"
             >
               <.icon name="hero-clipboard-document" class="size-4" />
@@ -118,6 +120,7 @@ defmodule GAWeb.SettingsLive.SecurityComponent do
     {color, label} = case assigns.status do
       :active -> {"badge-success", "Active"}
       :suspended -> {"badge-error", "Suspended"}
+      _ -> {"badge-ghost", to_string(assigns.status)}
     end
 
     assigns = assign(assigns, color: color, label: label)
@@ -128,13 +131,19 @@ defmodule GAWeb.SettingsLive.SecurityComponent do
   end
 
   @impl true
-  def handle_event("reveal_hmac", _params, socket) do
-    case Accounts.get_hmac_key(socket.assigns.account.id) do
-      {:ok, key} ->
-        {:noreply, assign(socket, hmac_revealed: true, hmac_key: key)}
+  def handle_event("reveal_hmac", _params, socket)
+      when socket.assigns.role == :owner do
+    if Accounts.sudo_mode?(socket.assigns.current_user) do
+      case Accounts.get_hmac_key(socket.assigns.account.id) do
+        {:ok, key} ->
+          {:noreply, assign(socket, hmac_revealed: true, hmac_key: key)}
 
-      {:error, _} ->
-        {:noreply, put_flash(socket, :error, "Failed to retrieve HMAC key.")}
+        {:error, reason} ->
+          Logger.error("Failed to retrieve HMAC key", account_id: socket.assigns.account.id, error: inspect(reason))
+          {:noreply, put_flash(socket, :error, "Failed to retrieve HMAC key.")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Please re-authenticate to perform this action.")}
     end
   end
 
@@ -144,12 +153,8 @@ defmodule GAWeb.SettingsLive.SecurityComponent do
   end
 
   @impl true
-  def handle_event("copy_hmac", _params, socket) do
-    {:noreply, push_event(socket, "phx:copy", %{text: Base.encode16(socket.assigns.hmac_key, case: :lower)})}
-  end
-
-  @impl true
-  def handle_event("show_rotate_modal", _params, socket) do
+  def handle_event("show_rotate_modal", _params, socket)
+      when socket.assigns.role == :owner do
     {:noreply, assign(socket, show_rotate_modal: true, rotate_confirmation: "")}
   end
 
@@ -164,20 +169,32 @@ defmodule GAWeb.SettingsLive.SecurityComponent do
   end
 
   @impl true
-  def handle_event("confirm_rotate", _params, socket) do
-    if socket.assigns.rotate_confirmation == "ROTATE" do
-      case Accounts.rotate_hmac_key(socket.assigns.account) do
-        {:ok, _account} ->
-          {:noreply,
-           socket
-           |> assign(show_rotate_modal: false, rotate_confirmation: "", hmac_revealed: false, hmac_key: nil)
-           |> put_flash(:info, "HMAC key rotated successfully.")}
-
-        {:error, _} ->
-          {:noreply, put_flash(socket, :error, "Failed to rotate HMAC key.")}
-      end
+  def handle_event("confirm_rotate", _params, socket)
+      when socket.assigns.role == :owner do
+    if not Accounts.sudo_mode?(socket.assigns.current_user) do
+      {:noreply, put_flash(socket, :error, "Please re-authenticate to perform this action.")}
     else
-      {:noreply, socket}
+      if socket.assigns.rotate_confirmation == "ROTATE" do
+        case Accounts.rotate_hmac_key(socket.assigns.account) do
+          {:ok, _account} ->
+            {:noreply,
+             socket
+             |> assign(show_rotate_modal: false, rotate_confirmation: "", hmac_revealed: false, hmac_key: nil)
+             |> put_flash(:info, "HMAC key rotated successfully.")}
+
+          {:error, reason} ->
+            Logger.error("Failed to rotate HMAC key", account_id: socket.assigns.account.id, error: inspect(reason))
+            {:noreply, put_flash(socket, :error, "Failed to rotate HMAC key.")}
+        end
+      else
+        {:noreply, socket}
+      end
     end
+  end
+
+  # Catch-all for unauthorized actions
+  def handle_event(event, _params, socket)
+      when event in ["reveal_hmac", "show_rotate_modal", "confirm_rotate"] do
+    {:noreply, put_flash(socket, :error, "You are not authorized to perform this action.")}
   end
 end

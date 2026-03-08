@@ -4,6 +4,7 @@ defmodule GA.Accounts do
   """
 
   import Ecto.Query, warn: false
+  require Logger
   alias GA.Repo
 
   alias GA.Accounts.{Account, AccountUser, ApiKey, User, UserToken, UserNotifier}
@@ -380,6 +381,12 @@ defmodule GA.Accounts do
 
   @doc "Delete an account. Cascades to account_users and api_keys."
   def delete_account(%Account{} = account) do
+    Logger.warning("Account deletion initiated",
+      account_id: account.id,
+      account_name: account.name,
+      account_slug: account.slug
+    )
+
     Repo.delete(account)
   end
 
@@ -396,9 +403,10 @@ defmodule GA.Accounts do
 
     AccountUser
     |> where([au], au.account_id == ^account.id)
-    |> preload(:user)
+    |> join(:inner, [au], u in assoc(au, :user))
+    |> preload([au, u], user: u)
     |> order_by([au], ^role_order)
-    |> order_by([au], asc: fragment("(SELECT email FROM users WHERE id = ?)", au.user_id))
+    |> order_by([au, u], asc: u.email)
     |> Repo.all()
   end
 
@@ -408,13 +416,13 @@ defmodule GA.Accounts do
         changeset
 
       name ->
-        slug =
-          name
-          |> String.downcase()
-          |> String.replace(~r/[^a-z0-9]+/, "-")
-          |> String.trim("-")
+        case Account.slugify(name) do
+          "" ->
+            Ecto.Changeset.add_error(changeset, :name, "must contain at least one alphanumeric character")
 
-        Ecto.Changeset.put_change(changeset, :slug, slug)
+          slug ->
+            Ecto.Changeset.put_change(changeset, :slug, slug)
+        end
     end
   end
 
@@ -431,6 +439,14 @@ defmodule GA.Accounts do
   def get_account_user!(id) do
     AccountUser
     |> Repo.get!(id)
+    |> Repo.preload([:user, :account])
+  end
+
+  @doc "Get account_user by ID scoped to a specific account."
+  def get_account_user!(id, %Account{} = account) do
+    AccountUser
+    |> where([au], au.id == ^id and au.account_id == ^account.id)
+    |> Repo.one!()
     |> Repo.preload([:user, :account])
   end
 

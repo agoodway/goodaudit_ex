@@ -1,0 +1,27 @@
+Phase 4: Prepare for Landing — Account Settings
+=================================================
+Date: 2026-03-07
+Branch: feat/live-dashboard-metrics
+Epic: td-be148e (Account Settings)
+
+Findings Fixed: 17/17
+- P0 (Critical): 3 fixed
+- P1 (High): 2 fixed
+- P2 (Warning): 7 fixed
+- P3 (Suggestion): 3 fixed
+- P4 (Chore): 2 fixed
+
+Changes Made:
+1. accounts.ex: Added get_account_user!/2 (account-scoped), Logger for delete_account,
+   join-based list_account_members, slug validation in maybe_rederive_slug
+2. account.ex: Extracted public slugify/1 function
+3. members_component.ex: Account-scoped lookups, role allowlist, owner-only guards,
+   Logger.error, catch-all role_badge
+4. security_component.ex: DOM-based clipboard copy, sudo_mode? enforcement,
+   owner-only guards, Logger.error, catch-all status_badge
+5. general_component.ex: Role guard on save_name, slug error display, disabled form for members
+6. danger_zone_component.ex: Role guard, sudo_mode? enforcement, Logger.error
+7. index.ex: Redirect non-members, pass role/current_user to DangerZone and Security
+8. app.js: Added phx:copy event listener for clipboard
+
+Tests: 26 settings tests passing, compilation clean (no warnings)

@@ -1,6 +1,8 @@
 defmodule GAWeb.SettingsLive.DangerZoneComponent do
   use GAWeb, :live_component
 
+  require Logger
+
   alias GA.Accounts
 
   @impl true
@@ -78,7 +80,8 @@ defmodule GAWeb.SettingsLive.DangerZoneComponent do
   end
 
   @impl true
-  def handle_event("show_delete_modal", _params, socket) do
+  def handle_event("show_delete_modal", _params, socket)
+      when socket.assigns.role == :owner do
     {:noreply, assign(socket, show_delete_modal: true, delete_confirmation: "")}
   end
 
@@ -93,18 +96,30 @@ defmodule GAWeb.SettingsLive.DangerZoneComponent do
   end
 
   @impl true
-  def handle_event("confirm_delete", _params, socket) do
-    if socket.assigns.delete_confirmation == socket.assigns.account.name do
-      case Accounts.delete_account(socket.assigns.account) do
-        {:ok, _} ->
-          send(self(), :account_deleted)
-          {:noreply, socket}
-
-        {:error, _} ->
-          {:noreply, put_flash(socket, :error, "Failed to delete account.")}
-      end
+  def handle_event("confirm_delete", _params, socket)
+      when socket.assigns.role == :owner do
+    if not Accounts.sudo_mode?(socket.assigns.current_user) do
+      {:noreply, put_flash(socket, :error, "Please re-authenticate to perform this action.")}
     else
-      {:noreply, socket}
+      if socket.assigns.delete_confirmation == socket.assigns.account.name do
+        case Accounts.delete_account(socket.assigns.account) do
+          {:ok, _} ->
+            send(self(), :account_deleted)
+            {:noreply, socket}
+
+          {:error, reason} ->
+            Logger.error("Failed to delete account", account_id: socket.assigns.account.id, error: inspect(reason))
+            {:noreply, put_flash(socket, :error, "Failed to delete account.")}
+        end
+      else
+        {:noreply, socket}
+      end
     end
+  end
+
+  # Catch-all for unauthorized actions
+  def handle_event(event, _params, socket)
+      when event in ["show_delete_modal", "confirm_delete"] do
+    {:noreply, put_flash(socket, :error, "You are not authorized to perform this action.")}
   end
 end

@@ -32,19 +32,21 @@ defmodule GA.Accounts.Account do
     |> unique_constraint(:slug)
   end
 
+  @doc "Derives a URL-safe slug from a name."
+  def slugify(name) when is_binary(name) do
+    name
+    |> String.downcase()
+    |> String.replace(~r/[^a-z0-9]+/, "-")
+    |> String.trim("-")
+  end
+
   defp maybe_generate_slug(changeset) do
     case get_field(changeset, :slug) do
       nil ->
         name = get_field(changeset, :name)
 
         if name do
-          slug =
-            name
-            |> String.downcase()
-            |> String.replace(~r/[^a-z0-9]+/, "-")
-            |> String.trim("-")
-
-          put_change(changeset, :slug, slug)
+          put_change(changeset, :slug, slugify(name))
         else
           changeset
         end

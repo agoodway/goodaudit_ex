@@ -1,7 +1,11 @@
 defmodule GAWeb.SettingsLive.MembersComponent do
   use GAWeb, :live_component
 
+  require Logger
+
   alias GA.Accounts
+
+  @allowed_roles ~w(admin member)
 
   @impl true
   def update(assigns, socket) do
@@ -83,6 +87,7 @@ defmodule GAWeb.SettingsLive.MembersComponent do
       :owner -> "badge-primary"
       :admin -> "badge-secondary"
       :member -> "badge-ghost"
+      _ -> "badge-ghost"
     end
 
     assigns = assign(assigns, :color, color)
@@ -93,30 +98,44 @@ defmodule GAWeb.SettingsLive.MembersComponent do
   end
 
   @impl true
-  def handle_event("change_role", %{"role" => role, "member-id" => member_id}, socket) do
-    account_user = Accounts.get_account_user!(member_id)
+  def handle_event("change_role", %{"role" => role, "member-id" => member_id}, socket)
+      when socket.assigns.role == :owner do
+    if role in @allowed_roles do
+      account_user = Accounts.get_account_user!(member_id, socket.assigns.account)
 
-    case Accounts.update_account_user_role(account_user, String.to_existing_atom(role)) do
-      {:ok, _} ->
-        send(self(), :members_updated)
-        {:noreply, put_flash(socket, :info, "Role updated successfully.")}
+      case Accounts.update_account_user_role(account_user, String.to_existing_atom(role)) do
+        {:ok, _} ->
+          send(self(), :members_updated)
+          {:noreply, put_flash(socket, :info, "Role updated successfully.")}
 
-      {:error, _} ->
-        {:noreply, put_flash(socket, :error, "Failed to update role.")}
+        {:error, reason} ->
+          Logger.error("Failed to update role", account_id: socket.assigns.account.id, member_id: member_id, error: inspect(reason))
+          {:noreply, put_flash(socket, :error, "Failed to update role.")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Invalid role.")}
     end
   end
 
   @impl true
-  def handle_event("remove_member", %{"member-id" => member_id}, socket) do
-    account_user = Accounts.get_account_user!(member_id)
+  def handle_event("remove_member", %{"member-id" => member_id}, socket)
+      when socket.assigns.role == :owner do
+    account_user = Accounts.get_account_user!(member_id, socket.assigns.account)
 
     case Accounts.remove_user_from_account(account_user.account, account_user.user) do
       {:ok, _} ->
         send(self(), :members_updated)
         {:noreply, put_flash(socket, :info, "Member removed successfully.")}
 
-      {:error, _} ->
+      {:error, reason} ->
+        Logger.error("Failed to remove member", account_id: socket.assigns.account.id, member_id: member_id, error: inspect(reason))
         {:noreply, put_flash(socket, :error, "Failed to remove member.")}
     end
+  end
+
+  # Catch-all for unauthorized role changes/removals
+  def handle_event(event, _params, socket)
+      when event in ["change_role", "remove_member"] do
+    {:noreply, put_flash(socket, :error, "You are not authorized to perform this action.")}
   end
 end

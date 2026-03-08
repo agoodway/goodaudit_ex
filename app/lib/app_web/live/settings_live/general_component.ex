@@ -29,9 +29,13 @@ defmodule GAWeb.SettingsLive.GeneralComponent do
               value={@form[:name].value}
               class="input input-bordered w-full max-w-md"
               phx-debounce="300"
+              disabled={@role not in [:owner, :admin]}
             />
             <p :for={msg <- Enum.map(@form[:name].errors, &translate_error/1)} class="text-sm text-error mt-1">
               {msg}
+            </p>
+            <p :for={msg <- Enum.map(@form[:slug].errors, &translate_error/1)} class="text-sm text-error mt-1">
+              Slug {msg}
             </p>
           </div>
 
@@ -60,7 +64,7 @@ defmodule GAWeb.SettingsLive.GeneralComponent do
             </div>
           </div>
 
-          <div>
+          <div :if={@role in [:owner, :admin]}>
             <button type="submit" class="btn btn-primary btn-sm">
               Save Changes
             </button>
@@ -82,7 +86,8 @@ defmodule GAWeb.SettingsLive.GeneralComponent do
   end
 
   @impl true
-  def handle_event("save_name", %{"account" => attrs}, socket) do
+  def handle_event("save_name", %{"account" => attrs}, socket)
+      when socket.assigns.role in [:owner, :admin] do
     case Accounts.update_account(socket.assigns.account, attrs) do
       {:ok, account} ->
         send(self(), {:account_updated, account})
@@ -97,4 +102,7 @@ defmodule GAWeb.SettingsLive.GeneralComponent do
     end
   end
 
+  def handle_event("save_name", _params, socket) do
+    {:noreply, put_flash(socket, :error, "You are not authorized to perform this action.")}
+  end
 end

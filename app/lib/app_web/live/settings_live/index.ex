@@ -8,17 +8,23 @@ defmodule GAWeb.SettingsLive.Index do
     account = socket.assigns.current_account
     user = socket.assigns.current_scope.user
     membership = Accounts.get_account_user(user, account)
-    role = if membership, do: membership.role, else: :member
 
-    {:ok,
-     assign(socket,
-       page_title: "Settings",
-       active_nav: :settings,
-       breadcrumbs: [%{label: "Settings"}],
-       role: role,
-       membership: membership,
-       members: load_members(account, role)
-     )}
+    if membership do
+      {:ok,
+       assign(socket,
+         page_title: "Settings",
+         active_nav: :settings,
+         breadcrumbs: [%{label: "Settings"}],
+         role: membership.role,
+         membership: membership,
+         members: load_members(account, membership.role)
+       )}
+    else
+      {:ok,
+       socket
+       |> put_flash(:error, "You do not have access to this account.")
+       |> redirect(to: ~p"/dashboard")}
+    end
   end
 
   @impl true
@@ -101,6 +107,7 @@ defmodule GAWeb.SettingsLive.Index do
           id="settings-security"
           account={@current_account}
           role={@role}
+          current_user={@current_scope.user}
         />
       </div>
 
@@ -110,6 +117,8 @@ defmodule GAWeb.SettingsLive.Index do
         module={GAWeb.SettingsLive.DangerZoneComponent}
         id="settings-danger-zone"
         account={@current_account}
+        role={@role}
+        current_user={@current_scope.user}
       />
     </div>
     """
