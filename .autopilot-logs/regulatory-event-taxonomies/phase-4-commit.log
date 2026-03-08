@@ -95,3 +95,50 @@ exec
 
 codex
 The changes are all within the same regulatory-event-taxonomies scope, so I’m creating one atomic commit with your exact message now.
+exec
+/bin/zsh -lc 'git add -A && git commit -m "fix(regulatory-event-taxonomies): address review findings"' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 88ms:
+[main bfcef53] fix(regulatory-event-taxonomies): address review findings
+ 42 files changed, 258178 insertions(+), 75 deletions(-)
+ create mode 100644 .autopilot-logs/regulatory-event-taxonomies/phase-3-commit.log
+ create mode 100644 .autopilot-logs/regulatory-event-taxonomies/phase-3-pre-landing-check.log
+ create mode 100644 .autopilot-logs/regulatory-event-taxonomies/phase-4-commit.log
+ create mode 100644 .autopilot-logs/regulatory-event-taxonomies/phase-4-prepare-for-landing.log
+ create mode 100644 app/lib/app/compliance/action_mapping.ex
+ create mode 100644 app/lib/app/compliance/taxonomies/gdpr.ex
+ create mode 100644 app/lib/app/compliance/taxonomies/hipaa.ex
+ create mode 100644 app/lib/app/compliance/taxonomies/iso_27001.ex
+ create mode 100644 app/lib/app/compliance/taxonomies/pci_dss.ex
+ create mode 100644 app/lib/app/compliance/taxonomies/soc2.ex
+ create mode 100644 app/lib/app_web/controllers/api/v1/action_mapping_controller.ex
+ create mode 100644 app/lib/app_web/controllers/api/v1/action_mapping_json.ex
+ create mode 100644 app/lib/app_web/controllers/api/v1/taxonomy_controller.ex
+ create mode 100644 app/lib/app_web/controllers/api/v1/taxonomy_json.ex
+ create mode 100644 app/lib/app_web/schemas/action_mapping_list_response.ex
+ create mode 100644 app/lib/app_web/schemas/action_mapping_request.ex
+ create mode 100644 app/lib/app_web/schemas/action_mapping_response.ex
+ create mode 100644 app/lib/app_web/schemas/action_mapping_validate_response.ex
+exec
+/bin/zsh -lc 'git log -1 --oneline' in /Users/tbrewer/projects/goodway/goodauditexec
+/bin/zsh -lc 'git status --short' in /Users/tbrewer/projects/goodway/goodaudit succeeded in 52ms:
+bfcef53 fix(regulatory-event-taxonomies): address review findings
+ succeeded in 51ms:
+ M .autopilot-logs/regulatory-event-taxonomies/phase-4-commit.log
+codex
+Committed successfully.
+
+- Commit: `bfcef53`
+- Message: `fix(regulatory-event-taxonomies): address review findings`
+- Result: `42 files changed, 258178 insertions(+), 75 deletions(-)`
+
+Current working tree has one post-commit modification:
+- `M .autopilot-logs/regulatory-event-taxonomies/phase-4-commit.log`
+Committed successfully.
+
+- Commit: `bfcef53`
+- Message: `fix(regulatory-event-taxonomies): address review findings`
+- Result: `42 files changed, 258178 insertions(+), 75 deletions(-)`
+
+Current working tree has one post-commit modification:
+- `M .autopilot-logs/regulatory-event-taxonomies/phase-4-commit.log`
+tokens used
+17,395

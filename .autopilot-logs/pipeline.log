@@ -1281,3 +1281,19 @@
 2026/03/05 22:07:38.173384 exec: codex exec --model gpt-5.3-codex --full-auto
 2026/03/05 22:07:38.173388 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/regulatory-event-taxonomies/phase-4-commit.log
 2026/03/05 22:07:38.174836 exec: process started pid=92355
+2026/03/05 22:08:17.165113 exec: process pid=92355 exited successfully
+2026/03/05 22:08:17.165191 [regulatory-event-taxonomies] phase 4: commit completed in 39s
+2026/03/05 22:08:17.165203 [regulatory-event-taxonomies] phase 4 completed in 18m 20s
+2026/03/05 22:08:17.165217 [regulatory-event-taxonomies] phase 5 (land-the-plane) starting
+2026/03/05 22:08:17.165264 [regulatory-event-taxonomies] phase 5: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/regulatory-event-taxonomies/phase-5-land-the-plane.log
+2026/03/05 22:08:17.165268 [regulatory-event-taxonomies] phase 5: prompt=Run /land-the-plane for the change named "regulatory-event-taxonomies" located at openspec/changes/regulatory-event-taxonomies/. Do not ask me any questions — use your best judgment for any decisions.
+2026/03/05 22:08:17.165270 [regulatory-event-taxonomies] phase 5: launching codex session
+2026/03/05 22:08:17.165288 exec: codex exec --model gpt-5.3-codex --full-auto
+2026/03/05 22:08:17.165291 exec: log_file=/Users/tbrewer/projects/goodway/goodaudit/.autopilot-logs/regulatory-event-taxonomies/phase-5-land-the-plane.log
+2026/03/05 22:08:17.167067 exec: process started pid=94830
+2026/03/05 22:14:18.078911 exec: process pid=94830 exited successfully
+2026/03/05 22:14:18.082105 [regulatory-event-taxonomies] phase 5: codex session completed in 6m 1s
+2026/03/05 22:14:18.082151 [regulatory-event-taxonomies] phase 5 completed in 6m 1s
+2026/03/05 22:14:18.082168 change "regulatory-event-taxonomies" succeeded in 46m 50s
+2026/03/05 22:14:18.082200 all changes completed in 46m 50s
+2026/03/05 22:14:18.082289 === Pipeline finished ===
