@@ -43,6 +43,59 @@ custom classes must fully style the input
 - Ensure **clean typography, spacing, and layout balance** for a refined, premium look
 - Focus on **delightful details** like hover effects, loading states, and smooth page transitions
 
+### Design System — "Institutional Precision"
+
+The GoodAudit design conveys **trust, security, and auditability** through typographic discipline and structured information hierarchy. Think: secure vault meets modern SaaS.
+
+#### Typography
+- **Display/data font**: `font-mono` → IBM Plex Mono — used for all metrics, labels, timestamps, breadcrumbs, section headers, and navigation group labels
+- **Body font**: `font-sans` → Plus Jakarta Sans — used for body text, descriptions, and general UI copy
+- Fonts are loaded via Google Fonts in `root.html.heex`
+- Section headers use `font-mono text-[0.6rem] font-semibold uppercase tracking-[0.12em+]`
+- Metric values use `font-mono text-[1.75rem] font-bold tracking-tight`
+
+#### Color Palette
+- **Primary accent**: emerald green (`oklch ~52-72% 0.14-0.15 160`) — signals compliance, security, "all systems go"
+- **Base tones**: cool slate (hue 250) — both light and dark themes
+- **Sidebar**: always dark (`oklch(13-15% 0.01 250)`), emerald accents for active states
+- **Status colors**: green=operational, amber=warning/degraded, red=error — use `.status-dot` CSS classes
+- **Never** use warm amber/gold as primary; **never** use generic purple gradients
+
+#### Layout & Cards
+- Use `.dash-card` for all bordered content sections — 1px border, `border-radius: 0.375rem`
+- Card headers: `.dash-card-header` — monospace, uppercase, 0.6875rem, letter-spacing 0.08em, 60% opacity
+- Card bodies: `.dash-card-body` — 1.25rem padding
+- Sidebar width: `w-60` (240px) on desktop
+- Top bar height: `h-12` (48px) — slim, content-first
+- Main content area gets `bg-base-200/30` for subtle depth separation
+- Prefer grid layouts (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`) for metric cards
+
+#### Sidebar Navigation
+- Brand: emerald-tinted icon + monospace uppercase "GOODAUDIT" with wide tracking
+- Nav section labels: `font-mono text-[0.6rem] uppercase tracking-[0.15em] text-white/25`
+- Active nav item: left emerald border (`border-l-2 border-emerald-400`) + subtle bg
+- Inactive: `text-white/50`, icons `text-white/25`
+- User avatar: monospace initial in bordered square, not circle
+
+#### Borders & Depth
+- Use crisp 1px borders (`border-base-300`), never drop shadows for cards
+- `--depth: 0` and `--noise: 0` in themes — flat, institutional aesthetic
+- Radius: `0.25rem` for fields/selectors, `0.375rem` for boxes — tighter than defaults
+
+#### Animations
+- Page load: `.animate-fade-up` with staggered delays (`.animate-delay-1` through `-4`)
+- Status indicators: `.status-dot--pulse` for attention states
+- Keep animations subtle and purposeful — this is compliance software, not a game
+
+#### Breadcrumbs
+- Monospace, `/` separator (not chevron icons), `text-xs`
+- Current page: `font-semibold text-base-content/70`
+- Parent links: `text-base-content/40`
+
+#### Theme Toggle
+- Compact bordered pill with 3 icon buttons (sun/monitor/moon)
+- Active state: `bg-base-100 shadow-sm` on the selected button
+
 
 <!-- phoenix-gen-auth-start -->
 ## Authentication
