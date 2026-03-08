@@ -1,0 +1,16 @@
+Prepare-for-takeoff complete for **Account Settings**. Here's the summary:
+
+**Epic:** `td-be148e` — Account Settings
+
+**45 issues created** (1:1 mapping from tasks.md):
+- **4 backend** — Context functions (`list_account_members`, `update_account`, `delete_account`, `rotate_hmac_key`)
+- **4 backend** — Router routes + 1 frontend sidebar wiring
+- **4 frontend** — Settings LiveView shell (mount, handle_params, tab nav, component rendering)
+- **4 frontend** — General tab (component, form, flash, account ID)
+- **6 frontend** — Members tab (component, table, role change, remove, read-only, invite placeholder)
+- **6 frontend** — Security tab (component, masked key, reveal, rotate, confirm, status badge)
+- **5 frontend** — Danger Zone (component, styling, delete button, confirm logic, redirect)
+- **12 test** — Full test coverage for all context functions and LiveView features
+- **1 review** — Review gate (`td-e426ad`) depends on all 45 implementation + test issues
+
+**Dependencies wired:** backend → frontend → tests, with the review gate blocking until everything is done. All 45 checkboxes in `tasks.md` marked as imported.
