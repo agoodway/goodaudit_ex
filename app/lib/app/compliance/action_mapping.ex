@@ -14,6 +14,17 @@ defmodule GA.Compliance.ActionMapping do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
 
+  @type t :: %__MODULE__{
+          id: Ecto.UUID.t() | nil,
+          account_id: Ecto.UUID.t() | nil,
+          account: GA.Accounts.Account.t() | Ecto.Association.NotLoaded.t() | nil,
+          custom_action: String.t() | nil,
+          framework: String.t() | nil,
+          taxonomy_path: String.t() | nil,
+          taxonomy_version: String.t() | nil,
+          created_at: DateTime.t() | nil
+        }
+
   @type resolve_result :: %{
           taxonomy_actions: [String.t()],
           mapped_actions: [String.t()]
@@ -35,7 +46,13 @@ defmodule GA.Compliance.ActionMapping do
   def changeset(mapping, attrs) do
     mapping
     |> cast(attrs, [:account_id, :custom_action, :framework, :taxonomy_path, :taxonomy_version])
-    |> validate_required([:account_id, :custom_action, :framework, :taxonomy_path, :taxonomy_version])
+    |> validate_required([
+      :account_id,
+      :custom_action,
+      :framework,
+      :taxonomy_path,
+      :taxonomy_version
+    ])
     |> validate_length(:custom_action, min: 1, max: 255)
     |> validate_format(:taxonomy_version, ~r/^\d+\.\d+\.\d+$/)
     |> foreign_key_constraint(:account_id)
@@ -49,7 +66,8 @@ defmodule GA.Compliance.ActionMapping do
   """
   @spec create_mapping(String.t(), map() | keyword()) ::
           {:ok, t()} | {:error, Ecto.Changeset.t()}
-  def create_mapping(account_id, attrs) when is_binary(account_id) and (is_map(attrs) or is_list(attrs)) do
+  def create_mapping(account_id, attrs)
+      when is_binary(account_id) and (is_map(attrs) or is_list(attrs)) do
     attrs = normalize_attrs(attrs)
     framework = get_attr(attrs, :framework)
     taxonomy_path = get_attr(attrs, :taxonomy_path)
@@ -83,7 +101,10 @@ defmodule GA.Compliance.ActionMapping do
   Lists mappings for an account, optionally filtered by framework/custom action.
   """
   @spec list_mappings(String.t(), keyword() | map()) :: [t()]
-  def list_mappings(account_id, opts \\ []) when is_binary(account_id) do
+  def list_mappings(account_id, opts \\ [])
+
+  def list_mappings(account_id, opts)
+      when is_binary(account_id) and (is_list(opts) or is_map(opts)) do
     framework = get_opt(opts, :framework)
     custom_action = get_opt(opts, :custom_action)
 
@@ -141,7 +162,8 @@ defmodule GA.Compliance.ActionMapping do
   Deletes a mapping when it belongs to the account.
   """
   @spec delete_mapping(String.t(), String.t()) :: {:ok, t()} | {:error, :not_found}
-  def delete_mapping(account_id, mapping_id) when is_binary(account_id) and is_binary(mapping_id) do
+  def delete_mapping(account_id, mapping_id)
+      when is_binary(account_id) and is_binary(mapping_id) do
     case Repo.get_by(__MODULE__, id: mapping_id, account_id: account_id) do
       nil -> {:error, :not_found}
       mapping -> Repo.delete(mapping)
@@ -180,8 +202,10 @@ defmodule GA.Compliance.ActionMapping do
   Returns a dry-run report of recent action recognition for a framework.
   """
   @spec validate_actions(String.t(), String.t()) ::
-          {:ok, %{recognized: [String.t()], unmapped: [String.t()]}} | {:error, :unknown_framework}
-  def validate_actions(account_id, framework) when is_binary(account_id) and is_binary(framework) do
+          {:ok, %{recognized: [String.t()], unmapped: [String.t()]}}
+          | {:error, :unknown_framework}
+  def validate_actions(account_id, framework)
+      when is_binary(account_id) and is_binary(framework) do
     with {:ok, module} <- Taxonomy.get(framework) do
       canonical_actions = MapSet.new(module.actions())
 

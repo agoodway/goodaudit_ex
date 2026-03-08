@@ -89,11 +89,6 @@ defmodule GAWeb.Api.V1.AuditLogController do
     opts = build_list_opts(params)
 
     case Audit.list_logs(account_id, opts) do
-      {logs, next_cursor} ->
-        conn
-        |> put_view(json: AuditLogJSON)
-        |> render(:index, logs: logs, next_cursor: next_cursor)
-
       {:error, :invalid_category_format} ->
         invalid_category_response(conn, "Invalid category format. Expected 'framework:pattern'")
 
@@ -104,6 +99,11 @@ defmodule GAWeb.Api.V1.AuditLogController do
 
       {:error, :invalid_category_path} ->
         invalid_category_response(conn, "Invalid category path for framework taxonomy")
+
+      {logs, next_cursor} ->
+        conn
+        |> put_view(json: AuditLogJSON)
+        |> render(:index, logs: logs, next_cursor: next_cursor)
     end
   end
 
