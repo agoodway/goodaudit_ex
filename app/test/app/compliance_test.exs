@@ -181,6 +181,69 @@ defmodule GA.ComplianceTest do
     end
   end
 
+  describe "get_active_framework/2" do
+    test "returns association when active" do
+      account = account_fixture()
+      {:ok, activated} = Compliance.activate_framework(account.id, "hipaa")
+
+      assert {:ok, found} = Compliance.get_active_framework(account.id, "hipaa")
+      assert found.id == activated.id
+      assert found.framework == "hipaa"
+    end
+
+    test "returns not_found when not active" do
+      account = account_fixture()
+      assert {:error, :not_found} = Compliance.get_active_framework(account.id, "hipaa")
+    end
+  end
+
+  describe "update_framework_config/3" do
+    test "updates validation mode from flexible to strict" do
+      account = account_fixture()
+      {:ok, _} = Compliance.activate_framework(account.id, "hipaa")
+
+      assert {:ok, updated} =
+               Compliance.update_framework_config(account.id, "hipaa", %{
+                 action_validation_mode: "strict"
+               })
+
+      assert updated.action_validation_mode == "strict"
+    end
+
+    test "updates config_overrides retention_days" do
+      account = account_fixture()
+      {:ok, _} = Compliance.activate_framework(account.id, "hipaa")
+
+      assert {:ok, updated} =
+               Compliance.update_framework_config(account.id, "hipaa", %{
+                 config_overrides: %{"retention_days" => 3650}
+               })
+
+      assert updated.config_overrides["retention_days"] == 3650
+    end
+
+    test "rejects invalid override key" do
+      account = account_fixture()
+      {:ok, _} = Compliance.activate_framework(account.id, "hipaa")
+
+      assert {:error, changeset} =
+               Compliance.update_framework_config(account.id, "hipaa", %{
+                 config_overrides: %{"bad_key" => "value"}
+               })
+
+      assert "contains unsupported keys: bad_key" in errors_on(changeset).config_overrides
+    end
+
+    test "returns not_found for non-existent framework" do
+      account = account_fixture()
+
+      assert {:error, :not_found} =
+               Compliance.update_framework_config(account.id, "hipaa", %{
+                 action_validation_mode: "strict"
+               })
+    end
+  end
+
   defp account_fixture do
     {:ok, account} =
       Accounts.create_account(%{name: "Compliance Account #{System.unique_integer([:positive])}"})

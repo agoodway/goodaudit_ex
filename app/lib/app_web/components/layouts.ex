@@ -162,6 +162,20 @@ defmodule GAWeb.Layouts do
           </ul>
         </li>
 
+        <li>
+          <p class="px-2 mb-2 font-mono text-[0.6rem] font-semibold uppercase tracking-[0.15em] text-white/25">
+            Configuration
+          </p>
+          <ul role="list" class="space-y-0.5">
+            <.sidebar_nav_item
+              href={"#{@account_base}/compliance"}
+              icon="hero-shield-check"
+              label="Compliance"
+              active={@active_nav == :compliance}
+            />
+          </ul>
+        </li>
+
         <%!-- Bottom section --%>
         <li class="mt-auto">
           <ul role="list" class="space-y-0.5">

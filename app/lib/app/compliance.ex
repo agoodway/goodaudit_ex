@@ -133,6 +133,46 @@ defmodule GA.Compliance do
   def deactivate_framework(_account_id, _framework), do: {:error, :not_found}
 
   @doc """
+  Returns a single active framework association for an account.
+  """
+  def get_active_framework(account_id, framework)
+      when is_binary(account_id) and is_binary(framework) do
+    case Repo.get_by(AccountComplianceFramework,
+           account_id: account_id,
+           framework: framework
+         ) do
+      nil -> {:error, :not_found}
+      association -> {:ok, association}
+    end
+  end
+
+  def get_active_framework(_account_id, _framework), do: {:error, :not_found}
+
+  @doc """
+  Updates an active framework's settings (validation mode and config overrides).
+  """
+  def update_framework_config(account_id, framework, attrs)
+      when is_binary(account_id) and is_binary(framework) do
+    case Repo.get_by(AccountComplianceFramework,
+           account_id: account_id,
+           framework: framework
+         ) do
+      nil ->
+        {:error, :not_found}
+
+      association ->
+        association
+        |> AccountComplianceFramework.changeset(
+          Map.take(attrs, [:action_validation_mode, :config_overrides, "action_validation_mode", "config_overrides"]),
+          valid_framework_ids: Map.keys(@registry)
+        )
+        |> Repo.update()
+    end
+  end
+
+  def update_framework_config(_account_id, _framework, _attrs), do: {:error, :not_found}
+
+  @doc """
   Returns the effective runtime config for an active framework association.
   """
   def effective_config(account_id, framework)
