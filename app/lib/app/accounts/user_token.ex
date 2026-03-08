@@ -1,4 +1,8 @@
 defmodule GA.Accounts.UserToken do
+  @moduledoc """
+  Persisted token model for sessions, magic links, and email changes.
+  """
+
   use Ecto.Schema
   import Ecto.Query
   alias GA.Accounts.UserToken

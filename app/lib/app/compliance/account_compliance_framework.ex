@@ -50,21 +50,19 @@ defmodule GA.Compliance.AccountComplianceFramework do
   defp validate_config_overrides(changeset) do
     overrides = get_field(changeset, :config_overrides) || %{}
 
-    cond do
-      not is_map(overrides) ->
-        add_error(changeset, :config_overrides, "must be an object")
+    if is_map(overrides) do
+      normalized = normalize_override_keys(overrides)
 
-      true ->
-        normalized = normalize_override_keys(overrides)
-
-        with :ok <- validate_override_keys(normalized),
-             :ok <- validate_retention_days(normalized),
-             :ok <- validate_verification_cadence(normalized),
-             :ok <- validate_additional_required_fields(normalized) do
-          put_change(changeset, :config_overrides, normalized)
-        else
-          {:error, message} -> add_error(changeset, :config_overrides, message)
-        end
+      with :ok <- validate_override_keys(normalized),
+           :ok <- validate_retention_days(normalized),
+           :ok <- validate_verification_cadence(normalized),
+           :ok <- validate_additional_required_fields(normalized) do
+        put_change(changeset, :config_overrides, normalized)
+      else
+        {:error, message} -> add_error(changeset, :config_overrides, message)
+      end
+    else
+      add_error(changeset, :config_overrides, "must be an object")
     end
   end
 
@@ -90,19 +88,33 @@ defmodule GA.Compliance.AccountComplianceFramework do
 
   defp validate_retention_days(overrides) do
     case Map.get(overrides, "retention_days") do
-      nil -> :ok
-      value when is_integer(value) and value > 0 and value <= @max_retention_days -> :ok
-      value when is_integer(value) and value > @max_retention_days -> {:error, "retention_days must not exceed #{@max_retention_days}"}
-      _ -> {:error, "retention_days must be a positive integer"}
+      nil ->
+        :ok
+
+      value when is_integer(value) and value > 0 and value <= @max_retention_days ->
+        :ok
+
+      value when is_integer(value) and value > @max_retention_days ->
+        {:error, "retention_days must not exceed #{@max_retention_days}"}
+
+      _ ->
+        {:error, "retention_days must be a positive integer"}
     end
   end
 
   defp validate_verification_cadence(overrides) do
     case Map.get(overrides, "verification_cadence_hours") do
-      nil -> :ok
-      value when is_integer(value) and value > 0 and value <= @max_verification_cadence_hours -> :ok
-      value when is_integer(value) and value > @max_verification_cadence_hours -> {:error, "verification_cadence_hours must not exceed #{@max_verification_cadence_hours}"}
-      _ -> {:error, "verification_cadence_hours must be a positive integer"}
+      nil ->
+        :ok
+
+      value when is_integer(value) and value > 0 and value <= @max_verification_cadence_hours ->
+        :ok
+
+      value when is_integer(value) and value > @max_verification_cadence_hours ->
+        {:error, "verification_cadence_hours must not exceed #{@max_verification_cadence_hours}"}
+
+      _ ->
+        {:error, "verification_cadence_hours must be a positive integer"}
     end
   end
 

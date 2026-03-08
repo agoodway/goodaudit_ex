@@ -1,4 +1,6 @@
 defmodule GAWeb.UserSettingsController do
+  @moduledoc false
+
   use GAWeb, :controller
 
   alias GA.Accounts
@@ -9,10 +11,12 @@ defmodule GAWeb.UserSettingsController do
   plug :require_sudo_mode
   plug :assign_email_and_password_changesets
 
+  @doc false
   def edit(conn, _params) do
     render(conn, :edit)
   end
 
+  @doc false
   def update(conn, %{"action" => "update_email"} = params) do
     %{"user" => user_params} = params
     user = conn.assigns.current_scope.user
@@ -37,6 +41,7 @@ defmodule GAWeb.UserSettingsController do
     end
   end
 
+  @doc false
   def update(conn, %{"action" => "update_password"} = params) do
     %{"user" => user_params} = params
     user = conn.assigns.current_scope.user
@@ -53,6 +58,7 @@ defmodule GAWeb.UserSettingsController do
     end
   end
 
+  @doc false
   def confirm_email(conn, %{"token" => token}) do
     case Accounts.update_user_email(conn.assigns.current_scope.user, token) do
       {:ok, _user} ->

@@ -26,6 +26,7 @@ defmodule GAWeb.Api.V1.TaxonomyController do
     ]
   )
 
+  @doc false
   def index(conn, _params) do
     taxonomies =
       Taxonomy.list_frameworks()
@@ -51,6 +52,7 @@ defmodule GAWeb.Api.V1.TaxonomyController do
     ]
   )
 
+  @doc false
   def show(conn, %{"framework" => framework}) do
     case Taxonomy.get(framework) do
       {:ok, module} ->

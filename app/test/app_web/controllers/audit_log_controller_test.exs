@@ -5,8 +5,8 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
 
   alias GA.Accounts
   alias GA.Audit
-  alias GA.Compliance.ActionMapping
   alias GA.Compliance
+  alias GA.Compliance.ActionMapping
 
   describe "POST /api/v1/audit-logs" do
     test "returns 201 for valid payload with private key", %{conn: conn} do
@@ -193,7 +193,7 @@ defmodule GAWeb.Api.V1.AuditLogControllerTest do
         |> json_response(200)
 
       assert response["meta"]["count"] == 1
-      assert response["meta"]["next_cursor"] == 2
+      assert response["meta"]["next_cursor"] == nil
       assert Enum.map(response["data"], & &1["resource_id"]) == ["second-match"]
     end
 

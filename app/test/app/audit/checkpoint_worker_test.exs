@@ -3,6 +3,8 @@ defmodule GA.Audit.CheckpointWorkerTest do
 
   import ExUnit.CaptureLog
 
+  require Logger
+
   alias GA.Accounts
   alias GA.Audit
   alias GA.Audit.CheckpointWorker
@@ -43,6 +45,10 @@ defmodule GA.Audit.CheckpointWorkerTest do
       empty_account = account_fixture()
       populated_account = account_fixture()
       add_log(populated_account.id, "populated")
+
+      previous_level = Logger.level()
+      Logger.configure(level: :debug)
+      on_exit(fn -> Logger.configure(level: previous_level) end)
 
       worker = start_worker()
 

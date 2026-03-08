@@ -26,7 +26,10 @@ defmodule GAWeb.ComplianceLive.FrameworkCardComponent do
 
     socket =
       if not Map.has_key?(socket.assigns, :form_data) or association_changed? do
-        assign(socket, form_data: initial_form_data(assigns[:association] || socket.assigns[:association]), dirty?: false)
+        assign(socket,
+          form_data: initial_form_data(assigns[:association] || socket.assigns[:association]),
+          dirty?: false
+        )
       else
         socket
       end
@@ -52,7 +55,10 @@ defmodule GAWeb.ComplianceLive.FrameworkCardComponent do
             checked={@association != nil}
             phx-click="toggle_framework"
             phx-target={@myself}
-            data-confirm={if @association, do: "Deactivating will remove this framework's configuration. Continue?"}
+            data-confirm={
+              if @association,
+                do: "Deactivating will remove this framework's configuration. Continue?"
+            }
           />
         </div>
         <div :if={!@can_edit?}>
@@ -80,7 +86,10 @@ defmodule GAWeb.ComplianceLive.FrameworkCardComponent do
               Strict — rejects unrecognized actions
             </option>
           </select>
-          <p :if={@form_data.action_validation_mode == "strict"} class="mt-1 text-[0.625rem] font-mono text-warning/70">
+          <p
+            :if={@form_data.action_validation_mode == "strict"}
+            class="mt-1 text-[0.625rem] font-mono text-warning/70"
+          >
             Strict mode rejects audit log entries with actions not recognized by this framework's
             event taxonomy or your custom action mappings.
           </p>
@@ -153,14 +162,20 @@ defmodule GAWeb.ComplianceLive.FrameworkCardComponent do
             <span class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 block mb-0.5">
               Validation Mode
             </span>
-            <span class="text-sm text-base-content/70 capitalize">{@association.action_validation_mode}</span>
+            <span class="text-sm text-base-content/70 capitalize">
+              {@association.action_validation_mode}
+            </span>
           </div>
           <div>
             <span class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 block mb-0.5">
               Retention Days
             </span>
             <span class="text-sm text-base-content/70">
-              {Map.get(@association.config_overrides || %{}, "retention_days", @framework_module.default_retention_days())}
+              {Map.get(
+                @association.config_overrides || %{},
+                "retention_days",
+                @framework_module.default_retention_days()
+              )}
             </span>
           </div>
           <div>
@@ -168,7 +183,11 @@ defmodule GAWeb.ComplianceLive.FrameworkCardComponent do
               Verification Cadence
             </span>
             <span class="text-sm text-base-content/70">
-              {Map.get(@association.config_overrides || %{}, "verification_cadence_hours", @framework_module.verification_cadence_hours())} hours
+              {Map.get(
+                @association.config_overrides || %{},
+                "verification_cadence_hours",
+                @framework_module.verification_cadence_hours()
+              )} hours
             </span>
           </div>
           <div>
@@ -187,10 +206,10 @@ defmodule GAWeb.ComplianceLive.FrameworkCardComponent do
 
   @impl true
   def handle_event("toggle_framework", _params, socket) do
-    if not authorized?(socket) do
-      {:noreply, put_flash(socket, :error, "You don't have permission to modify frameworks.")}
-    else
+    if authorized?(socket) do
       handle_toggle(socket)
+    else
+      {:noreply, put_flash(socket, :error, "You don't have permission to modify frameworks.")}
     end
   end
 
@@ -210,10 +229,10 @@ defmodule GAWeb.ComplianceLive.FrameworkCardComponent do
 
   @impl true
   def handle_event("save", _params, socket) do
-    if not authorized?(socket) do
-      {:noreply, put_flash(socket, :error, "You don't have permission to modify frameworks.")}
-    else
+    if authorized?(socket) do
       handle_save(socket)
+    else
+      {:noreply, put_flash(socket, :error, "You don't have permission to modify frameworks.")}
     end
   end
 
@@ -227,7 +246,11 @@ defmodule GAWeb.ComplianceLive.FrameworkCardComponent do
 
         {:noreply,
          socket
-         |> assign(association: association, form_data: initial_form_data(association), dirty?: false)
+         |> assign(
+           association: association,
+           form_data: initial_form_data(association),
+           dirty?: false
+         )
          |> put_flash(:info, "#{socket.assigns.framework_module.name()} activated.")}
 
       {:error, changeset} ->
@@ -273,7 +296,11 @@ defmodule GAWeb.ComplianceLive.FrameworkCardComponent do
 
         {:noreply,
          socket
-         |> assign(association: association, form_data: initial_form_data(association), dirty?: false)
+         |> assign(
+           association: association,
+           form_data: initial_form_data(association),
+           dirty?: false
+         )
          |> put_flash(:info, "#{socket.assigns.framework_module.name()} settings saved.")}
 
       {:error, :not_found} ->

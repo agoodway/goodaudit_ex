@@ -21,6 +21,7 @@ defmodule GAWeb.Api.V1.VerificationController do
     ]
   )
 
+  @doc false
   def create(conn, _params) do
     account_id = conn.assigns.current_account.id
 

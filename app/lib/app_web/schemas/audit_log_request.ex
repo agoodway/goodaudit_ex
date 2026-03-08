@@ -2,6 +2,7 @@ defmodule GAWeb.Schemas.AuditLogRequest do
   @moduledoc """
   OpenAPI schema for creating an audit log entry.
   """
+  alias GA.Audit.Log
   require OpenApiSpex
   alias OpenApiSpex.Schema
 
@@ -16,7 +17,7 @@ defmodule GAWeb.Schemas.AuditLogRequest do
       timestamp: %Schema{type: :string, format: :"date-time", nullable: true},
       outcome: %Schema{
         type: :string,
-        enum: GA.Audit.Log.valid_outcomes()
+        enum: Log.valid_outcomes()
       },
       extensions: %Schema{type: :object, additionalProperties: true},
       metadata: %Schema{type: :object, additionalProperties: true}

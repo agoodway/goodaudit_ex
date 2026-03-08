@@ -1,8 +1,12 @@
 defmodule GA.Accounts.UserNotifier do
+  @moduledoc """
+  Delivers transactional emails for account authentication flows.
+  """
+
   import Swoosh.Email
 
-  alias GA.Mailer
   alias GA.Accounts.User
+  alias GA.Mailer
 
   # Delivers the email using the application mailer.
   defp deliver(recipient, subject, body) do

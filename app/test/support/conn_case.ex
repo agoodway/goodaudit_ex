@@ -17,6 +17,8 @@ defmodule GAWeb.ConnCase do
 
   use ExUnit.CaseTemplate
 
+  alias GA.Accounts.Scope
+
   using do
     quote do
       # The default endpoint for testing
@@ -46,7 +48,7 @@ defmodule GAWeb.ConnCase do
   """
   def register_and_log_in_user(%{conn: conn} = context) do
     user = GA.AccountsFixtures.user_fixture()
-    scope = GA.Accounts.Scope.for_user(user)
+    scope = Scope.for_user(user)
 
     opts =
       context

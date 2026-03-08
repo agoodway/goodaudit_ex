@@ -3,8 +3,8 @@ defmodule GA.Compliance.TaxonomyTest do
 
   import ExUnit.CaptureIO
 
-  alias GA.Compliance.Taxonomy
   alias GA.Compliance.Taxonomies
+  alias GA.Compliance.Taxonomy
 
   describe "behaviour enforcement" do
     test "warns when callbacks are missing" do

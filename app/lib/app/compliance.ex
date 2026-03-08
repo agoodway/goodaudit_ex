@@ -7,6 +7,7 @@ defmodule GA.Compliance do
 
   alias GA.Compliance.AccountComplianceFramework
   alias GA.Compliance.ActionMapping
+  alias GA.Compliance.Taxonomy
   alias GA.Repo
 
   @registry %{
@@ -223,7 +224,7 @@ defmodule GA.Compliance do
 
     unknown_frameworks =
       Enum.reduce(strict_frameworks, [], fn framework, acc ->
-        with {:ok, module} <- GA.Compliance.Taxonomy.get(framework),
+        with {:ok, module} <- Taxonomy.get(framework),
              false <- action in module.actions(),
              false <- ActionMapping.mapped_action?(account_id, framework, action) do
           [framework | acc]

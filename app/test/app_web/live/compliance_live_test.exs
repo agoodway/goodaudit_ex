@@ -99,7 +99,10 @@ defmodule GAWeb.ComplianceLiveTest do
       assert updated.config_overrides["retention_days"] == 3650
     end
 
-    test "additional_required_fields are parsed, trimmed, and saved", %{conn: conn, account: account} do
+    test "additional_required_fields are parsed, trimmed, and saved", %{
+      conn: conn,
+      account: account
+    } do
       {:ok, _} = Compliance.activate_framework(account.id, "hipaa")
 
       {:ok, view, _html} = live(conn, compliance_path(account))
@@ -115,12 +118,20 @@ defmodule GAWeb.ComplianceLiveTest do
       |> render_click()
 
       {:ok, updated} = Compliance.get_active_framework(account.id, "hipaa")
-      assert updated.config_overrides["additional_required_fields"] == ["department", "location", "team"]
+
+      assert updated.config_overrides["additional_required_fields"] == [
+               "department",
+               "location",
+               "team"
+             ]
     end
   end
 
   describe "dirty state tracking" do
-    test "save button is disabled initially and enabled after field change", %{conn: conn, account: account} do
+    test "save button is disabled initially and enabled after field change", %{
+      conn: conn,
+      account: account
+    } do
       {:ok, _} = Compliance.activate_framework(account.id, "hipaa")
 
       {:ok, view, _html} = live(conn, compliance_path(account))

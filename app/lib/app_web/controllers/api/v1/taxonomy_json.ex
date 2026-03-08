@@ -3,10 +3,12 @@ defmodule GAWeb.Api.V1.TaxonomyJSON do
   JSON rendering for taxonomy API responses.
   """
 
+  @doc false
   def index(%{taxonomies: taxonomies}) do
     %{data: Enum.map(taxonomies, &summary/1)}
   end
 
+  @doc false
   def show(%{framework: framework, version: version, taxonomy: taxonomy}) do
     %{
       data: %{

@@ -7,7 +7,7 @@ defmodule GA.Accounts do
   require Logger
   alias GA.Repo
 
-  alias GA.Accounts.{Account, AccountUser, ApiKey, User, UserToken, UserNotifier}
+  alias GA.Accounts.{Account, AccountUser, ApiKey, User, UserNotifier, UserToken}
 
   ## Database getters
 
@@ -399,7 +399,11 @@ defmodule GA.Accounts do
 
   @doc "List all members of an account with preloaded users, ordered by role then email."
   def list_account_members(%Account{} = account) do
-    role_order = dynamic([au], fragment("CASE ? WHEN 'owner' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END", au.role))
+    role_order =
+      dynamic(
+        [au],
+        fragment("CASE ? WHEN 'owner' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END", au.role)
+      )
 
     AccountUser
     |> where([au], au.account_id == ^account.id)
@@ -418,7 +422,11 @@ defmodule GA.Accounts do
       name ->
         case Account.slugify(name) do
           "" ->
-            Ecto.Changeset.add_error(changeset, :name, "must contain at least one alphanumeric character")
+            Ecto.Changeset.add_error(
+              changeset,
+              :name,
+              "must contain at least one alphanumeric character"
+            )
 
           slug ->
             Ecto.Changeset.put_change(changeset, :slug, slug)

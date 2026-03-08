@@ -26,7 +26,7 @@ defmodule GAWeb.Plugs.ApiAuth do
          {:ok, api_key} <- Accounts.verify_api_token(token),
          :ok <- check_user_confirmed(api_key.account_user.user),
          :ok <- check_account_active(api_key.account_user.account) do
-      Task.start(fn -> Accounts.touch_api_key(api_key) end)
+      _ = Accounts.touch_api_key(api_key)
 
       conn
       |> assign(:current_api_key, api_key)

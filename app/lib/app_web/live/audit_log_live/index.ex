@@ -251,9 +251,17 @@ defmodule GAWeb.AuditLogLive.Index do
           />
         </summary>
         <div class="dash-card-body">
-          <.form for={%{}} phx-change="filter" phx-submit="filter" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <.form
+            for={%{}}
+            phx-change="filter"
+            phx-submit="filter"
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"
+          >
             <div>
-              <label for="filter-from" class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block">
+              <label
+                for="filter-from"
+                class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block"
+              >
                 From
               </label>
               <input
@@ -265,7 +273,10 @@ defmodule GAWeb.AuditLogLive.Index do
               />
             </div>
             <div>
-              <label for="filter-to" class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block">
+              <label
+                for="filter-to"
+                class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block"
+              >
                 To
               </label>
               <input
@@ -277,7 +288,10 @@ defmodule GAWeb.AuditLogLive.Index do
               />
             </div>
             <div>
-              <label for="filter-actor-id" class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block">
+              <label
+                for="filter-actor-id"
+                class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block"
+              >
                 Actor
               </label>
               <input
@@ -291,7 +305,10 @@ defmodule GAWeb.AuditLogLive.Index do
               />
             </div>
             <div>
-              <label for="filter-action" class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block">
+              <label
+                for="filter-action"
+                class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block"
+              >
                 Action
               </label>
               <input
@@ -305,7 +322,10 @@ defmodule GAWeb.AuditLogLive.Index do
               />
             </div>
             <div>
-              <label for="filter-resource-type" class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block">
+              <label
+                for="filter-resource-type"
+                class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block"
+              >
                 Resource Type
               </label>
               <input
@@ -319,7 +339,10 @@ defmodule GAWeb.AuditLogLive.Index do
               />
             </div>
             <div>
-              <label for="filter-outcome" class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block">
+              <label
+                for="filter-outcome"
+                class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block"
+              >
                 Outcome
               </label>
               <select

@@ -10,6 +10,20 @@ defmodule GA.Accounts.AccountUser do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
 
+  @type role :: :owner | :admin | :member
+
+  @type t :: %__MODULE__{
+          id: Ecto.UUID.t() | nil,
+          role: role(),
+          user_id: Ecto.UUID.t() | nil,
+          account_id: Ecto.UUID.t() | nil,
+          user: GA.Accounts.User.t() | Ecto.Association.NotLoaded.t() | nil,
+          account: GA.Accounts.Account.t() | Ecto.Association.NotLoaded.t() | nil,
+          api_keys: [GA.Accounts.ApiKey.t()] | Ecto.Association.NotLoaded.t(),
+          inserted_at: NaiveDateTime.t() | nil,
+          updated_at: NaiveDateTime.t() | nil
+        }
+
   schema "account_users" do
     field :role, Ecto.Enum, values: [:owner, :admin, :member], default: :member
 

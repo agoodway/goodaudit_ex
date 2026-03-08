@@ -3,10 +3,16 @@ defmodule GAWeb.Api.V1.ActionMappingJSON do
   JSON rendering for action mapping responses.
   """
 
+  @doc false
   def index(%{mappings: mappings}), do: %{data: Enum.map(mappings, &data/1)}
+
+  @doc false
   def show(%{mapping: mapping}), do: %{data: data(mapping)}
+
+  @doc false
   def validate(%{report: report}), do: %{data: report}
 
+  @doc false
   def data(mapping) do
     %{
       id: mapping.id,

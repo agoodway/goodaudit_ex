@@ -37,7 +37,10 @@ defmodule GA.Audit.Log do
     timestamps(type: :utc_datetime_usec)
   end
 
+  @doc false
   def valid_actions, do: @valid_actions
+
+  @doc false
   def valid_outcomes, do: @valid_outcomes
 
   @doc """

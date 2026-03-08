@@ -17,8 +17,10 @@ defmodule GAWeb do
   those modules here.
   """
 
+  @doc false
   def static_paths, do: ~w(assets fonts images favicon.ico robots.txt)
 
+  @doc false
   def router do
     quote do
       use Phoenix.Router, helpers: false
@@ -30,12 +32,14 @@ defmodule GAWeb do
     end
   end
 
+  @doc false
   def channel do
     quote do
       use Phoenix.Channel
     end
   end
 
+  @doc false
   def controller do
     quote do
       use Phoenix.Controller, formats: [:html, :json]
@@ -48,6 +52,7 @@ defmodule GAWeb do
     end
   end
 
+  @doc false
   def live_view do
     quote do
       use Phoenix.LiveView
@@ -56,6 +61,7 @@ defmodule GAWeb do
     end
   end
 
+  @doc false
   def live_component do
     quote do
       use Phoenix.LiveComponent
@@ -64,6 +70,7 @@ defmodule GAWeb do
     end
   end
 
+  @doc false
   def html do
     quote do
       use Phoenix.Component
@@ -88,14 +95,15 @@ defmodule GAWeb do
       import GAWeb.CoreComponents
 
       # Common modules used in templates
-      alias Phoenix.LiveView.JS
       alias GAWeb.Layouts
+      alias Phoenix.LiveView.JS
 
       # Routes generation with the ~p sigil
       unquote(verified_routes())
     end
   end
 
+  @doc false
   def verified_routes do
     quote do
       use Phoenix.VerifiedRoutes,

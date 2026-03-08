@@ -1,4 +1,8 @@
 defmodule GAWeb.UserAuth do
+  @moduledoc """
+  Authentication helpers and plugs for browser and LiveView flows.
+  """
+
   use GAWeb, :verified_routes
 
   import Plug.Conn

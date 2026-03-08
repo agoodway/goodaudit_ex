@@ -85,41 +85,43 @@ defmodule GA.Audit do
         attrs
         |> Map.delete("extensions")
         |> Map.delete("frameworks")
-        |> Map.put(:extensions, validated_extensions)
-        |> Map.put(:frameworks, framework_ids)
+        |> Map.put("extensions", validated_extensions)
+        |> Map.put("frameworks", framework_ids)
         |> hydrate_legacy_fields()
 
-      Repo.transaction(fn ->
-        with :ok <- lock_account(account_id),
-             {:ok, hmac_key} <- Accounts.get_hmac_key(account_id),
-             sequence_number <- next_sequence_number(account_id),
-             previous_checksum <- get_previous_checksum(account_id, sequence_number),
-             {:ok, checksum} <-
-               compute_checksum(
-                 hmac_key,
-                 attrs,
-                 account_id,
-                 sequence_number,
-                 previous_checksum
-               ),
-             changeset <-
-               Log.changeset(%Log{}, attrs)
-               |> apply_chain_fields(account_id, %{
-                 sequence_number: sequence_number,
-                 checksum: checksum,
-                 previous_checksum: previous_checksum
-               }),
-             {:ok, log} <- Repo.insert(changeset) do
-          log
-        else
-          {:error, reason} -> Repo.rollback(reason)
-        end
-      end)
+      Repo.transaction(fn -> insert_log_entry(account_id, attrs) end)
       |> unwrap_tx_result()
     end
   end
 
   def create_log_entry(_, _), do: {:error, :invalid_arguments}
+
+  defp insert_log_entry(account_id, attrs) do
+    with :ok <- lock_account(account_id),
+         {:ok, hmac_key} <- Accounts.get_hmac_key(account_id),
+         sequence_number <- next_sequence_number(account_id),
+         previous_checksum <- get_previous_checksum(account_id, sequence_number),
+         {:ok, checksum} <-
+           compute_checksum(
+             hmac_key,
+             attrs,
+             account_id,
+             sequence_number,
+             previous_checksum
+           ),
+         changeset <-
+           Log.changeset(%Log{}, attrs)
+           |> apply_chain_fields(account_id, %{
+             sequence_number: sequence_number,
+             checksum: checksum,
+             previous_checksum: previous_checksum
+           }),
+         {:ok, log} <- Repo.insert(changeset) do
+      log
+    else
+      {:error, reason} -> Repo.rollback(reason)
+    end
+  end
 
   @doc """
   Exports account-scoped audit entries with a higher limit cap (#{@max_export_limit}).
@@ -391,15 +393,53 @@ defmodule GA.Audit do
   end
 
   defp put_default_timestamp(attrs) do
-    if Map.has_key?(attrs, :timestamp) or Map.has_key?(attrs, "timestamp") do
-      attrs
-    else
-      Map.put(attrs, :timestamp, DateTime.utc_now())
+    cond do
+      Map.has_key?(attrs, :timestamp) ->
+        Map.update!(attrs, :timestamp, &normalize_timestamp/1)
+
+      Map.has_key?(attrs, "timestamp") ->
+        Map.update!(attrs, "timestamp", &normalize_timestamp/1)
+
+      true ->
+        Map.put(attrs, "timestamp", DateTime.utc_now() |> DateTime.truncate(:microsecond))
     end
   end
 
-  defp normalize_attrs(attrs) when is_map(attrs), do: attrs
-  defp normalize_attrs(attrs) when is_list(attrs), do: Map.new(attrs)
+  defp normalize_timestamp(%DateTime{} = timestamp) do
+    timestamp
+    |> DateTime.to_naive()
+    |> ensure_naive_usec_precision()
+    |> DateTime.from_naive!(timestamp.time_zone)
+  end
+
+  defp normalize_timestamp(%NaiveDateTime{} = timestamp) do
+    timestamp
+    |> ensure_naive_usec_precision()
+    |> DateTime.from_naive!("Etc/UTC")
+  end
+
+  defp normalize_timestamp(timestamp) when is_binary(timestamp) do
+    case DateTime.from_iso8601(timestamp) do
+      {:ok, datetime, _offset} -> normalize_timestamp(datetime)
+      _ -> timestamp
+    end
+  end
+
+  defp normalize_timestamp(timestamp), do: timestamp
+
+  defp ensure_naive_usec_precision(%NaiveDateTime{microsecond: {value, _precision}} = timestamp) do
+    %{timestamp | microsecond: {value, 6}}
+  end
+
+  defp normalize_attrs(attrs) when is_map(attrs) do
+    Map.new(attrs, fn {key, value} -> {to_string(key), value} end)
+  end
+
+  defp normalize_attrs(attrs) when is_list(attrs) do
+    attrs
+    |> Map.new()
+    |> normalize_attrs()
+  end
 
   defp drop_reserved_chain_keys(attrs) do
     Enum.reduce(@reserved_chain_keys, attrs, fn key, acc ->
@@ -458,20 +498,14 @@ defmodule GA.Audit do
     string_key = Atom.to_string(key)
 
     cond do
-      Map.has_key?(attrs, key) and not is_nil(Map.get(attrs, key)) ->
-        attrs
-
       Map.has_key?(attrs, string_key) and not is_nil(Map.get(attrs, string_key)) ->
         attrs
-
-      Map.has_key?(attrs, key) ->
-        Map.put(attrs, key, value)
 
       Map.has_key?(attrs, string_key) ->
         Map.put(attrs, string_key, value)
 
       true ->
-        Map.put(attrs, key, value)
+        Map.put(attrs, string_key, value)
     end
   end
 

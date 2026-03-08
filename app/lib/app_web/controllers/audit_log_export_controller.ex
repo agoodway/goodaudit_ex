@@ -9,6 +9,7 @@ defmodule GAWeb.AuditLogExportController do
 
   @valid_outcomes ~w(success failure denied error)
 
+  @doc false
   def export(conn, params) do
     account = conn.assigns.current_account
 

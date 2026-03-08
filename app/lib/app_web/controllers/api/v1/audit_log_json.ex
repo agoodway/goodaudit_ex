@@ -3,6 +3,7 @@ defmodule GAWeb.Api.V1.AuditLogJSON do
   JSON rendering for audit log API responses.
   """
 
+  @doc false
   def index(%{logs: logs, next_cursor: next_cursor}) do
     %{
       data: Enum.map(logs, &data/1),
@@ -13,8 +14,10 @@ defmodule GAWeb.Api.V1.AuditLogJSON do
     }
   end
 
+  @doc false
   def show(%{log: log}), do: %{data: data(log)}
 
+  @doc false
   def data(log) do
     %{
       id: log.id,

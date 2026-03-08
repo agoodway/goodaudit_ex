@@ -19,10 +19,12 @@ defmodule GA.Compliance.ExtensionSchema do
   }
 
   @spec validate([String.t()], map() | nil) :: {:ok, map()} | {:error, Ecto.Changeset.t()}
+  @doc false
   def validate(framework_ids, extensions), do: validate(framework_ids, extensions, %{})
 
   @spec validate([String.t()], map() | nil, map()) ::
           {:ok, map()} | {:error, Ecto.Changeset.t()}
+  @doc false
   def validate(framework_ids, extensions, additional_required_by_framework)
       when is_list(framework_ids) do
     normalized_framework_ids =
@@ -102,41 +104,49 @@ defmodule GA.Compliance.ExtensionSchema do
     Enum.reduce(framework_ids, errors, fn framework_id, acc ->
       framework_extensions = Map.get(extensions, framework_id, %{})
 
-      case Compliance.get_framework(framework_id) do
-        {:ok, module} ->
-          case framework_extensions do
-            %{} ->
-              framework_schema = normalize_framework_schema(module.extension_schema())
-              additional_required = Map.get(additional_required_by_framework, framework_id, [])
-
-              acc
-              |> validate_unknown_extension_fields(
-                framework_id,
-                framework_extensions,
-                framework_schema,
-                additional_required
-              )
-              |> validate_required_extension_fields(
-                framework_id,
-                framework_extensions,
-                framework_schema,
-                additional_required
-              )
-              |> validate_extension_field_types(
-                framework_id,
-                framework_extensions,
-                framework_schema,
-                additional_required
-              )
-
-            _ ->
-              acc ++ ["#{framework_id} must be an object"]
-          end
-
-        {:error, :unknown_framework} ->
-          acc ++ ["#{framework_id} is not a recognized framework"]
-      end
+      validate_framework_extension(
+        acc,
+        framework_id,
+        framework_extensions,
+        additional_required_by_framework
+      )
     end)
+  end
+
+  defp validate_framework_extension(
+         errors,
+         framework_id,
+         framework_extensions,
+         additional_required_by_framework
+       ) do
+    with {:ok, module} <- Compliance.get_framework(framework_id),
+         %{} <- framework_extensions do
+      framework_schema = normalize_framework_schema(module.extension_schema())
+      additional_required = Map.get(additional_required_by_framework, framework_id, [])
+
+      errors
+      |> validate_unknown_extension_fields(
+        framework_id,
+        framework_extensions,
+        framework_schema,
+        additional_required
+      )
+      |> validate_required_extension_fields(
+        framework_id,
+        framework_extensions,
+        framework_schema,
+        additional_required
+      )
+      |> validate_extension_field_types(
+        framework_id,
+        framework_extensions,
+        framework_schema,
+        additional_required
+      )
+    else
+      {:error, :unknown_framework} -> errors ++ ["#{framework_id} is not a recognized framework"]
+      _ -> errors ++ ["#{framework_id} must be an object"]
+    end
   end
 
   defp validate_unknown_extension_fields(
@@ -203,21 +213,26 @@ defmodule GA.Compliance.ExtensionSchema do
     field_types
     |> Enum.sort_by(fn {field, _type} -> field end)
     |> Enum.reduce(errors, fn {field, type}, acc ->
-      case Map.fetch(framework_extensions, field) do
-        {:ok, nil} ->
-          acc
-
-        {:ok, value} ->
-          if valid_type?(value, type) do
-            acc
-          else
-            acc ++ ["#{framework_id}.#{field} must be #{type_label(type)}"]
-          end
-
-        :error ->
-          acc
-      end
+      validate_extension_field_type(acc, framework_id, framework_extensions, field, type)
     end)
+  end
+
+  defp validate_extension_field_type(acc, framework_id, framework_extensions, field, type)
+       when is_list(acc) do
+    case Map.fetch(framework_extensions, field) do
+      {:ok, nil} ->
+        acc
+
+      :error ->
+        acc
+
+      {:ok, value} ->
+        if valid_type?(value, type) do
+          acc
+        else
+          acc ++ ["#{framework_id}.#{field} must be #{type_label(type)}"]
+        end
+    end
   end
 
   defp normalize_framework_schema(%{} = schema) do

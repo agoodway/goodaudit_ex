@@ -26,13 +26,14 @@ defmodule GAWeb.Api.V1.AuditLogController do
     responses: [
       created: {"Audit log entry", "application/json", AuditLogResponse},
       unprocessable_entity:
-        {"Validation error (example: {\"errors\": {\"extensions\": [\"hipaa.user_role is required\"]}})",
+        {~s|Validation error (example: {"errors": {"extensions": ["hipaa.user_role is required"]}})|,
          "application/json", ErrorResponse},
       unauthorized: {"Unauthorized", "application/json", ErrorResponse},
       forbidden: {"Forbidden", "application/json", ErrorResponse}
     ]
   )
 
+  @doc false
   def create(conn, attrs) when is_map(attrs) do
     account_id = conn.assigns.current_account.id
 
@@ -84,6 +85,7 @@ defmodule GAWeb.Api.V1.AuditLogController do
     ]
   )
 
+  @doc false
   def index(conn, params) do
     account_id = conn.assigns.current_account.id
     opts = build_list_opts(params)
@@ -119,6 +121,7 @@ defmodule GAWeb.Api.V1.AuditLogController do
     ]
   )
 
+  @doc false
   def show(conn, %{"id" => id}) do
     account_id = conn.assigns.current_account.id
 

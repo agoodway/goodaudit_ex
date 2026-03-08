@@ -1,4 +1,6 @@
 defmodule GAWeb.SettingsLive.DangerZoneComponent do
+  @moduledoc false
+
   use GAWeb, :live_component
 
   require Logger
@@ -98,22 +100,10 @@ defmodule GAWeb.SettingsLive.DangerZoneComponent do
   @impl true
   def handle_event("confirm_delete", _params, socket)
       when socket.assigns.role == :owner do
-    if not Accounts.sudo_mode?(socket.assigns.current_user) do
-      {:noreply, put_flash(socket, :error, "Please re-authenticate to perform this action.")}
+    if Accounts.sudo_mode?(socket.assigns.current_user) do
+      confirm_delete(socket)
     else
-      if socket.assigns.delete_confirmation == socket.assigns.account.name do
-        case Accounts.delete_account(socket.assigns.account) do
-          {:ok, _} ->
-            send(self(), :account_deleted)
-            {:noreply, socket}
-
-          {:error, reason} ->
-            Logger.error("Failed to delete account", account_id: socket.assigns.account.id, error: inspect(reason))
-            {:noreply, put_flash(socket, :error, "Failed to delete account.")}
-        end
-      else
-        {:noreply, socket}
-      end
+      {:noreply, put_flash(socket, :error, "Please re-authenticate to perform this action.")}
     end
   end
 
@@ -122,4 +112,25 @@ defmodule GAWeb.SettingsLive.DangerZoneComponent do
       when event in ["show_delete_modal", "confirm_delete"] do
     {:noreply, put_flash(socket, :error, "You are not authorized to perform this action.")}
   end
+
+  defp confirm_delete(
+         %{assigns: %{delete_confirmation: confirmation, account: %{name: name}}} = socket
+       )
+       when confirmation == name do
+    case Accounts.delete_account(socket.assigns.account) do
+      {:ok, _} ->
+        send(self(), :account_deleted)
+        {:noreply, socket}
+
+      {:error, reason} ->
+        Logger.error("Failed to delete account",
+          account_id: socket.assigns.account.id,
+          error: inspect(reason)
+        )
+
+        {:noreply, put_flash(socket, :error, "Failed to delete account.")}
+    end
+  end
+
+  defp confirm_delete(socket), do: {:noreply, socket}
 end

@@ -71,11 +71,10 @@ defmodule GA.Audit.Chain do
     extensions = canonical_extensions(get_value(normalized_attrs, "extensions"))
     metadata = canonical_metadata(get_value(normalized_attrs, "metadata"))
 
-    ([Enum.at(fields, 0), Enum.at(fields, 1), previous] ++
-       Enum.drop(fields, 2) ++
-       [extensions, metadata])
-    |> Enum.map(&reject_payload_delimiter!/1)
-    |> Enum.join("|")
+    [Enum.at(fields, 0), Enum.at(fields, 1), previous]
+    |> Kernel.++(Enum.drop(fields, 2))
+    |> Kernel.++([extensions, metadata])
+    |> Enum.map_join("|", &reject_payload_delimiter!/1)
   end
 
   def canonical_payload(_attrs, _previous_checksum) do
@@ -176,16 +175,11 @@ defmodule GA.Audit.Chain do
     raise ArgumentError, "previous_checksum must be nil or a 64-character lowercase hex checksum"
   end
 
-  defp valid_checksum?(checksum) when is_binary(checksum),
-    do: String.match?(checksum, @checksum_pattern)
-
-  defp valid_checksum?(_checksum), do: false
+  defp valid_checksum?(checksum), do: String.match?(checksum, @checksum_pattern)
 
   defp to_existing_atom(key) do
-    try do
-      String.to_existing_atom(key)
-    rescue
-      ArgumentError -> nil
-    end
+    String.to_existing_atom(key)
+  rescue
+    ArgumentError -> nil
   end
 end

@@ -57,7 +57,7 @@ defmodule GA.Compliance.ActionMapping do
     |> validate_format(:taxonomy_version, ~r/^\d+\.\d+\.\d+$/)
     |> foreign_key_constraint(:account_id)
     |> unique_constraint(:custom_action,
-      name: :account_action_mappings_account_id_custom_action_framework_index
+      name: :account_action_mappings_account_id_custom_action_framework_inde
     )
   end
 
@@ -76,10 +76,10 @@ defmodule GA.Compliance.ActionMapping do
          {:ok, [_action]} <- resolve_exact_path(module, taxonomy_path) do
       attrs =
         attrs
-        |> Map.put(:account_id, account_id)
-        |> Map.put(:framework, framework)
-        |> Map.put(:taxonomy_path, taxonomy_path)
-        |> Map.put(:taxonomy_version, module.taxonomy_version())
+        |> Map.put("account_id", account_id)
+        |> Map.put("framework", framework)
+        |> Map.put("taxonomy_path", taxonomy_path)
+        |> Map.put("taxonomy_version", module.taxonomy_version())
 
       %__MODULE__{}
       |> changeset(attrs)
@@ -292,10 +292,10 @@ defmodule GA.Compliance.ActionMapping do
     %__MODULE__{}
     |> changeset(
       attrs
-      |> Map.put(:account_id, account_id)
-      |> Map.put_new(:taxonomy_version, "0.0.0")
-      |> Map.put_new(:taxonomy_path, "invalid.path")
-      |> Map.put_new(:custom_action, "invalid")
+      |> Map.put("account_id", account_id)
+      |> Map.put_new("taxonomy_version", "0.0.0")
+      |> Map.put_new("taxonomy_path", "invalid.path")
+      |> Map.put_new("custom_action", "invalid")
     )
     |> add_error(:framework, "is invalid")
   end
@@ -306,17 +306,24 @@ defmodule GA.Compliance.ActionMapping do
     %__MODULE__{}
     |> changeset(
       attrs
-      |> Map.put(:account_id, account_id)
-      |> Map.put_new(:framework, framework || "hipaa")
-      |> Map.put_new(:taxonomy_version, "1.0.0")
-      |> Map.put_new(:custom_action, "invalid")
-      |> Map.put_new(:taxonomy_path, "invalid.path")
+      |> Map.put("account_id", account_id)
+      |> Map.put_new("framework", framework || "hipaa")
+      |> Map.put_new("taxonomy_version", "1.0.0")
+      |> Map.put_new("custom_action", "invalid")
+      |> Map.put_new("taxonomy_path", "invalid.path")
     )
     |> add_error(:taxonomy_path, "is invalid")
   end
 
-  defp normalize_attrs(attrs) when is_list(attrs), do: Map.new(attrs)
-  defp normalize_attrs(attrs) when is_map(attrs), do: attrs
+  defp normalize_attrs(attrs) when is_list(attrs) do
+    attrs
+    |> Map.new()
+    |> normalize_attrs()
+  end
+
+  defp normalize_attrs(attrs) when is_map(attrs) do
+    Map.new(attrs, fn {key, value} -> {to_string(key), value} end)
+  end
 
   defp get_attr(attrs, key) when is_map(attrs) do
     case Map.fetch(attrs, key) do

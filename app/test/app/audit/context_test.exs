@@ -3,11 +3,12 @@ defmodule GA.Audit.ContextTest do
 
   import Ecto.Query
 
+  alias Ecto.Adapters.SQL.Sandbox
   alias GA.Accounts
   alias GA.Audit
   alias GA.Audit.{Chain, Checkpoint, Log}
-  alias GA.Compliance.ActionMapping
   alias GA.Compliance
+  alias GA.Compliance.ActionMapping
   alias GA.Repo
 
   describe "create_log_entry/2" do
@@ -280,22 +281,29 @@ defmodule GA.Audit.ContextTest do
     end
 
     test "returns framework validation errors without waiting on advisory lock" do
-      account = account_fixture()
-      assert {:ok, _association} = Compliance.activate_framework(account.id, "hipaa")
+      account = Sandbox.unboxed_run(Repo, fn -> account_fixture() end)
+
+      assert {:ok, _association} =
+               Sandbox.unboxed_run(Repo, fn ->
+                 Compliance.activate_framework(account.id, "hipaa")
+               end)
+
       parent = self()
 
       locker_task =
         Task.async(fn ->
-          Repo.transaction(fn ->
-            {key_a, key_b} = account_lock_keys(account.id)
-            {:ok, _} = Repo.query("SELECT pg_advisory_xact_lock($1, $2)", [key_a, key_b])
-            send(parent, :framework_lock_acquired)
+          Sandbox.unboxed_run(Repo, fn ->
+            Repo.transaction(fn ->
+              {key_a, key_b} = account_lock_keys(account.id)
+              {:ok, _} = Repo.query("SELECT pg_advisory_xact_lock($1, $2)", [key_a, key_b])
+              send(parent, :framework_lock_acquired)
 
-            receive do
-              :release_framework_lock -> :ok
-            after
-              5_000 -> raise "timed out waiting to release framework lock"
-            end
+              receive do
+                :release_framework_lock -> :ok
+              after
+                5_000 -> raise "timed out waiting to release framework lock"
+              end
+            end)
           end)
         end)
 
@@ -722,23 +730,28 @@ defmodule GA.Audit.ContextTest do
     end
 
     test "create_checkpoint/1 serializes with concurrent writers and captures committed head" do
-      account = account_fixture()
+      account = Sandbox.unboxed_run(Repo, fn -> account_fixture() end)
       parent = self()
 
-      assert {:ok, _} = Audit.create_log_entry(account.id, valid_attrs(%{resource_id: "seed"}))
+      assert {:ok, _} =
+               Sandbox.unboxed_run(Repo, fn ->
+                 Audit.create_log_entry(account.id, valid_attrs(%{resource_id: "seed"}))
+               end)
 
       locker_task =
         Task.async(fn ->
-          Repo.transaction(fn ->
-            {key_a, key_b} = account_lock_keys(account.id)
-            {:ok, _} = Repo.query("SELECT pg_advisory_xact_lock($1, $2)", [key_a, key_b])
-            send(parent, :locker_ready)
+          Sandbox.unboxed_run(Repo, fn ->
+            Repo.transaction(fn ->
+              {key_a, key_b} = account_lock_keys(account.id)
+              {:ok, _} = Repo.query("SELECT pg_advisory_xact_lock($1, $2)", [key_a, key_b])
+              send(parent, :locker_ready)
 
-            receive do
-              :release_locker -> :ok
-            after
-              5_000 -> raise "timed out waiting to release advisory lock"
-            end
+              receive do
+                :release_locker -> :ok
+              after
+                5_000 -> raise "timed out waiting to release advisory lock"
+              end
+            end)
           end)
         end)
 
@@ -746,14 +759,17 @@ defmodule GA.Audit.ContextTest do
 
       writer_task =
         Task.async(fn ->
-          Audit.create_log_entry(account.id, valid_attrs(%{resource_id: "during-checkpoint"}))
+          Sandbox.unboxed_run(Repo, fn ->
+            Audit.create_log_entry(account.id, valid_attrs(%{resource_id: "during-checkpoint"}))
+          end)
         end)
 
       assert Task.yield(writer_task, 100) == nil
+      assert_waiting_for_advisory_lock(account.id)
 
       checkpoint_task =
         Task.async(fn ->
-          Audit.create_checkpoint(account.id)
+          Sandbox.unboxed_run(Repo, fn -> Audit.create_checkpoint(account.id) end)
         end)
 
       assert Task.yield(checkpoint_task, 100) == nil
@@ -772,7 +788,7 @@ defmodule GA.Audit.ContextTest do
 
   defp account_fixture do
     {:ok, account} =
-      Accounts.create_account(%{name: "Audit Account #{System.unique_integer([:positive])}"})
+      Accounts.create_account(%{name: "Audit Account #{Ecto.UUID.generate()}"})
 
     account
   end
@@ -814,6 +830,41 @@ defmodule GA.Audit.ContextTest do
     {key_a, key_b}
   end
 
+  defp assert_waiting_for_advisory_lock(account_id, timeout_ms \\ 1_000) do
+    deadline = System.monotonic_time(:millisecond) + timeout_ms
+    do_assert_waiting_for_advisory_lock(account_id, deadline)
+  end
+
+  defp do_assert_waiting_for_advisory_lock(account_id, deadline) do
+    if advisory_lock_waiting?(account_id) do
+      :ok
+    else
+      if System.monotonic_time(:millisecond) >= deadline do
+        flunk("expected writer to be waiting on advisory lock for #{account_id}")
+      end
+
+      receive do
+      after
+        10 -> do_assert_waiting_for_advisory_lock(account_id, deadline)
+      end
+    end
+  end
+
+  defp advisory_lock_waiting?(_account_id) do
+    waiting_count_query = """
+    SELECT count(*)
+    FROM pg_locks
+    WHERE locktype = 'advisory'
+      AND mode = 'ExclusiveLock'
+      AND granted = false
+    """
+
+    case Repo.query(waiting_count_query, []) do
+      {:ok, %{rows: [[count]]}} when count > 0 -> true
+      _ -> false
+    end
+  end
+
   defp insert_bulk_logs(account_id, count) do
     now = DateTime.utc_now() |> DateTime.truncate(:microsecond)
 
@@ -823,7 +874,11 @@ defmodule GA.Audit.ContextTest do
           id: Ecto.UUID.generate(),
           account_id: account_id,
           sequence_number: sequence,
-          checksum: sequence |> Integer.to_string(16) |> String.pad_leading(64, "0"),
+          checksum:
+            sequence
+            |> Integer.to_string(16)
+            |> String.downcase()
+            |> String.pad_leading(64, "0"),
           previous_checksum: nil,
           actor_id: "bulk-actor",
           user_id: "bulk-user",

@@ -47,7 +47,8 @@ defmodule GA.Compliance.Taxonomy do
   """
   @spec resolve_path(module(), String.t()) :: {:ok, [String.t()]} | {:error, :invalid_path}
   def resolve_path(module, path) when is_atom(module) and is_binary(path) do
-    with true <- function_exported?(module, :taxonomy, 0),
+    with true <- Code.ensure_loaded?(module),
+         true <- function_exported?(module, :taxonomy, 0),
          taxonomy when is_map(taxonomy) <- module.taxonomy() do
       resolve_segments(taxonomy, String.split(path, ".", trim: true))
     else

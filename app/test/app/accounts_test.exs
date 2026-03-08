@@ -352,7 +352,11 @@ defmodule GA.AccountsTest do
 
     test "raises when unconfirmed user has password set" do
       user = unconfirmed_user_fixture()
-      {1, nil} = Repo.update_all(User, set: [hashed_password: "hashed"])
+
+      {1, nil} =
+        from(u in User, where: u.id == ^user.id)
+        |> Repo.update_all(set: [hashed_password: "hashed"])
+
       {encoded_token, _hashed_token} = generate_user_magic_link_token(user)
 
       assert_raise RuntimeError, ~r/magic link log in is not allowed/, fn ->
@@ -451,7 +455,9 @@ defmodule GA.AccountsTest do
       {:ok, account} = Accounts.create_account(user, %{name: "Delete Me"})
 
       membership = Accounts.get_account_user(user, account)
-      {:ok, {_api_key, _token}} = Accounts.create_api_key(membership, %{name: "test", type: :public})
+
+      {:ok, {_api_key, _token}} =
+        Accounts.create_api_key(membership, %{name: "test", type: :public})
 
       assert {:ok, _} = Accounts.delete_account(account)
       assert is_nil(Accounts.get_account(account.id))

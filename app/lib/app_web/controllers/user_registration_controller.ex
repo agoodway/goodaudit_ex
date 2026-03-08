@@ -1,14 +1,18 @@
 defmodule GAWeb.UserRegistrationController do
+  @moduledoc false
+
   use GAWeb, :controller
 
   alias GA.Accounts
   alias GA.Accounts.User
 
+  @doc false
   def new(conn, _params) do
     changeset = Accounts.change_user_email(%User{})
     render(conn, :new, changeset: changeset)
   end
 
+  @doc false
   def create(conn, %{"user" => user_params}) do
     case Accounts.register_user(user_params) do
       {:ok, user} ->

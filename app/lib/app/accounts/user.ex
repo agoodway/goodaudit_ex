@@ -1,9 +1,26 @@
 defmodule GA.Accounts.User do
+  @moduledoc """
+  User account record for authentication and account memberships.
+  """
+
   use Ecto.Schema
   import Ecto.Changeset
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
+
+  @type t :: %__MODULE__{
+          id: Ecto.UUID.t() | nil,
+          email: String.t() | nil,
+          password: String.t() | nil,
+          hashed_password: String.t() | nil,
+          confirmed_at: DateTime.t() | NaiveDateTime.t() | nil,
+          authenticated_at: DateTime.t() | NaiveDateTime.t() | nil,
+          account_users: [GA.Accounts.AccountUser.t()] | Ecto.Association.NotLoaded.t(),
+          accounts: [GA.Accounts.Account.t()] | Ecto.Association.NotLoaded.t(),
+          inserted_at: NaiveDateTime.t() | nil,
+          updated_at: NaiveDateTime.t() | nil
+        }
   schema "users" do
     field :email, :string
     field :password, :string, virtual: true, redact: true

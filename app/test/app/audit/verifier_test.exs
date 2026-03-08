@@ -214,7 +214,7 @@ defmodule GA.Audit.VerifierTest do
       action: "read",
       resource_type: "patient",
       resource_id: Ecto.UUID.generate(),
-      timestamp: ~U[2026-03-03 16:30:00Z],
+      timestamp: ~U[2026-03-03 16:30:00.000000Z],
       source_ip: "127.0.0.1",
       user_agent: "ExUnit",
       outcome: "success",

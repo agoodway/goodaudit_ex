@@ -35,12 +35,11 @@ defmodule GA.Audit.LogTest do
     assert "can't be blank" in errors.outcome
   end
 
-  test "changeset rejects invalid action" do
+  test "changeset accepts custom action values" do
     attrs = Map.put(valid_attrs(), :action, "archive")
     changeset = Log.changeset(%Log{}, attrs)
 
-    refute changeset.valid?
-    assert "is invalid" in errors_on(changeset).action
+    assert changeset.valid?
   end
 
   test "changeset rejects invalid outcome" do

@@ -74,7 +74,10 @@ defmodule GAWeb.SettingsLiveTest do
   end
 
   describe "role-based redirect" do
-    test "member accessing /settings/members redirects to /settings", %{conn: conn, account: account} do
+    test "member accessing /settings/members redirects to /settings", %{
+      conn: conn,
+      account: account
+    } do
       member = user_fixture()
       {:ok, _} = Accounts.add_user_to_account(account, member, :member)
       member_conn = log_in_user(conn, member)
@@ -86,7 +89,10 @@ defmodule GAWeb.SettingsLiveTest do
       assert flash["info"] == "You don't have access to that section."
     end
 
-    test "admin accessing /settings/security redirects to /settings", %{conn: conn, account: account} do
+    test "admin accessing /settings/security redirects to /settings", %{
+      conn: conn,
+      account: account
+    } do
       admin = user_fixture()
       {:ok, _} = Accounts.add_user_to_account(account, admin, :admin)
       admin_conn = log_in_user(conn, admin)

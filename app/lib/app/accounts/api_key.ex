@@ -10,6 +10,21 @@ defmodule GA.Accounts.ApiKey do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
 
+  @type t :: %__MODULE__{
+          id: Ecto.UUID.t() | nil,
+          name: String.t() | nil,
+          type: :public | :private,
+          token_prefix: String.t() | nil,
+          token_hash: String.t() | nil,
+          status: :active | :revoked,
+          last_used_at: DateTime.t() | NaiveDateTime.t() | nil,
+          expires_at: DateTime.t() | NaiveDateTime.t() | nil,
+          account_user_id: Ecto.UUID.t() | nil,
+          account_user: GA.Accounts.AccountUser.t() | Ecto.Association.NotLoaded.t() | nil,
+          inserted_at: NaiveDateTime.t() | nil,
+          updated_at: NaiveDateTime.t() | nil
+        }
+
   schema "api_keys" do
     field :name, :string
     field :type, Ecto.Enum, values: [:public, :private], default: :public

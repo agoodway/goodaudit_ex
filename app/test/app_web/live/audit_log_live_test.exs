@@ -247,7 +247,11 @@ defmodule GAWeb.AuditLogLiveTest do
         create_log(account.id, %{
           metadata: %{"ip_address" => "10.0.0.1"},
           extensions: %{
-            "hipaa" => %{"phi_accessed" => false, "user_role" => "admin", "session_id" => "sess-1"}
+            "hipaa" => %{
+              "phi_accessed" => false,
+              "user_role" => "admin",
+              "session_id" => "sess-1"
+            }
           }
         })
 

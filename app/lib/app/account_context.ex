@@ -6,11 +6,13 @@ defmodule GA.AccountContext do
   alias GA.Accounts
   alias GA.Accounts.{Account, AccountUser, User}
 
+  @doc false
   @spec list_user_accounts(User.t()) :: [{Account.t(), AccountUser.role()}]
   def list_user_accounts(%User{} = user) do
     Accounts.list_user_accounts(user)
   end
 
+  @doc false
   @spec get_account_for_user(User.t(), String.t() | Ecto.UUID.t()) ::
           {:ok, Account.t()} | {:error, :not_found}
   def get_account_for_user(_user, nil), do: {:error, :not_found}
@@ -25,6 +27,7 @@ defmodule GA.AccountContext do
     end
   end
 
+  @doc false
   @spec user_has_access?(User.t(), Account.t()) :: boolean()
   def user_has_access?(%User{} = user, %Account{} = account) do
     case Accounts.get_account_user(user, account) do
@@ -33,6 +36,7 @@ defmodule GA.AccountContext do
     end
   end
 
+  @doc false
   @spec get_default_account(User.t(), map()) :: {:ok, Account.t()} | {:error, :no_accounts}
   def get_default_account(%User{} = user, session) do
     last_account_id = session["last_account_id"]

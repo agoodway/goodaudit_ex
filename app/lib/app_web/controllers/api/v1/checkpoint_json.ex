@@ -3,12 +3,15 @@ defmodule GAWeb.Api.V1.CheckpointJSON do
   JSON rendering for checkpoint API responses.
   """
 
+  @doc false
   def index(%{checkpoints: checkpoints}) do
     %{data: Enum.map(checkpoints, &data/1)}
   end
 
+  @doc false
   def show(%{checkpoint: checkpoint}), do: %{data: data(checkpoint)}
 
+  @doc false
   def data(checkpoint) do
     %{
       id: checkpoint.id,

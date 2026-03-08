@@ -1,4 +1,6 @@
 defmodule GAWeb.Router do
+  @moduledoc false
+
   use GAWeb, :router
 
   import GAWeb.UserAuth

@@ -1,4 +1,6 @@
 defmodule GAWeb.SettingsLive.GeneralComponent do
+  @moduledoc false
+
   use GAWeb, :live_component
 
   alias GA.Accounts
@@ -31,10 +33,16 @@ defmodule GAWeb.SettingsLive.GeneralComponent do
               phx-debounce="300"
               disabled={@role not in [:owner, :admin]}
             />
-            <p :for={msg <- Enum.map(@form[:name].errors, &translate_error/1)} class="text-sm text-error mt-1">
+            <p
+              :for={msg <- Enum.map(@form[:name].errors, &translate_error/1)}
+              class="text-sm text-error mt-1"
+            >
               {msg}
             </p>
-            <p :for={msg <- Enum.map(@form[:slug].errors, &translate_error/1)} class="text-sm text-error mt-1">
+            <p
+              :for={msg <- Enum.map(@form[:slug].errors, &translate_error/1)}
+              class="text-sm text-error mt-1"
+            >
               Slug {msg}
             </p>
           </div>

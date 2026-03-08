@@ -1,9 +1,12 @@
 defmodule GAWeb.UserSessionController do
+  @moduledoc false
+
   use GAWeb, :controller
 
   alias GA.Accounts
   alias GAWeb.UserAuth
 
+  @doc false
   def new(conn, _params) do
     email = get_in(conn.assigns, [:current_scope, Access.key(:user), Access.key(:email)])
     form = Phoenix.Component.to_form(%{"email" => email}, as: "user")
@@ -12,6 +15,7 @@ defmodule GAWeb.UserSessionController do
   end
 
   # magic link login
+  @doc false
   def create(conn, %{"user" => %{"token" => token} = user_params} = params) do
     info =
       case params do
@@ -33,6 +37,7 @@ defmodule GAWeb.UserSessionController do
   end
 
   # email + password login
+  @doc false
   def create(conn, %{"user" => %{"email" => email, "password" => password} = user_params}) do
     if user = Accounts.get_user_by_email_and_password(email, password) do
       conn
@@ -49,6 +54,7 @@ defmodule GAWeb.UserSessionController do
   end
 
   # magic link request
+  @doc false
   def create(conn, %{"user" => %{"email" => email}}) do
     if user = Accounts.get_user_by_email(email) do
       Accounts.deliver_login_instructions(
@@ -65,6 +71,7 @@ defmodule GAWeb.UserSessionController do
     |> redirect(to: ~p"/users/log-in")
   end
 
+  @doc false
   def confirm(conn, %{"token" => token}) do
     if user = Accounts.get_user_by_magic_link_token(token) do
       form = Phoenix.Component.to_form(%{"token" => token}, as: "user")
@@ -80,6 +87,7 @@ defmodule GAWeb.UserSessionController do
     end
   end
 
+  @doc false
   def delete(conn, _params) do
     conn
     |> put_flash(:info, "Logged out successfully.")

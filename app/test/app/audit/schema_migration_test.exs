@@ -13,7 +13,7 @@ defmodule GA.Audit.SchemaMigrationTest do
   end
 
   defp insert_audit_log(attrs) do
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
+    now = DateTime.utc_now() |> DateTime.truncate(:microsecond)
 
     defaults = %{
       id: Ecto.UUID.generate(),
@@ -53,8 +53,8 @@ defmodule GA.Audit.SchemaMigrationTest do
       )
       """,
       [
-        attrs.id,
-        attrs.account_id,
+        dump_uuid(attrs.id),
+        dump_uuid(attrs.account_id),
         attrs.sequence_number,
         attrs.checksum,
         attrs.previous_checksum,
@@ -79,7 +79,7 @@ defmodule GA.Audit.SchemaMigrationTest do
   end
 
   defp insert_audit_checkpoint(attrs) do
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
+    now = DateTime.utc_now() |> DateTime.truncate(:microsecond)
 
     defaults = %{
       id: Ecto.UUID.generate(),
@@ -103,8 +103,8 @@ defmodule GA.Audit.SchemaMigrationTest do
       )
       """,
       [
-        attrs.id,
-        attrs.account_id,
+        dump_uuid(attrs.id),
+        dump_uuid(attrs.account_id),
         attrs.sequence_number,
         attrs.checksum,
         attrs.signature,
@@ -116,7 +116,7 @@ defmodule GA.Audit.SchemaMigrationTest do
   end
 
   defp insert_account_framework(attrs) do
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
+    now = DateTime.utc_now() |> DateTime.truncate(:microsecond)
 
     defaults = %{
       id: Ecto.UUID.generate(),
@@ -140,8 +140,8 @@ defmodule GA.Audit.SchemaMigrationTest do
       )
       """,
       [
-        attrs.id,
-        attrs.account_id,
+        dump_uuid(attrs.id),
+        dump_uuid(attrs.account_id),
         attrs.framework,
         attrs.action_validation_mode,
         attrs.enabled_at,
@@ -151,6 +151,9 @@ defmodule GA.Audit.SchemaMigrationTest do
       ]
     )
   end
+
+  defp dump_uuid(nil), do: nil
+  defp dump_uuid(value), do: Ecto.UUID.dump!(value)
 
   test "audit tables exist with account_id foreign keys" do
     assert {:ok, %{rows: [[1]]}} =
@@ -353,7 +356,7 @@ defmodule GA.Audit.SchemaMigrationTest do
              SQL.query(
                Repo,
                "SELECT frameworks FROM audit_logs WHERE id = $1",
-               [id]
+               [dump_uuid(id)]
              )
 
     assert frameworks == []
@@ -373,7 +376,7 @@ defmodule GA.Audit.SchemaMigrationTest do
              SQL.query(
                Repo,
                "SELECT extensions FROM audit_logs WHERE id = $1",
-               [id]
+               [dump_uuid(id)]
              )
 
     assert extensions == %{}

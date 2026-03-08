@@ -24,6 +24,7 @@ defmodule GAWeb.Api.V1.CheckpointController do
     ]
   )
 
+  @doc false
   def create(conn, _params) do
     account_id = conn.assigns.current_account.id
 
@@ -43,6 +44,7 @@ defmodule GAWeb.Api.V1.CheckpointController do
     ]
   )
 
+  @doc false
   def index(conn, _params) do
     account_id = conn.assigns.current_account.id
     checkpoints = Audit.list_checkpoints(account_id)

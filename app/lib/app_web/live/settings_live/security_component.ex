@@ -1,4 +1,6 @@
 defmodule GAWeb.SettingsLive.SecurityComponent do
+  @moduledoc false
+
   use GAWeb, :live_component
 
   require Logger
@@ -24,7 +26,10 @@ defmodule GAWeb.SettingsLive.SecurityComponent do
       <div class="space-y-3">
         <h3 class="text-sm font-semibold text-base-content">HMAC Signing Key</h3>
         <div class="flex items-center gap-3">
-          <code id="hmac-key-display" class="text-sm font-mono bg-base-200 px-3 py-1.5 rounded select-all">
+          <code
+            id="hmac-key-display"
+            class="text-sm font-mono bg-base-200 px-3 py-1.5 rounded select-all"
+          >
             <%= if @hmac_revealed do %>
               {Base.encode16(@hmac_key, case: :lower)}
             <% else %>
@@ -117,11 +122,12 @@ defmodule GAWeb.SettingsLive.SecurityComponent do
   end
 
   defp status_badge(assigns) do
-    {color, label} = case assigns.status do
-      :active -> {"badge-success", "Active"}
-      :suspended -> {"badge-error", "Suspended"}
-      _ -> {"badge-ghost", to_string(assigns.status)}
-    end
+    {color, label} =
+      case assigns.status do
+        :active -> {"badge-success", "Active"}
+        :suspended -> {"badge-error", "Suspended"}
+        _ -> {"badge-ghost", to_string(assigns.status)}
+      end
 
     assigns = assign(assigns, color: color, label: label)
 
@@ -139,7 +145,11 @@ defmodule GAWeb.SettingsLive.SecurityComponent do
           {:noreply, assign(socket, hmac_revealed: true, hmac_key: key)}
 
         {:error, reason} ->
-          Logger.error("Failed to retrieve HMAC key", account_id: socket.assigns.account.id, error: inspect(reason))
+          Logger.error("Failed to retrieve HMAC key",
+            account_id: socket.assigns.account.id,
+            error: inspect(reason)
+          )
+
           {:noreply, put_flash(socket, :error, "Failed to retrieve HMAC key.")}
       end
     else
@@ -171,24 +181,10 @@ defmodule GAWeb.SettingsLive.SecurityComponent do
   @impl true
   def handle_event("confirm_rotate", _params, socket)
       when socket.assigns.role == :owner do
-    if not Accounts.sudo_mode?(socket.assigns.current_user) do
-      {:noreply, put_flash(socket, :error, "Please re-authenticate to perform this action.")}
+    if Accounts.sudo_mode?(socket.assigns.current_user) do
+      confirm_rotate(socket)
     else
-      if socket.assigns.rotate_confirmation == "ROTATE" do
-        case Accounts.rotate_hmac_key(socket.assigns.account) do
-          {:ok, _account} ->
-            {:noreply,
-             socket
-             |> assign(show_rotate_modal: false, rotate_confirmation: "", hmac_revealed: false, hmac_key: nil)
-             |> put_flash(:info, "HMAC key rotated successfully.")}
-
-          {:error, reason} ->
-            Logger.error("Failed to rotate HMAC key", account_id: socket.assigns.account.id, error: inspect(reason))
-            {:noreply, put_flash(socket, :error, "Failed to rotate HMAC key.")}
-        end
-      else
-        {:noreply, socket}
-      end
+      {:noreply, put_flash(socket, :error, "Please re-authenticate to perform this action.")}
     end
   end
 
@@ -197,4 +193,29 @@ defmodule GAWeb.SettingsLive.SecurityComponent do
       when event in ["reveal_hmac", "show_rotate_modal", "confirm_rotate"] do
     {:noreply, put_flash(socket, :error, "You are not authorized to perform this action.")}
   end
+
+  defp confirm_rotate(%{assigns: %{rotate_confirmation: "ROTATE"}} = socket) do
+    case Accounts.rotate_hmac_key(socket.assigns.account) do
+      {:ok, _account} ->
+        {:noreply,
+         socket
+         |> assign(
+           show_rotate_modal: false,
+           rotate_confirmation: "",
+           hmac_revealed: false,
+           hmac_key: nil
+         )
+         |> put_flash(:info, "HMAC key rotated successfully.")}
+
+      {:error, reason} ->
+        Logger.error("Failed to rotate HMAC key",
+          account_id: socket.assigns.account.id,
+          error: inspect(reason)
+        )
+
+        {:noreply, put_flash(socket, :error, "Failed to rotate HMAC key.")}
+    end
+  end
+
+  defp confirm_rotate(socket), do: {:noreply, socket}
 end

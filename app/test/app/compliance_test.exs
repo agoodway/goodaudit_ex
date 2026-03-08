@@ -3,25 +3,26 @@ defmodule GA.ComplianceTest do
 
   alias GA.Accounts
   alias GA.Compliance
+  alias GA.Compliance.Frameworks.{GDPR, HIPAA, ISO27001, PCIDSS, SOC2}
 
   describe "framework registry" do
     test "returns built-in framework mappings" do
       registry = Compliance.registry()
 
-      assert registry["hipaa"] == GA.Compliance.Frameworks.HIPAA
-      assert registry["soc2"] == GA.Compliance.Frameworks.SOC2
-      assert registry["pci_dss"] == GA.Compliance.Frameworks.PCIDSS
-      assert registry["gdpr"] == GA.Compliance.Frameworks.GDPR
-      assert registry["iso_27001"] == GA.Compliance.Frameworks.ISO27001
+      assert registry["hipaa"] == HIPAA
+      assert registry["soc2"] == SOC2
+      assert registry["pci_dss"] == PCIDSS
+      assert registry["gdpr"] == GDPR
+      assert registry["iso_27001"] == ISO27001
     end
 
     test "get_framework/1 resolves known and unknown IDs" do
-      assert {:ok, GA.Compliance.Frameworks.SOC2} = Compliance.get_framework("soc2")
+      assert {:ok, SOC2} = Compliance.get_framework("soc2")
       assert {:error, :unknown_framework} = Compliance.get_framework("nope")
     end
 
     test "required_fields_for_frameworks/1 unions and deduplicates known framework fields" do
-      hipaa = GA.Compliance.Frameworks.HIPAA.required_fields()
+      hipaa = HIPAA.required_fields()
 
       combined =
         Compliance.required_fields_for_frameworks(["hipaa", "soc2", "unknown_framework"])
@@ -36,33 +37,33 @@ defmodule GA.ComplianceTest do
 
   describe "framework module callbacks" do
     test "built-in modules expose expected callback values" do
-      assert GA.Compliance.Frameworks.HIPAA.name() == "HIPAA"
-      assert :actor_id in GA.Compliance.Frameworks.HIPAA.required_fields()
+      assert HIPAA.name() == "HIPAA"
+      assert :actor_id in HIPAA.required_fields()
 
-      assert GA.Compliance.Frameworks.HIPAA.extension_schema().required["phi_accessed"] ==
+      assert HIPAA.extension_schema().required["phi_accessed"] ==
                :boolean
 
-      assert GA.Compliance.Frameworks.HIPAA.default_retention_days() == 2555
-      assert GA.Compliance.Frameworks.HIPAA.verification_cadence_hours() == 24
+      assert HIPAA.default_retention_days() == 2555
+      assert HIPAA.verification_cadence_hours() == 24
 
-      assert GA.Compliance.Frameworks.SOC2.name() == "SOC 2 Type II"
-      assert :actor_id in GA.Compliance.Frameworks.SOC2.required_fields()
-      assert GA.Compliance.Frameworks.SOC2.default_retention_days() == 2555
+      assert SOC2.name() == "SOC 2 Type II"
+      assert :actor_id in SOC2.required_fields()
+      assert SOC2.default_retention_days() == 2555
 
-      assert GA.Compliance.Frameworks.PCIDSS.name() == "PCI-DSS v4"
-      assert :actor_id in GA.Compliance.Frameworks.PCIDSS.required_fields()
-      assert GA.Compliance.Frameworks.PCIDSS.default_retention_days() == 365
-      assert GA.Compliance.Frameworks.PCIDSS.verification_cadence_hours() == 12
+      assert PCIDSS.name() == "PCI-DSS v4"
+      assert :actor_id in PCIDSS.required_fields()
+      assert PCIDSS.default_retention_days() == 365
+      assert PCIDSS.verification_cadence_hours() == 12
 
-      assert GA.Compliance.Frameworks.GDPR.name() == "GDPR"
-      refute :phi_accessed in GA.Compliance.Frameworks.GDPR.required_fields()
-      assert GA.Compliance.Frameworks.GDPR.default_retention_days() == 1825
-      assert GA.Compliance.Frameworks.GDPR.verification_cadence_hours() == 48
+      assert GDPR.name() == "GDPR"
+      refute :phi_accessed in GDPR.required_fields()
+      assert GDPR.default_retention_days() == 1825
+      assert GDPR.verification_cadence_hours() == 48
 
-      assert GA.Compliance.Frameworks.ISO27001.name() == "ISO 27001"
-      assert :actor_id in GA.Compliance.Frameworks.ISO27001.required_fields()
-      assert GA.Compliance.Frameworks.ISO27001.default_retention_days() == 1095
-      assert GA.Compliance.Frameworks.ISO27001.verification_cadence_hours() == 24
+      assert ISO27001.name() == "ISO 27001"
+      assert :actor_id in ISO27001.required_fields()
+      assert ISO27001.default_retention_days() == 1095
+      assert ISO27001.verification_cadence_hours() == 24
     end
   end
 
@@ -186,10 +187,9 @@ defmodule GA.ComplianceTest do
 
       assert {:ok, config} = Compliance.effective_config(account.id, "hipaa")
 
-      assert config.retention_days == GA.Compliance.Frameworks.HIPAA.default_retention_days()
+      assert config.retention_days == HIPAA.default_retention_days()
 
-      assert config.verification_cadence_hours ==
-               GA.Compliance.Frameworks.HIPAA.verification_cadence_hours()
+      assert config.verification_cadence_hours == HIPAA.verification_cadence_hours()
 
       assert :actor_id in config.required_fields
     end

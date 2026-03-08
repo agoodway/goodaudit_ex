@@ -1,4 +1,6 @@
 defmodule GAWeb.SettingsLive.MembersComponent do
+  @moduledoc false
+
   use GAWeb, :live_component
 
   require Logger
@@ -83,12 +85,13 @@ defmodule GAWeb.SettingsLive.MembersComponent do
   end
 
   defp role_badge(assigns) do
-    color = case assigns.role do
-      :owner -> "badge-primary"
-      :admin -> "badge-secondary"
-      :member -> "badge-ghost"
-      _ -> "badge-ghost"
-    end
+    color =
+      case assigns.role do
+        :owner -> "badge-primary"
+        :admin -> "badge-secondary"
+        :member -> "badge-ghost"
+        _ -> "badge-ghost"
+      end
 
     assigns = assign(assigns, :color, color)
 
@@ -109,7 +112,12 @@ defmodule GAWeb.SettingsLive.MembersComponent do
           {:noreply, put_flash(socket, :info, "Role updated successfully.")}
 
         {:error, reason} ->
-          Logger.error("Failed to update role", account_id: socket.assigns.account.id, member_id: member_id, error: inspect(reason))
+          Logger.error("Failed to update role",
+            account_id: socket.assigns.account.id,
+            member_id: member_id,
+            error: inspect(reason)
+          )
+
           {:noreply, put_flash(socket, :error, "Failed to update role.")}
       end
     else
@@ -128,7 +136,12 @@ defmodule GAWeb.SettingsLive.MembersComponent do
         {:noreply, put_flash(socket, :info, "Member removed successfully.")}
 
       {:error, reason} ->
-        Logger.error("Failed to remove member", account_id: socket.assigns.account.id, member_id: member_id, error: inspect(reason))
+        Logger.error("Failed to remove member",
+          account_id: socket.assigns.account.id,
+          member_id: member_id,
+          error: inspect(reason)
+        )
+
         {:noreply, put_flash(socket, :error, "Failed to remove member.")}
     end
   end

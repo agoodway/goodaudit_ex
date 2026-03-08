@@ -34,6 +34,7 @@ defmodule GAWeb.Api.V1.ActionMappingController do
     ]
   )
 
+  @doc false
   def index(conn, params) do
     account_id = conn.assigns.current_account.id
 
@@ -60,6 +61,7 @@ defmodule GAWeb.Api.V1.ActionMappingController do
     ]
   )
 
+  @doc false
   def create(conn, attrs) do
     account_id = conn.assigns.current_account.id
 
@@ -94,6 +96,7 @@ defmodule GAWeb.Api.V1.ActionMappingController do
     ]
   )
 
+  @doc false
   def update(conn, %{"id" => id} = attrs) do
     account_id = conn.assigns.current_account.id
 
@@ -117,6 +120,7 @@ defmodule GAWeb.Api.V1.ActionMappingController do
     ]
   )
 
+  @doc false
   def delete(conn, %{"id" => id}) do
     account_id = conn.assigns.current_account.id
 
@@ -143,6 +147,7 @@ defmodule GAWeb.Api.V1.ActionMappingController do
     ]
   )
 
+  @doc false
   def validate(conn, %{"framework" => framework}) do
     account_id = conn.assigns.current_account.id
 
@@ -159,6 +164,7 @@ defmodule GAWeb.Api.V1.ActionMappingController do
     end
   end
 
+  @doc false
   def validate(conn, _params) do
     conn
     |> put_status(:unprocessable_entity)

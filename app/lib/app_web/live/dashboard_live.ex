@@ -12,7 +12,9 @@ defmodule GAWeb.DashboardLive do
 
     tasks = [
       Task.async(fn -> {:audit_log_count, GA.Audit.count_logs(account_id)} end),
-      Task.async(fn -> {:active_api_keys_count, GA.Accounts.count_active_api_keys(account_id)} end),
+      Task.async(fn ->
+        {:active_api_keys_count, GA.Accounts.count_active_api_keys(account_id)}
+      end),
       Task.async(fn ->
         {:active_frameworks_count, GA.Compliance.count_active_frameworks(account_id)}
       end),
@@ -237,8 +239,8 @@ defmodule GAWeb.DashboardLive do
     cond do
       diff < 60 -> "just now"
       diff < 3600 -> "#{div(diff, 60)} min ago"
-      diff < 86400 -> "#{div(diff, 3600)} hours ago"
-      diff < 2_592_000 -> "#{div(diff, 86400)} days ago"
+      diff < 86_400 -> "#{div(diff, 3600)} hours ago"
+      diff < 2_592_000 -> "#{div(diff, 86_400)} days ago"
       true -> Calendar.strftime(datetime, "%b %d, %Y")
     end
   end

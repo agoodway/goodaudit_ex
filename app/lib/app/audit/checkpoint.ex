@@ -19,6 +19,7 @@ defmodule GA.Audit.Checkpoint do
     timestamps(type: :utc_datetime_usec)
   end
 
+  @doc false
   def changeset(checkpoint, attrs) do
     checkpoint
     |> cast(attrs, [:account_id, :sequence_number, :checksum, :signature, :verified_at])

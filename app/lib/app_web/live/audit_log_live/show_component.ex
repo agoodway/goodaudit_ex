@@ -43,7 +43,10 @@ defmodule GAWeb.AuditLogLive.ShowComponent do
           <div :if={@entry.metadata && @entry.metadata != %{}} class="space-y-1.5">
             <.kv_row :for={{k, v} <- @entry.metadata} label={k} value={format_value(v)} />
           </div>
-          <p :if={!@entry.metadata || @entry.metadata == %{}} class="text-xs text-base-content/30 font-mono">
+          <p
+            :if={!@entry.metadata || @entry.metadata == %{}}
+            class="text-xs text-base-content/30 font-mono"
+          >
             No metadata
           </p>
         </div>
@@ -56,7 +59,10 @@ defmodule GAWeb.AuditLogLive.ShowComponent do
           <div :if={@entry.extensions && @entry.extensions != %{}} class="space-y-1.5">
             <.kv_row :for={{k, v} <- @entry.extensions} label={k} value={format_value(v)} />
           </div>
-          <p :if={!@entry.extensions || @entry.extensions == %{}} class="text-xs text-base-content/30 font-mono">
+          <p
+            :if={!@entry.extensions || @entry.extensions == %{}}
+            class="text-xs text-base-content/30 font-mono"
+          >
             No extensions
           </p>
         </div>
@@ -69,7 +75,10 @@ defmodule GAWeb.AuditLogLive.ShowComponent do
           <div :if={@entry.frameworks && @entry.frameworks != []} class="flex flex-wrap gap-1.5">
             <.badge :for={fw <- @entry.frameworks}>{fw}</.badge>
           </div>
-          <p :if={!@entry.frameworks || @entry.frameworks == []} class="text-xs text-base-content/30 font-mono">
+          <p
+            :if={!@entry.frameworks || @entry.frameworks == []}
+            class="text-xs text-base-content/30 font-mono"
+          >
             No frameworks
           </p>
         </div>

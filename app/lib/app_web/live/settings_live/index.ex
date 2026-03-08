@@ -1,4 +1,6 @@
 defmodule GAWeb.SettingsLive.Index do
+  @moduledoc false
+
   use GAWeb, :live_view
 
   alias GA.Accounts
@@ -125,11 +127,12 @@ defmodule GAWeb.SettingsLive.Index do
   end
 
   defp tab_link(assigns) do
-    path = case assigns.tab do
-      :general -> ~p"/dashboard/accounts/#{assigns.account}/settings"
-      :members -> ~p"/dashboard/accounts/#{assigns.account}/settings/members"
-      :security -> ~p"/dashboard/accounts/#{assigns.account}/settings/security"
-    end
+    path =
+      case assigns.tab do
+        :general -> ~p"/dashboard/accounts/#{assigns.account}/settings"
+        :members -> ~p"/dashboard/accounts/#{assigns.account}/settings/members"
+        :security -> ~p"/dashboard/accounts/#{assigns.account}/settings/security"
+      end
 
     assigns = assign(assigns, :path, path)
 
@@ -140,7 +143,8 @@ defmodule GAWeb.SettingsLive.Index do
         "whitespace-nowrap border-b-2 py-3 px-1 text-sm font-medium transition-colors",
         if(@active,
           do: "border-emerald-500 text-emerald-600",
-          else: "border-transparent text-base-content/50 hover:border-base-300 hover:text-base-content/70"
+          else:
+            "border-transparent text-base-content/50 hover:border-base-300 hover:text-base-content/70"
         )
       ]}
     >
