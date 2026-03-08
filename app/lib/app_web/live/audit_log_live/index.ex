@@ -8,7 +8,7 @@ defmodule GAWeb.AuditLogLive.Index do
   alias GA.Audit
 
   @page_size 50
-  @export_cap 10_000
+  @valid_outcomes ~w(success failure denied error)
 
   @impl true
   def mount(_params, _session, socket) do
@@ -18,8 +18,7 @@ defmodule GAWeb.AuditLogLive.Index do
        active_nav: :audit_logs,
        breadcrumbs: [%{label: "Audit Logs"}],
        expanded_id: nil,
-       expanded_entry: nil,
-       export_warning: nil
+       expanded_entry: nil
      )}
   end
 
@@ -54,19 +53,23 @@ defmodule GAWeb.AuditLogLive.Index do
       |> put_if_present("outcome", params["outcome"])
       |> put_if_present("phi_accessed", params["phi_accessed"])
 
-    {:noreply, push_patch(socket, to: current_path(socket, query_params))}
+    {:noreply, push_patch(socket, to: current_path(socket, query_params), replace: true)}
   end
 
   @impl true
   def handle_event("next_page", _params, socket) do
-    cursor = socket.assigns.next_cursor
+    case socket.assigns.next_cursor do
+      nil ->
+        {:noreply, socket}
 
-    query_params =
-      socket.assigns.filters
-      |> filters_to_params()
-      |> Map.put("after_sequence", Integer.to_string(cursor))
+      cursor ->
+        query_params =
+          socket.assigns.filters
+          |> filters_to_params()
+          |> Map.put("after_sequence", Integer.to_string(cursor))
 
-    {:noreply, push_patch(socket, to: current_path(socket, query_params))}
+        {:noreply, push_patch(socket, to: current_path(socket, query_params))}
+    end
   end
 
   @impl true
@@ -87,7 +90,7 @@ defmodule GAWeb.AuditLogLive.Index do
           {:noreply, assign(socket, expanded_id: id, expanded_entry: entry)}
 
         {:error, _} ->
-          {:noreply, socket}
+          {:noreply, put_flash(socket, :error, "Unable to load entry details.")}
       end
     end
   end
@@ -95,42 +98,18 @@ defmodule GAWeb.AuditLogLive.Index do
   @impl true
   def handle_event("export_json", _params, socket) do
     account_id = socket.assigns.current_account.id
-    opts = build_query_opts(socket.assigns.filters) |> Keyword.put(:limit, @export_cap + 1)
+    export_params = filters_to_params(socket.assigns.filters)
 
-    {entries, _cursor} = Audit.list_logs(account_id, opts)
+    export_path =
+      ~p"/dashboard/accounts/#{account_id}/audit-logs/export"
+      |> then(fn base ->
+        case URI.encode_query(export_params) do
+          "" -> base
+          qs -> "#{base}?#{qs}"
+        end
+      end)
 
-    {export_entries, truncated} =
-      if length(entries) > @export_cap do
-        {Enum.take(entries, @export_cap), true}
-      else
-        {entries, false}
-      end
-
-    json =
-      export_entries
-      |> Enum.map(&serialize_entry/1)
-      |> Jason.encode!(pretty: true)
-
-    socket =
-      socket
-      |> push_event("download_json", %{
-        data: json,
-        filename: "audit-logs-#{Date.to_iso8601(Date.utc_today())}.json"
-      })
-
-    socket =
-      if truncated do
-        assign(socket, export_warning: "Export truncated to #{format_number(@export_cap)} entries.")
-      else
-        assign(socket, export_warning: nil)
-      end
-
-    {:noreply, socket}
-  end
-
-  @impl true
-  def handle_event("dismiss_export_warning", _params, socket) do
-    {:noreply, assign(socket, export_warning: nil)}
+    {:noreply, redirect(socket, to: export_path)}
   end
 
   # --- Render ---
@@ -138,7 +117,7 @@ defmodule GAWeb.AuditLogLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <div id="audit-log-viewer" phx-hook=".DownloadJSON" class="space-y-6">
+    <div id="audit-log-viewer" class="space-y-6">
       <%!-- Page header --%>
       <div class="flex items-end justify-between animate-fade-up">
         <div>
@@ -152,29 +131,12 @@ defmodule GAWeb.AuditLogLive.Index do
         </.button>
       </div>
 
-      <%!-- Export warning --%>
-      <div
-        :if={@export_warning}
-        class="flex items-center gap-2.5 p-3 rounded border border-warning/30 bg-warning/5 animate-fade-up"
-      >
-        <.icon name="hero-exclamation-triangle" class="size-4 text-warning shrink-0" />
-        <p class="text-xs text-base-content/70 flex-1">{@export_warning}</p>
-        <button
-          type="button"
-          phx-click="dismiss_export_warning"
-          class="text-base-content/30 hover:text-base-content/60 cursor-pointer"
-        >
-          <.icon name="hero-x-mark" class="size-3.5" />
-        </button>
-      </div>
-
       <%!-- Filter bar --%>
       <.filter_bar filters={@filters} />
 
       <%!-- Table or empty state --%>
-      <%= if @entries == [] do %>
-        <.empty_state has_filters={has_active_filters?(@filters)} />
-      <% else %>
+      <div :if={@entries == []}><.empty_state has_filters={has_active_filters?(@filters)} /></div>
+      <div :if={@entries != []}>
         <div class="dash-card overflow-hidden animate-fade-up animate-delay-1">
           <div class="responsive-table">
             <table class="w-full">
@@ -190,51 +152,19 @@ defmodule GAWeb.AuditLogLive.Index do
                 </tr>
               </thead>
               <tbody>
-                <tr
+                <.entry_rows
                   :for={entry <- @entries}
-                  id={"log-#{entry.id}"}
-                  phx-click="toggle_detail"
-                  phx-value-id={entry.id}
-                  class={[
-                    "cursor-pointer hover:bg-base-200/50 transition-colors",
-                    @expanded_id == entry.id && "bg-base-200/30"
-                  ]}
-                >
-                  <td data-label="Seq #" class="font-mono text-base-content/60">
-                    {entry.sequence_number}
-                  </td>
-                  <td data-label="Timestamp" class="text-xs font-mono text-base-content/50">
-                    {format_timestamp(entry.timestamp)}
-                  </td>
-                  <td data-label="Actor" class="text-sm text-base-content/70 truncate max-w-[10rem]">
-                    {entry.actor_id}
-                  </td>
-                  <td data-label="Action" class="text-sm font-medium text-base-content/80">
-                    {entry.action}
-                  </td>
-                  <td data-label="Resource" class="text-xs font-mono text-base-content/50">
-                    {entry.resource_type}/{entry.resource_id}
-                  </td>
-                  <td data-label="Outcome">
-                    <.outcome_badge outcome={entry.outcome} />
-                  </td>
-                  <td data-label="PHI">
-                    <.badge :if={entry.phi_accessed} variant="error">PHI</.badge>
-                  </td>
-                </tr>
-                <%!-- Inline detail panel --%>
-                <tr :if={@expanded_entry && @expanded_id == @expanded_entry.id}>
-                  <td colspan="7" class="!p-0">
-                    <GAWeb.AuditLogLive.ShowComponent.show entry={@expanded_entry} />
-                  </td>
-                </tr>
+                  entry={entry}
+                  expanded_id={@expanded_id}
+                  expanded_entry={@expanded_entry}
+                />
               </tbody>
             </table>
           </div>
         </div>
 
         <%!-- Pagination --%>
-        <div class="flex items-center justify-between animate-fade-up animate-delay-2">
+        <div class="flex items-center justify-between animate-fade-up animate-delay-2 mt-6">
           <p class="text-xs font-mono text-base-content/40">
             Showing {length(@entries)} entries
           </p>
@@ -255,30 +185,57 @@ defmodule GAWeb.AuditLogLive.Index do
             </.button>
           </div>
         </div>
-      <% end %>
+      </div>
     </div>
-
-    <script :type={Phoenix.LiveView.ColocatedHook} name=".DownloadJSON">
-      export default {
-        mounted() {
-          this.handleEvent("download_json", ({data, filename}) => {
-            const blob = new Blob([data], {type: "application/json"});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-          });
-        }
-      }
-    </script>
     """
   end
 
   # --- Components ---
+
+  attr :entry, :map, required: true
+  attr :expanded_id, :string, required: true
+  attr :expanded_entry, :map, required: true
+
+  defp entry_rows(assigns) do
+    ~H"""
+    <tr
+      id={"log-#{@entry.id}"}
+      phx-click="toggle_detail"
+      phx-value-id={@entry.id}
+      class={[
+        "cursor-pointer hover:bg-base-200/50 transition-colors",
+        @expanded_id == @entry.id && "bg-base-200/30"
+      ]}
+    >
+      <td data-label="Seq #" class="font-mono text-base-content/60">
+        {@entry.sequence_number}
+      </td>
+      <td data-label="Timestamp" class="text-xs font-mono text-base-content/50">
+        {format_timestamp(@entry.timestamp)}
+      </td>
+      <td data-label="Actor" class="text-sm text-base-content/70 truncate max-w-[10rem]">
+        {@entry.actor_id}
+      </td>
+      <td data-label="Action" class="text-sm font-medium text-base-content/80">
+        {@entry.action}
+      </td>
+      <td data-label="Resource" class="text-xs font-mono text-base-content/50">
+        {@entry.resource_type}/{@entry.resource_id}
+      </td>
+      <td data-label="Outcome">
+        <.outcome_badge outcome={@entry.outcome} />
+      </td>
+      <td data-label="PHI">
+        <.badge :if={@entry.phi_accessed} variant="error">PHI</.badge>
+      </td>
+    </tr>
+    <tr :if={@expanded_entry && @expanded_id == @entry.id}>
+      <td colspan="7" class="!p-0">
+        <GAWeb.AuditLogLive.ShowComponent.show entry={@expanded_entry} />
+      </td>
+    </tr>
+    """
+  end
 
   attr :filters, :map, required: true
 
@@ -294,35 +251,38 @@ defmodule GAWeb.AuditLogLive.Index do
           />
         </summary>
         <div class="dash-card-body">
-          <.form for={%{}} phx-change="filter" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <.form for={%{}} phx-change="filter" phx-submit="filter" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div>
-              <label class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block">
+              <label for="filter-from" class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block">
                 From
               </label>
               <input
                 type="date"
+                id="filter-from"
                 name="from"
                 value={@filters.from}
                 class="input input-bordered input-sm w-full font-mono text-xs"
               />
             </div>
             <div>
-              <label class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block">
+              <label for="filter-to" class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block">
                 To
               </label>
               <input
                 type="date"
+                id="filter-to"
                 name="to"
                 value={@filters.to}
                 class="input input-bordered input-sm w-full font-mono text-xs"
               />
             </div>
             <div>
-              <label class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block">
+              <label for="filter-actor-id" class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block">
                 Actor
               </label>
               <input
                 type="text"
+                id="filter-actor-id"
                 name="actor_id"
                 value={@filters.actor_id}
                 placeholder="Actor ID"
@@ -331,11 +291,12 @@ defmodule GAWeb.AuditLogLive.Index do
               />
             </div>
             <div>
-              <label class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block">
+              <label for="filter-action" class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block">
                 Action
               </label>
               <input
                 type="text"
+                id="filter-action"
                 name="action"
                 value={@filters.action}
                 placeholder="Action name"
@@ -344,11 +305,12 @@ defmodule GAWeb.AuditLogLive.Index do
               />
             </div>
             <div>
-              <label class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block">
+              <label for="filter-resource-type" class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block">
                 Resource Type
               </label>
               <input
                 type="text"
+                id="filter-resource-type"
                 name="resource_type"
                 value={@filters.resource_type}
                 placeholder="Resource type"
@@ -357,10 +319,11 @@ defmodule GAWeb.AuditLogLive.Index do
               />
             </div>
             <div>
-              <label class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block">
+              <label for="filter-outcome" class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-1 block">
                 Outcome
               </label>
               <select
+                id="filter-outcome"
                 name="outcome"
                 class="select select-bordered select-sm w-full font-mono text-xs"
               >
@@ -398,18 +361,14 @@ defmodule GAWeb.AuditLogLive.Index do
           <.icon name="hero-document-text" class="size-6 text-base-content/20" />
         </div>
         <h3 class="text-sm font-semibold text-base-content/70">
-          <%= if @has_filters do %>
-            No entries match the current filters
-          <% else %>
-            No audit log entries yet
-          <% end %>
+          <span :if={@has_filters}>No entries match the current filters</span>
+          <span :if={!@has_filters}>No audit log entries yet</span>
         </h3>
         <p class="mt-1 text-xs font-mono text-base-content/40 text-center max-w-xs">
-          <%= if @has_filters do %>
-            Try adjusting your filters to see more results.
-          <% else %>
+          <span :if={@has_filters}>Try adjusting your filters to see more results.</span>
+          <span :if={!@has_filters}>
             Audit log entries will appear here once your application starts logging events.
-          <% end %>
+          </span>
         </p>
       </div>
     </div>
@@ -444,7 +403,7 @@ defmodule GAWeb.AuditLogLive.Index do
       actor_id: non_empty(params["actor_id"]),
       action: non_empty(params["action"]),
       resource_type: non_empty(params["resource_type"]),
-      outcome: non_empty(params["outcome"]),
+      outcome: validate_outcome(params["outcome"]),
       phi_accessed: params["phi_accessed"] == "true",
       after_sequence: parse_integer(params["after_sequence"])
     }
@@ -495,6 +454,9 @@ defmodule GAWeb.AuditLogLive.Index do
   defp non_empty(nil), do: nil
   defp non_empty(value), do: value
 
+  defp validate_outcome(value) when value in @valid_outcomes, do: value
+  defp validate_outcome(_), do: nil
+
   defp parse_integer(nil), do: nil
   defp parse_integer(""), do: nil
 
@@ -518,7 +480,7 @@ defmodule GAWeb.AuditLogLive.Index do
 
   defp parse_date_end(date_str) do
     case Date.from_iso8601(date_str) do
-      {:ok, date} -> DateTime.new!(date, ~T[23:59:59], "Etc/UTC")
+      {:ok, date} -> DateTime.new!(Date.add(date, 1), ~T[00:00:00], "Etc/UTC")
       _ -> nil
     end
   end
@@ -535,7 +497,7 @@ defmodule GAWeb.AuditLogLive.Index do
 
   defp current_path(socket, params) do
     account_id = socket.assigns.current_account.id
-    base = "/dashboard/accounts/#{account_id}/audit-logs"
+    base = ~p"/dashboard/accounts/#{account_id}/audit-logs"
 
     case URI.encode_query(params) do
       "" -> base
@@ -548,34 +510,4 @@ defmodule GAWeb.AuditLogLive.Index do
   defp format_timestamp(datetime) do
     Calendar.strftime(datetime, "%Y-%m-%d %H:%M:%S")
   end
-
-  defp serialize_entry(entry) do
-    %{
-      id: entry.id,
-      sequence_number: entry.sequence_number,
-      checksum: entry.checksum,
-      previous_checksum: entry.previous_checksum,
-      actor_id: entry.actor_id,
-      action: entry.action,
-      resource_type: entry.resource_type,
-      resource_id: entry.resource_id,
-      timestamp: entry.timestamp && DateTime.to_iso8601(entry.timestamp),
-      outcome: entry.outcome,
-      phi_accessed: entry.phi_accessed,
-      extensions: entry.extensions,
-      frameworks: entry.frameworks,
-      metadata: entry.metadata
-    }
-  end
-
-  defp format_number(n) when is_integer(n) and n >= 1000 do
-    Integer.to_string(n)
-    |> String.graphemes()
-    |> Enum.reverse()
-    |> Enum.chunk_every(3)
-    |> Enum.map_join(",", &Enum.join/1)
-    |> String.reverse()
-  end
-
-  defp format_number(n) when is_integer(n), do: Integer.to_string(n)
 end

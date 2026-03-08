@@ -16,7 +16,7 @@ defmodule GAWeb.AuditLogLiveTest do
     %{conn: conn, user: user, account: account}
   end
 
-  defp audit_logs_path(account), do: "/dashboard/accounts/#{account.id}/audit-logs"
+  defp audit_logs_path(account), do: ~p"/dashboard/accounts/#{account}/audit-logs"
 
   defp create_log(account_id, overrides \\ %{}) do
     attrs =
@@ -37,24 +37,20 @@ defmodule GAWeb.AuditLogLiveTest do
     log
   end
 
-  # Extracts just the main table body HTML for assertion, avoiding sidebar/layout noise
-  defp table_html(html) do
-    # Match content within the audit-log-viewer div
-    case Regex.run(~r/<div id="audit-log-viewer".*?>(.*)<\/div>\s*<\/div>/s, html) do
-      [_, inner] -> inner
-      _ -> html
-    end
+  defp scoped_html(view) do
+    view |> element("#audit-log-viewer") |> render()
   end
 
   describe "mount and table rendering" do
     test "renders audit log table with entries", %{conn: conn, account: account} do
       log = create_log(account.id, %{action: "user.login", actor_id: "user-42"})
-      {:ok, _view, html} = live(conn, audit_logs_path(account))
+      {:ok, view, _html} = live(conn, audit_logs_path(account))
 
-      assert html =~ "Audit Logs"
-      assert html =~ "user.login"
-      assert html =~ "user-42"
-      assert html =~ to_string(log.sequence_number)
+      content = scoped_html(view)
+      assert content =~ "Audit Logs"
+      assert content =~ "user.login"
+      assert content =~ "user-42"
+      assert content =~ to_string(log.sequence_number)
     end
 
     test "sidebar link is present and active", %{conn: conn, account: account} do
@@ -65,9 +61,10 @@ defmodule GAWeb.AuditLogLiveTest do
     end
 
     test "renders empty state when no entries", %{conn: conn, account: account} do
-      {:ok, _view, html} = live(conn, audit_logs_path(account))
+      {:ok, view, _html} = live(conn, audit_logs_path(account))
 
-      assert html =~ "No audit log entries yet"
+      content = scoped_html(view)
+      assert content =~ "No audit log entries yet"
     end
   end
 
@@ -96,50 +93,93 @@ defmodule GAWeb.AuditLogLiveTest do
     test "filtering by action updates results", %{conn: conn, account: account} do
       {:ok, view, _html} = live(conn, audit_logs_path(account))
 
-      content = render(view) |> table_html()
+      content = scoped_html(view)
       assert content =~ "user.login"
       assert content =~ "record.remove"
 
-      {:ok, _view, html} =
+      {:ok, view, _html} =
         live(conn, audit_logs_path(account) <> "?action=user.login")
 
-      content = table_html(html)
+      content = scoped_html(view)
       assert content =~ "user.login"
       refute content =~ "record.remove"
     end
 
+    test "filter event handler triggers push_patch", %{conn: conn, account: account} do
+      {:ok, view, _html} = live(conn, audit_logs_path(account))
+
+      view
+      |> form("form", %{"action" => "user.login"})
+      |> render_change()
+
+      content = scoped_html(view)
+      assert content =~ "user.login"
+    end
+
     test "filtering by actor_id updates results", %{conn: conn, account: account} do
-      {:ok, _view, html} =
+      {:ok, view, _html} =
         live(conn, audit_logs_path(account) <> "?actor_id=alice")
 
-      content = table_html(html)
+      content = scoped_html(view)
       assert content =~ "alice"
       refute content =~ "bob"
     end
 
     test "filtering by outcome updates results", %{conn: conn, account: account} do
-      {:ok, _view, html} =
+      {:ok, view, _html} =
         live(conn, audit_logs_path(account) <> "?outcome=failure")
 
-      content = table_html(html)
+      content = scoped_html(view)
       assert content =~ "record.remove"
       refute content =~ "user.login"
     end
 
+    test "invalid outcome filter is ignored", %{conn: conn, account: account} do
+      {:ok, view, _html} =
+        live(conn, audit_logs_path(account) <> "?outcome=arbitrary_value")
+
+      content = scoped_html(view)
+      # Both entries should be visible since invalid outcome is treated as "All"
+      assert content =~ "user.login"
+      assert content =~ "record.remove"
+    end
+
     test "filtering by resource_type updates results", %{conn: conn, account: account} do
-      {:ok, _view, html} =
+      {:ok, view, _html} =
         live(conn, audit_logs_path(account) <> "?resource_type=session")
 
-      content = table_html(html)
+      content = scoped_html(view)
       assert content =~ "user.login"
       refute content =~ "record.remove"
     end
 
     test "empty state shown when no entries match filters", %{conn: conn, account: account} do
-      {:ok, _view, html} =
+      {:ok, view, _html} =
         live(conn, audit_logs_path(account) <> "?action=nonexistent")
 
-      assert html =~ "No entries match the current filters"
+      content = scoped_html(view)
+      assert content =~ "No entries match the current filters"
+    end
+  end
+
+  describe "PHI filter" do
+    test "phi_accessed filter shows only PHI entries", %{conn: conn, account: account} do
+      create_log(account.id, %{
+        action: "phi.access",
+        extensions: %{"hipaa" => %{"phi_accessed" => true, "user_role" => "doctor"}}
+      })
+
+      create_log(account.id, %{
+        action: "normal.access",
+        extensions: %{"hipaa" => %{"phi_accessed" => false, "user_role" => "admin"}}
+      })
+
+      {:ok, view, _html} =
+        live(conn, audit_logs_path(account) <> "?phi_accessed=true")
+
+      content = scoped_html(view)
+      assert content =~ "phi.access"
+      refute content =~ "normal.access"
     end
   end
 
@@ -159,15 +199,35 @@ defmodule GAWeb.AuditLogLiveTest do
     test "next page advances cursor", %{conn: conn, account: account, logs: logs} do
       first_log = hd(logs)
 
-      {:ok, _view, html} =
+      {:ok, view, _html} =
         live(conn, audit_logs_path(account) <> "?after_sequence=#{first_log.sequence_number}")
 
-      content = table_html(html)
+      content = scoped_html(view)
       refute content =~ "paginate_action_1"
       assert content =~ "paginate_action_2"
     end
 
-    test "back to start resets cursor", %{conn: conn, account: account, logs: _logs} do
+    test "next_page event with nil cursor is safe", %{conn: conn, account: account} do
+      # Create just one entry (no second page, so next_cursor will be nil)
+      create_log(account.id, %{action: "solo_entry"})
+
+      {:ok, view, _html} = live(conn, audit_logs_path(account))
+
+      # Simulate crafted event push with no next_cursor
+      html = render_click(view, "next_page")
+      assert html =~ "solo_entry"
+    end
+
+    test "back_to_start event resets cursor", %{conn: conn, account: account} do
+      {:ok, view, _html} =
+        live(conn, audit_logs_path(account) <> "?after_sequence=999999")
+
+      # Click back_to_start
+      html = render_click(view, "back_to_start")
+      assert html =~ "paginate_action_1"
+    end
+
+    test "back to start resets cursor via URL", %{conn: conn, account: account, logs: _logs} do
       {:ok, _view, html} =
         live(conn, audit_logs_path(account) <> "?after_sequence=999999")
 
@@ -214,14 +274,53 @@ defmodule GAWeb.AuditLogLiveTest do
 
       refute html =~ "Checksums"
     end
+
+    test "detail shows empty state for nil metadata", %{
+      conn: conn,
+      account: account
+    } do
+      log =
+        create_log(account.id, %{
+          metadata: %{}
+        })
+
+      {:ok, view, _html} = live(conn, audit_logs_path(account))
+
+      view |> element("#log-#{log.id}") |> render_click()
+
+      content = scoped_html(view)
+      assert content =~ "No metadata"
+    end
+
+    test "toggle_detail with cross-account log ID returns no data", %{
+      conn: conn,
+      account: account
+    } do
+      other_user = user_fixture()
+      {:ok, other_account} = Accounts.create_account(other_user, %{name: "Other Account"})
+      {:ok, _} = Compliance.activate_framework(other_account.id, "hipaa")
+      other_log = create_log(other_account.id, %{action: "secret_action"})
+
+      # Create a log in current account so the table renders
+      create_log(account.id, %{action: "visible_action"})
+
+      {:ok, view, _html} = live(conn, audit_logs_path(account))
+
+      # Try to expand the other account's log via crafted event
+      html = render_click(view, "toggle_detail", %{"id" => other_log.id})
+
+      refute html =~ "secret_action"
+      refute html =~ "Checksums"
+    end
   end
 
   describe "JSON export" do
-    test "export triggers download event", %{conn: conn, account: account} do
+    test "export redirects to controller download", %{conn: conn, account: account} do
       create_log(account.id, %{action: "export_test", actor_id: "exporter"})
 
       {:ok, view, _html} = live(conn, audit_logs_path(account))
-      assert render_click(view, "export_json") =~ "Audit Logs"
+      assert {:error, {:redirect, %{to: path}}} = render_click(view, "export_json")
+      assert path =~ "/audit-logs/export"
     end
   end
 
@@ -233,10 +332,10 @@ defmodule GAWeb.AuditLogLiveTest do
       create_log(account.id, %{action: "user.login", actor_id: "alice"})
       create_log(account.id, %{action: "record.remove", actor_id: "bob"})
 
-      {:ok, _view, html} =
+      {:ok, view, _html} =
         live(conn, audit_logs_path(account) <> "?action=user.login&actor_id=alice")
 
-      content = table_html(html)
+      content = scoped_html(view)
       assert content =~ "user.login"
       assert content =~ "alice"
       refute content =~ "record.remove"
@@ -252,9 +351,9 @@ defmodule GAWeb.AuditLogLiveTest do
       {:ok, _} = Compliance.activate_framework(other_account.id, "hipaa")
       create_log(other_account.id, %{action: "hidden_action"})
 
-      {:ok, _view, html} = live(conn, audit_logs_path(account))
+      {:ok, view, _html} = live(conn, audit_logs_path(account))
 
-      content = table_html(html)
+      content = scoped_html(view)
       assert content =~ "visible_action"
       refute content =~ "hidden_action"
     end

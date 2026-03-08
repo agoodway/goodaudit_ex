@@ -51,6 +51,13 @@ defmodule GAWeb.Router do
   # Dashboard Routes
   # ============================================
 
+  # Account-scoped dashboard downloads (regular controllers)
+  scope "/dashboard/accounts/:account_id", GAWeb do
+    pipe_through [:browser, :require_authenticated_user, :load_account]
+
+    get "/audit-logs/export", AuditLogExportController, :export
+  end
+
   # Account-scoped dashboard (LiveView)
   scope "/dashboard/accounts/:account_id", GAWeb do
     pipe_through [:browser, :require_authenticated_user]

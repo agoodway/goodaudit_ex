@@ -15,6 +15,7 @@ defmodule GA.Audit do
 
   @default_limit 50
   @max_limit 1000
+  @max_export_limit 10_000
   @reserved_chain_keys [:account_id, :sequence_number, :checksum, :previous_checksum]
 
   @doc """
@@ -119,6 +120,35 @@ defmodule GA.Audit do
   end
 
   def create_log_entry(_, _), do: {:error, :invalid_arguments}
+
+  @doc """
+  Exports account-scoped audit entries with a higher limit cap (#{@max_export_limit}).
+  Ignores cursor/pagination — always starts from the beginning.
+  Returns `{entries, truncated?}`.
+  """
+  def export_logs(account_id, opts \\ []) when is_binary(account_id) do
+    with {:ok, category_actions} <- resolve_category_actions(account_id, get_opt(opts, :category)) do
+      limit = min(get_opt(opts, :limit) || @max_export_limit, @max_export_limit)
+
+      export_opts = opts |> Keyword.delete(:after_sequence)
+
+      query =
+        from(log in Log,
+          where: log.account_id == ^account_id,
+          order_by: [asc: log.sequence_number]
+        )
+        |> apply_filters(export_opts, category_actions)
+        |> limit(^(limit + 1))
+
+      entries = Repo.all(query)
+
+      if length(entries) > limit do
+        {Enum.take(entries, limit), true}
+      else
+        {entries, false}
+      end
+    end
+  end
 
   @doc """
   Lists account-scoped audit entries with cursor pagination and optional filters.
@@ -322,7 +352,7 @@ defmodule GA.Audit do
       where(q, [log], log.timestamp >= ^value)
     end)
     |> maybe_filter(get_opt(opts, :to), fn q, value ->
-      where(q, [log], log.timestamp <= ^value)
+      where(q, [log], log.timestamp < ^value)
     end)
   end
 

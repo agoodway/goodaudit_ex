@@ -75,6 +75,7 @@ defmodule GA.Audit.Log do
     |> validate_length(:action, min: 1)
     |> validate_inclusion(:outcome, @valid_outcomes)
     |> validate_failure_reason()
+    |> sanitize_failure_reason()
     |> check_constraint(:outcome, name: :audit_logs_outcome_valid_check)
   end
 
@@ -83,5 +84,16 @@ defmodule GA.Audit.Log do
       "failure" -> validate_required(changeset, [:failure_reason])
       _ -> changeset
     end
+  end
+
+  defp sanitize_failure_reason(changeset) do
+    case get_change(changeset, :failure_reason) do
+      nil -> changeset
+      value -> put_change(changeset, :failure_reason, strip_control_chars(value))
+    end
+  end
+
+  defp strip_control_chars(str) when is_binary(str) do
+    String.replace(str, ~r/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/, "")
   end
 end

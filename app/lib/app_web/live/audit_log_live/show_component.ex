@@ -40,13 +40,12 @@ defmodule GAWeb.AuditLogLive.ShowComponent do
           <h4 class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-2">
             Metadata
           </h4>
-          <%= if @entry.metadata && @entry.metadata != %{} do %>
-            <div class="space-y-1.5">
-              <.kv_row :for={{k, v} <- @entry.metadata} label={k} value={inspect(v)} />
-            </div>
-          <% else %>
-            <p class="text-xs text-base-content/30 font-mono">No metadata</p>
-          <% end %>
+          <div :if={@entry.metadata && @entry.metadata != %{}} class="space-y-1.5">
+            <.kv_row :for={{k, v} <- @entry.metadata} label={k} value={format_value(v)} />
+          </div>
+          <p :if={!@entry.metadata || @entry.metadata == %{}} class="text-xs text-base-content/30 font-mono">
+            No metadata
+          </p>
         </div>
 
         <%!-- Extensions --%>
@@ -54,13 +53,12 @@ defmodule GAWeb.AuditLogLive.ShowComponent do
           <h4 class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-2">
             Extensions
           </h4>
-          <%= if @entry.extensions && @entry.extensions != %{} do %>
-            <div class="space-y-1.5">
-              <.kv_row :for={{k, v} <- @entry.extensions} label={k} value={inspect(v)} />
-            </div>
-          <% else %>
-            <p class="text-xs text-base-content/30 font-mono">No extensions</p>
-          <% end %>
+          <div :if={@entry.extensions && @entry.extensions != %{}} class="space-y-1.5">
+            <.kv_row :for={{k, v} <- @entry.extensions} label={k} value={format_value(v)} />
+          </div>
+          <p :if={!@entry.extensions || @entry.extensions == %{}} class="text-xs text-base-content/30 font-mono">
+            No extensions
+          </p>
         </div>
 
         <%!-- Frameworks --%>
@@ -68,13 +66,12 @@ defmodule GAWeb.AuditLogLive.ShowComponent do
           <h4 class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-base-content/40 mb-2">
             Frameworks
           </h4>
-          <%= if @entry.frameworks && @entry.frameworks != [] do %>
-            <div class="flex flex-wrap gap-1.5">
-              <.badge :for={fw <- @entry.frameworks}>{fw}</.badge>
-            </div>
-          <% else %>
-            <p class="text-xs text-base-content/30 font-mono">No frameworks</p>
-          <% end %>
+          <div :if={@entry.frameworks && @entry.frameworks != []} class="flex flex-wrap gap-1.5">
+            <.badge :for={fw <- @entry.frameworks}>{fw}</.badge>
+          </div>
+          <p :if={!@entry.frameworks || @entry.frameworks == []} class="text-xs text-base-content/30 font-mono">
+            No frameworks
+          </p>
         </div>
 
         <%!-- Additional fields --%>
@@ -117,6 +114,12 @@ defmodule GAWeb.AuditLogLive.ShowComponent do
   defp display_value(nil), do: "-"
   defp display_value(value) when is_binary(value), do: value
   defp display_value(value), do: inspect(value)
+
+  defp format_value(value) when is_binary(value), do: value
+  defp format_value(value) when is_number(value), do: to_string(value)
+  defp format_value(value) when is_boolean(value), do: to_string(value)
+  defp format_value(nil), do: nil
+  defp format_value(value), do: Jason.encode!(value, pretty: true)
 
   defp format_iso(nil), do: "-"
   defp format_iso(datetime), do: DateTime.to_iso8601(datetime)

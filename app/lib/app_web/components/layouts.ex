@@ -140,7 +140,7 @@ defmodule GAWeb.Layouts do
               active={@active_nav == :dashboard}
             />
             <.sidebar_nav_item
-              href={"#{@account_base}/audit-logs"}
+              href={~p"/dashboard/accounts/#{@current_account}/audit-logs"}
               icon="hero-document-text"
               label="Audit Logs"
               active={@active_nav == :audit_logs}
