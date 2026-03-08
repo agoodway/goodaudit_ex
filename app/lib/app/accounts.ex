@@ -368,6 +368,56 @@ defmodule GA.Accounts do
     |> Repo.insert()
   end
 
+  @doc "Update an account's attributes. Re-derives slug when name changes."
+  def update_account(%Account{} = account, attrs) do
+    changeset =
+      account
+      |> Account.changeset(attrs)
+      |> maybe_rederive_slug()
+
+    Repo.update(changeset)
+  end
+
+  @doc "Delete an account. Cascades to account_users and api_keys."
+  def delete_account(%Account{} = account) do
+    Repo.delete(account)
+  end
+
+  @doc "Rotate the HMAC key for an account. Generates a new 32-byte key."
+  def rotate_hmac_key(%Account{} = account) do
+    account
+    |> Ecto.Changeset.change(hmac_key: :crypto.strong_rand_bytes(32))
+    |> Repo.update()
+  end
+
+  @doc "List all members of an account with preloaded users, ordered by role then email."
+  def list_account_members(%Account{} = account) do
+    role_order = dynamic([au], fragment("CASE ? WHEN 'owner' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END", au.role))
+
+    AccountUser
+    |> where([au], au.account_id == ^account.id)
+    |> preload(:user)
+    |> order_by([au], ^role_order)
+    |> order_by([au], asc: fragment("(SELECT email FROM users WHERE id = ?)", au.user_id))
+    |> Repo.all()
+  end
+
+  defp maybe_rederive_slug(changeset) do
+    case Ecto.Changeset.get_change(changeset, :name) do
+      nil ->
+        changeset
+
+      name ->
+        slug =
+          name
+          |> String.downcase()
+          |> String.replace(~r/[^a-z0-9]+/, "-")
+          |> String.trim("-")
+
+        Ecto.Changeset.put_change(changeset, :slug, slug)
+    end
+  end
+
   # ============================================
   # AccountUser (Membership) Functions
   # ============================================

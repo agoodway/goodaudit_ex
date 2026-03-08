@@ -73,6 +73,9 @@ defmodule GAWeb.Router do
       live "/audit-logs", AuditLogLive.Index, :index
       live "/api-keys", ApiKeyLive.Index, :index
       live "/compliance", ComplianceLive.Index, :index
+      live "/settings", SettingsLive.Index, :general
+      live "/settings/members", SettingsLive.Index, :members
+      live "/settings/security", SettingsLive.Index, :security
     end
   end
 

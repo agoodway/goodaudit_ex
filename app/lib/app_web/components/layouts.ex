@@ -180,7 +180,7 @@ defmodule GAWeb.Layouts do
         <li class="mt-auto">
           <ul role="list" class="space-y-0.5">
             <.sidebar_nav_item
-              href={~p"/users/settings"}
+              href={"#{@account_base}/settings"}
               icon="hero-cog-6-tooth"
               label="Settings"
               active={@active_nav == :settings}
