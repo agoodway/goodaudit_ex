@@ -19,16 +19,20 @@ defmodule GAWeb.DashboardLiveTest do
     "/dashboard/accounts/#{account.id}"
   end
 
-  defp create_log(account_id) do
-    attrs = %{
-      actor_id: "actor-#{System.unique_integer([:positive])}",
-      action: "create",
-      resource_type: "document",
-      resource_id: Ecto.UUID.generate(),
-      timestamp: DateTime.utc_now(),
-      outcome: "success",
-      extensions: %{"hipaa" => %{"phi_accessed" => false, "user_role" => "admin"}}
-    }
+  defp create_log(account_id, overrides \\ %{}) do
+    attrs =
+      Map.merge(
+        %{
+          actor_id: "actor-#{System.unique_integer([:positive])}",
+          action: "create",
+          resource_type: "document",
+          resource_id: Ecto.UUID.generate(),
+          timestamp: DateTime.utc_now(),
+          outcome: "success",
+          extensions: %{"hipaa" => %{"phi_accessed" => false, "user_role" => "admin"}}
+        },
+        overrides
+      )
 
     {:ok, log} = Audit.create_log_entry(account_id, attrs)
     log
@@ -36,7 +40,8 @@ defmodule GAWeb.DashboardLiveTest do
 
   describe "dashboard with empty account" do
     test "renders metric cards with zero values", %{conn: conn, account: account} do
-      {:ok, _view, html} = live(conn, dashboard_path(account))
+      {:ok, view, _html} = live(conn, dashboard_path(account))
+      html = render(view)
 
       assert html =~ "Active Frameworks"
       assert html =~ "Chain Status"
@@ -45,6 +50,8 @@ defmodule GAWeb.DashboardLiveTest do
       assert html =~ "no logs"
       assert html =~ "none configured"
       assert html =~ "none active"
+      # Assert zero values
+      assert html =~ ">0</span>"
     end
 
     test "renders empty activity state", %{conn: conn, account: account} do
@@ -59,6 +66,7 @@ defmodule GAWeb.DashboardLiveTest do
       assert html =~ "Configure Framework"
       assert html =~ "Connect Integrations"
       assert html =~ "Create API Key"
+      refute html =~ "hero-check-mini"
     end
   end
 
@@ -80,18 +88,18 @@ defmodule GAWeb.DashboardLiveTest do
     end
 
     test "renders real metric values", %{conn: conn, account: account} do
-      {:ok, _view, html} = live(conn, dashboard_path(account))
+      {:ok, view, _html} = live(conn, dashboard_path(account))
+      html = render(view)
 
-      # Active frameworks count
-      assert html =~ "Active Frameworks"
+      # Active frameworks: 1
+      assert html =~ ">1</span>"
       assert html =~ "configured"
 
-      # Audit logs count
-      assert html =~ "Audit Logs"
+      # Audit logs: 3
+      assert html =~ ">3</span>"
       assert html =~ "last 30d"
 
-      # API keys count
-      assert html =~ "API Keys"
+      # API keys: 1
       assert html =~ "active"
 
       # Chain status should be verified (valid chain)
@@ -110,10 +118,96 @@ defmodule GAWeb.DashboardLiveTest do
     test "getting started checklist reflects account state", %{conn: conn, account: account} do
       {:ok, _view, html} = live(conn, dashboard_path(account))
 
-      # Step 1 (Configure Framework) should be complete — account has hipaa active
-      # Step 3 (Create API Key) should be complete — account has an API key
-      # We verify the check icon appears (hero-check-mini)
-      assert html =~ "hero-check-mini"
+      # Step 1 (Configure Framework) and Step 3 (Create API Key) should be complete
+      # Assert exactly 2 check icons are rendered
+      check_count =
+        html
+        |> String.split("hero-check-mini")
+        |> length()
+        |> Kernel.-(1)
+
+      assert check_count == 2
+    end
+  end
+
+  describe "dashboard with broken chain" do
+    setup %{account: account} do
+      {:ok, _} = Compliance.activate_framework(account.id, "hipaa")
+
+      # Create a valid log first
+      log = create_log(account.id)
+
+      # Insert a second log with wrong previous_checksum to break the chain
+      %Audit.Log{}
+      |> Ecto.Changeset.change(%{
+        account_id: account.id,
+        sequence_number: log.sequence_number + 1,
+        checksum: String.duplicate("a", 64),
+        previous_checksum: String.duplicate("b", 64),
+        actor_id: "breaker",
+        action: "create",
+        resource_type: "test",
+        resource_id: Ecto.UUID.generate(),
+        timestamp: DateTime.utc_now(),
+        outcome: "success",
+        user_id: "breaker",
+        user_role: "admin"
+      })
+      |> GA.Repo.insert!()
+
+      :ok
+    end
+
+    test "renders broken chain status", %{conn: conn, account: account} do
+      {:ok, view, _html} = live(conn, dashboard_path(account))
+      html = render(view)
+
+      assert html =~ "broken"
+      assert html =~ "status-dot--error"
+    end
+  end
+
+  describe "format_number/1" do
+    test "formats small numbers without commas" do
+      assert GAWeb.DashboardLive.format_number(0) == "0"
+      assert GAWeb.DashboardLive.format_number(999) == "999"
+    end
+
+    test "formats thousands with commas" do
+      assert GAWeb.DashboardLive.format_number(1000) == "1,000"
+      assert GAWeb.DashboardLive.format_number(1234) == "1,234"
+    end
+
+    test "formats millions with commas" do
+      assert GAWeb.DashboardLive.format_number(1_234_567) == "1,234,567"
+    end
+  end
+
+  describe "relative_time/1" do
+    test "returns 'just now' for times within 60 seconds" do
+      assert GAWeb.DashboardLive.relative_time(DateTime.utc_now()) == "just now"
+    end
+
+    test "returns minutes ago" do
+      time = DateTime.add(DateTime.utc_now(), -120, :second)
+      assert GAWeb.DashboardLive.relative_time(time) == "2 min ago"
+    end
+
+    test "returns hours ago" do
+      time = DateTime.add(DateTime.utc_now(), -7200, :second)
+      assert GAWeb.DashboardLive.relative_time(time) == "2 hours ago"
+    end
+
+    test "returns days ago" do
+      time = DateTime.add(DateTime.utc_now(), -172_800, :second)
+      assert GAWeb.DashboardLive.relative_time(time) == "2 days ago"
+    end
+
+    test "returns formatted date for old times" do
+      time = DateTime.add(DateTime.utc_now(), -90, :day)
+      result = GAWeb.DashboardLive.relative_time(time)
+      # Should be a formatted date like "Dec 08, 2025"
+      assert result =~ ~r/^\w{3} \d{2}, \d{4}$/
     end
   end
 end

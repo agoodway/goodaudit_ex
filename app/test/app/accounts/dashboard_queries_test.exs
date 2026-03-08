@@ -49,6 +49,11 @@ defmodule GA.Accounts.DashboardQueriesTest do
       assert Accounts.count_active_api_keys(empty_account.id) == 0
     end
 
+    test "returns 0 for non-binary input" do
+      assert Accounts.count_active_api_keys(nil) == 0
+      assert Accounts.count_active_api_keys(123) == 0
+    end
+
     test "is scoped to account", %{account: account, account_user: account_user} do
       user2 = user_fixture()
       {:ok, other_account} = Accounts.create_account(user2, %{name: "Other Account"})

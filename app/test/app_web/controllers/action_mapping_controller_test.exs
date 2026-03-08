@@ -101,7 +101,7 @@ defmodule GAWeb.Api.V1.ActionMappingControllerTest do
         |> json_response(422)
 
       assert unknown_framework_response["status"] == 422
-      assert unknown_framework_response["message"] == "Unknown framework: unknown"
+      assert unknown_framework_response["message"] == "Unknown or unsupported framework"
     end
   end
 

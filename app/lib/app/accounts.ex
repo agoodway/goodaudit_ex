@@ -429,6 +429,8 @@ defmodule GA.Accounts do
     |> Repo.one()
   end
 
+  def count_active_api_keys(_), do: 0
+
   @doc "Verify an API token and return the key with account_user preloaded."
   def verify_api_token(token) do
     prefix = String.slice(token, 0, 12)

@@ -155,7 +155,7 @@ defmodule GAWeb.Api.V1.ActionMappingController do
       {:error, :unknown_framework} ->
         conn
         |> put_status(:unprocessable_entity)
-        |> json(%{status: 422, message: "Unknown framework: #{framework}"})
+        |> json(%{status: 422, message: "Unknown or unsupported framework"})
     end
   end
 

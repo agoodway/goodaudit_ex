@@ -25,7 +25,7 @@ defmodule GA.Audit do
     since = Keyword.get(opts, :since, DateTime.add(DateTime.utc_now(), -30, :day))
 
     from(log in Log,
-      where: log.account_id == ^account_id and log.inserted_at >= ^since,
+      where: log.account_id == ^account_id and log.timestamp >= ^since,
       select: count(log.id)
     )
     |> Repo.one()
@@ -34,11 +34,25 @@ defmodule GA.Audit do
   @doc """
   Returns the most recent audit log entries for an account, ordered newest first.
   """
+  @recent_logs_max_limit 100
+
   def recent_logs(account_id, limit \\ 5) when is_binary(account_id) do
+    clamped_limit = limit |> max(1) |> min(@recent_logs_max_limit)
+
     from(log in Log,
       where: log.account_id == ^account_id,
-      order_by: [desc: log.inserted_at],
-      limit: ^limit
+      order_by: [desc: log.inserted_at, desc: log.sequence_number],
+      limit: ^clamped_limit,
+      select:
+        struct(log, [
+          :id,
+          :account_id,
+          :action,
+          :resource_type,
+          :actor_id,
+          :inserted_at,
+          :sequence_number
+        ])
     )
     |> Repo.all()
   end

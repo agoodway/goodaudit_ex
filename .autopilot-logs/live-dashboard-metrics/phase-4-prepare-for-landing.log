@@ -1,0 +1,33 @@
+All 17 findings are now `in_review`. Here's the summary:
+
+## Prepare for Landing Complete
+
+**17/17 review findings fixed** on `feat/live-dashboard-metrics`. All 30 dashboard tests pass, 0 new test failures.
+
+### Critical (P0/P1) — 4 fixes
+| ID | Fix |
+|---|---|
+| **td-e4009c** (P0) | Fixed `format_number/1` crash: `Enum.join` → `Enum.map_join` to properly join chunked graphemes |
+| **td-78014d** (P1) | Moved `verify_chain` out of mount to `handle_info` — loads async after connect with `:loading` initial state |
+| **td-2c1eb5** (P1) | Added `:error` chain status with "unavailable" label, warning styling, and `Logger.error` |
+| **td-87ed93** (P1) | Changed `count_logs/2` to filter on `log.timestamp` instead of `log.inserted_at` |
+
+### Warning (P2) — 7 fixes
+| ID | Fix |
+|---|---|
+| **td-66889d** | Parallelized 4 DB queries via `Task.async` + `Task.await_many` |
+| **td-d4bac8** | Added `desc: log.sequence_number` secondary sort to `recent_logs/2` |
+| **td-9c10de** | Added `select: struct(log, [...])` projection to `recent_logs/2` |
+| **td-b02b2f** | Clamped limit to 1..100 range in `recent_logs/2` |
+| **td-fc0570** | Added fallback `count_active_api_keys(_) → 0` |
+| **td-ebf964** | Replaced interpolated framework value with static error message (XSS prevention) |
+| **td-37cde8/d99d6e** | Added broken chain test + numeric value assertions in LiveView tests |
+
+### Suggestion (P3) — 6 fixes
+| ID | Fix |
+|---|---|
+| **td-1b8d26** | Replaced fake System Status with "Health checks coming soon" placeholder |
+| **td-571ba0** | Tokenized action names on `.`/`_` separators for proper icon/color matching |
+| **td-41279a** | Added 8 unit tests for `format_number/1` and `relative_time/1` |
+| **td-193d1d** | Added boundary precision test for `count_logs/2` `since:` parameter |
+| **td-a74fde** | Test now asserts exactly 2 check icons rendered |

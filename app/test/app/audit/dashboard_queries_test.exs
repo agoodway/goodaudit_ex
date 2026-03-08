@@ -50,6 +50,20 @@ defmodule GA.Audit.DashboardQueriesTest do
       assert Audit.count_logs(account.id, since: future) == 0
     end
 
+    test "since parameter includes logs at the boundary timestamp", %{account: account} do
+      boundary = DateTime.utc_now() |> DateTime.add(-10, :second)
+
+      # Log before boundary
+      create_log(account.id, %{timestamp: DateTime.add(boundary, -1, :second)})
+      # Log at boundary
+      create_log(account.id, %{timestamp: boundary})
+      # Log after boundary
+      create_log(account.id, %{timestamp: DateTime.add(boundary, 1, :second)})
+
+      # Should include the boundary log and the one after it
+      assert Audit.count_logs(account.id, since: boundary) == 2
+    end
+
     test "returns 0 for an account with no logs", %{account: _account} do
       {:ok, empty_account} = Accounts.create_account(%{name: "Empty Account"})
       assert Audit.count_logs(empty_account.id) == 0

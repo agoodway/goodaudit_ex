@@ -4,35 +4,54 @@ defmodule GAWeb.DashboardLive do
   """
   use GAWeb, :live_view
 
+  require Logger
+
   @impl true
   def mount(_params, _session, socket) do
     account_id = socket.assigns.current_account.id
 
-    audit_log_count = GA.Audit.count_logs(account_id)
-    active_api_keys_count = GA.Accounts.count_active_api_keys(account_id)
-    active_frameworks_count = GA.Compliance.count_active_frameworks(account_id)
-    recent_logs = GA.Audit.recent_logs(account_id)
-    chain_result = GA.Audit.verify_chain(account_id)
+    tasks = [
+      Task.async(fn -> {:audit_log_count, GA.Audit.count_logs(account_id)} end),
+      Task.async(fn -> {:active_api_keys_count, GA.Accounts.count_active_api_keys(account_id)} end),
+      Task.async(fn ->
+        {:active_frameworks_count, GA.Compliance.count_active_frameworks(account_id)}
+      end),
+      Task.async(fn -> {:recent_logs, GA.Audit.recent_logs(account_id)} end)
+    ]
 
-    chain_status = chain_status(chain_result)
+    results = tasks |> Task.await_many(5_000) |> Map.new()
+
+    if connected?(socket), do: send(self(), :verify_chain)
 
     {:ok,
      assign(socket,
        page_title: "Dashboard",
        active_nav: :dashboard,
        breadcrumbs: [%{label: "Dashboard"}],
-       audit_log_count: audit_log_count,
-       active_api_keys_count: active_api_keys_count,
-       active_frameworks_count: active_frameworks_count,
-       recent_logs: recent_logs,
-       chain_status: chain_status
+       audit_log_count: results.audit_log_count,
+       active_api_keys_count: results.active_api_keys_count,
+       active_frameworks_count: results.active_frameworks_count,
+       recent_logs: results.recent_logs,
+       chain_status: :loading
      )}
+  end
+
+  @impl true
+  def handle_info(:verify_chain, socket) do
+    account_id = socket.assigns.current_account.id
+    chain_result = GA.Audit.verify_chain(account_id)
+    chain_status = chain_status(chain_result)
+    {:noreply, assign(socket, chain_status: chain_status)}
   end
 
   defp chain_status(%{total_entries: 0}), do: :no_logs
   defp chain_status(%{valid: true}), do: :verified
   defp chain_status(%{valid: false}), do: :broken
-  defp chain_status({:error, _}), do: :no_logs
+
+  defp chain_status({:error, reason}) do
+    Logger.error("Chain verification failed: #{inspect(reason)}")
+    :error
+  end
 
   @impl true
   def render(assigns) do
@@ -135,18 +154,12 @@ defmodule GAWeb.DashboardLive do
           </div>
         </div>
 
-        <%!-- System Status — awaits a health check system --%>
+        <%!-- System Status — placeholder until health check system is built --%>
         <div class="dash-card">
           <div class="dash-card-header">System Status</div>
-          <div class="dash-card-body space-y-4">
-            <.status_row label="API" status="operational" />
-            <.status_row label="Audit Pipeline" status="operational" />
-            <.status_row label="Evidence Store" status="operational" />
-            <.status_row label="Webhook Delivery" status="degraded" />
-          </div>
-          <div class="border-t border-base-300 px-5 py-3">
-            <p class="text-[0.625rem] font-mono uppercase tracking-wider text-base-content/30">
-              Last checked: 2 min ago
+          <div class="dash-card-body">
+            <p class="text-sm text-base-content/40 py-4 text-center">
+              Health checks coming soon
             </p>
           </div>
         </div>
@@ -185,40 +198,39 @@ defmodule GAWeb.DashboardLive do
   # --- Helper functions ---
 
   defp action_icon(action) when is_binary(action) do
-    case action do
-      "create" <> _ -> "hero-plus-circle"
-      "delete" <> _ -> "hero-trash"
-      "update" <> _ -> "hero-pencil-square"
-      "login" <> _ -> "hero-key"
-      "logout" <> _ -> "hero-key"
-      "auth" <> _ -> "hero-key"
-      "access" <> _ -> "hero-eye"
-      "read" <> _ -> "hero-eye"
-      "export" <> _ -> "hero-arrow-down-tray"
-      _ -> "hero-document-text"
+    cond do
+      action_contains?(action, ~w(create)) -> "hero-plus-circle"
+      action_contains?(action, ~w(delete)) -> "hero-trash"
+      action_contains?(action, ~w(update)) -> "hero-pencil-square"
+      action_contains?(action, ~w(login logout auth)) -> "hero-key"
+      action_contains?(action, ~w(access read)) -> "hero-eye"
+      action_contains?(action, ~w(export)) -> "hero-arrow-down-tray"
+      true -> "hero-document-text"
     end
   end
 
   defp action_icon(_), do: "hero-document-text"
 
   defp action_color(action) when is_binary(action) do
-    case action do
-      "create" <> _ -> "text-success"
-      "delete" <> _ -> "text-error"
-      "update" <> _ -> "text-info"
-      "login" <> _ -> "text-primary"
-      "logout" <> _ -> "text-primary"
-      "auth" <> _ -> "text-primary"
-      "access" <> _ -> "text-warning"
-      "read" <> _ -> "text-warning"
-      "export" <> _ -> "text-info"
-      _ -> "text-base-content/50"
+    cond do
+      action_contains?(action, ~w(create)) -> "text-success"
+      action_contains?(action, ~w(delete)) -> "text-error"
+      action_contains?(action, ~w(update export)) -> "text-info"
+      action_contains?(action, ~w(login logout auth)) -> "text-primary"
+      action_contains?(action, ~w(access read)) -> "text-warning"
+      true -> "text-base-content/50"
     end
   end
 
   defp action_color(_), do: "text-base-content/50"
 
-  defp relative_time(datetime) do
+  defp action_contains?(action, keywords) do
+    tokens = String.split(action, ~r/[._]/)
+    Enum.any?(keywords, fn kw -> Enum.any?(tokens, &String.starts_with?(&1, kw)) end)
+  end
+
+  @doc false
+  def relative_time(datetime) do
     now = DateTime.utc_now()
     diff = DateTime.diff(now, datetime, :second)
 
@@ -240,28 +252,35 @@ defmodule GAWeb.DashboardLive do
     if parts == "", do: "\u2014", else: parts
   end
 
-  defp format_number(n) when n >= 1000 do
+  @doc false
+  def format_number(n) when is_integer(n) and n >= 1000 do
     Integer.to_string(n)
     |> String.graphemes()
     |> Enum.reverse()
     |> Enum.chunk_every(3)
-    |> Enum.join(",")
+    |> Enum.map_join(",", &Enum.join/1)
     |> String.reverse()
   end
 
-  defp format_number(n), do: Integer.to_string(n)
+  def format_number(n) when is_integer(n), do: Integer.to_string(n)
 
   defp chain_status_label(:verified), do: "verified"
   defp chain_status_label(:broken), do: "broken"
   defp chain_status_label(:no_logs), do: "no logs"
+  defp chain_status_label(:loading), do: "checking…"
+  defp chain_status_label(:error), do: "unavailable"
 
   defp chain_status_color(:verified), do: "text-success"
   defp chain_status_color(:broken), do: "text-error"
   defp chain_status_color(:no_logs), do: "text-base-content/40"
+  defp chain_status_color(:loading), do: "text-base-content/40"
+  defp chain_status_color(:error), do: "text-warning"
 
   defp chain_status_dot_classes(:verified), do: "status-dot status-dot--ok"
   defp chain_status_dot_classes(:broken), do: "status-dot status-dot--error status-dot--pulse"
   defp chain_status_dot_classes(:no_logs), do: ""
+  defp chain_status_dot_classes(:loading), do: ""
+  defp chain_status_dot_classes(:error), do: "status-dot status-dot--warn"
 
   # --- Dashboard components ---
 
@@ -282,32 +301,6 @@ defmodule GAWeb.DashboardLive do
         <p class="text-xs text-base-content/40 mt-0.5 truncate">{@detail}</p>
       </div>
       <span class="text-[0.625rem] font-mono text-base-content/30 shrink-0 mt-0.5">{@time}</span>
-    </div>
-    """
-  end
-
-  attr :label, :string, required: true
-  attr :status, :string, required: true
-
-  defp status_row(assigns) do
-    ~H"""
-    <div class="flex items-center justify-between">
-      <span class="text-xs font-medium text-base-content/60">{@label}</span>
-      <div class="flex items-center gap-1.5">
-        <span class={[
-          "status-dot",
-          if(@status == "operational",
-            do: "status-dot--ok",
-            else: "status-dot--warn status-dot--pulse"
-          )
-        ]} />
-        <span class={[
-          "text-[0.625rem] font-mono uppercase tracking-wider",
-          if(@status == "operational", do: "text-success", else: "text-warning")
-        ]}>
-          {@status}
-        </span>
-      </div>
     </div>
     """
   end
