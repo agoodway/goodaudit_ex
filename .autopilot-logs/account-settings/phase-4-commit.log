@@ -1,1 +1,0 @@
-Committed `78279fb` — 12 files changed (219 insertions, 79 deletions). Changes include authorization guards, sudo mode checks, scoped queries, logging, slug deduplication, and clipboard handling improvements across the account settings components.
