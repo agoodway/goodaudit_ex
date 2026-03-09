@@ -29,6 +29,7 @@ defmodule GoodauditEx do
         :after_sequence,
         :limit,
         :actor_id,
+        :external_tenant_id,
         :action,
         :resource_type,
         :resource_id,
