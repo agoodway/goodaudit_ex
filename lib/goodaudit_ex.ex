@@ -22,11 +22,28 @@ defmodule GoodauditEx do
 
   # --- Audit Logs ---
 
-  @doc "List audit log entries with optional filters."
+  @doc """
+  List audit log entries with optional filters.
+
+  ## Pagination
+
+  Results are cursor-paginated by `sequence_number`.
+
+  - `order` — `"asc"` (default) or `"desc"`. Controls sort direction.
+  - `after_sequence` — returns entries with `sequence_number > N`. Use for forward
+    pagination in ascending order.
+  - `before_sequence` — returns entries with `sequence_number < N`. Use for forward
+    pagination in descending order (newest-first).
+  - `after_sequence` and `before_sequence` are mutually exclusive.
+  - `next_cursor` in the response is the last entry's sequence number on the current page.
+    Pass it as `after_sequence` (asc) or `before_sequence` (desc) to fetch the next page.
+  """
   def list_audit_logs(%Client{} = client, opts \\ []) do
     params =
       Keyword.take(opts, [
         :after_sequence,
+        :before_sequence,
+        :order,
         :limit,
         :actor_id,
         :external_tenant_id,
