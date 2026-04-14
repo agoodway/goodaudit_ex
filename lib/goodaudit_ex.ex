@@ -207,4 +207,88 @@ defmodule GoodauditEx do
         error
     end
   end
+
+  # --- Session Recordings ---
+
+  @doc """
+  Start a new recording session.
+
+  Returns `{:ok, response}` where `response` is a
+  `SessionRecordingCreateResponse` containing the recording data and a
+  short-lived `session_token` (`srt_`-prefixed) for browser-direct streaming.
+
+  ## Example
+
+      {:ok, %{data: data, session_token: token}} =
+        GoodauditEx.start_session_recording(client, "rec_abc123")
+
+  """
+  def start_session_recording(%Client{} = client, recording_session_id)
+      when is_binary(recording_session_id) do
+    case Client.request(client, :post, "/api/v1/session-recordings",
+           json: %{recording_session_id: recording_session_id}
+         ) do
+      {:ok, body} when is_map(body) ->
+        {:ok, Schemas.SessionRecordingCreateResponse.from_map(body)}
+
+      error ->
+        error
+    end
+  end
+
+  @doc """
+  Append a batch of rrweb events to an active recording session.
+
+  Accepts either the `sk_` client or a client configured with an `srt_` session token.
+
+  ## Example
+
+      :ok = GoodauditEx.append_session_recording_events(client, "rec_abc123", events)
+
+  """
+  def append_session_recording_events(%Client{} = client, recording_session_id, events)
+      when is_binary(recording_session_id) and is_list(events) do
+    case Client.request(
+           client,
+           :post,
+           "/api/v1/session-recordings/#{recording_session_id}/events",
+           json: %{events: events}
+         ) do
+      {:ok, _body} ->
+        :ok
+
+      error ->
+        error
+    end
+  end
+
+  @doc """
+  Complete a recording session.
+
+  Triggers server-side finalization: S3 upload, checksum computation, and
+  audit log entry creation. Returns the completed recording metadata.
+
+  Accepts either the `sk_` client or a client configured with an `srt_` session token.
+
+  ## Example
+
+      {:ok, %{data: data}} =
+        GoodauditEx.complete_session_recording(client, "rec_abc123")
+      # data contains: recording_session_id, checksum, size_bytes, event_count
+
+  """
+  def complete_session_recording(%Client{} = client, recording_session_id)
+      when is_binary(recording_session_id) do
+    case Client.request(
+           client,
+           :post,
+           "/api/v1/session-recordings/#{recording_session_id}/complete"
+         ) do
+      {:ok, body} when is_map(body) ->
+        {:ok, Schemas.SessionRecordingResponse.from_map(body)}
+
+      error ->
+        error
+    end
+  end
 end

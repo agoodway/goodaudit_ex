@@ -97,6 +97,55 @@ defmodule GoodauditExTest do
     end
   end
 
+  describe "SessionRecordingCreateResponse schema" do
+    test "from_map/1 converts a create response" do
+      map = %{
+        "data" => %{
+          "id" => "550e8400-e29b-41d4-a716-446655440000",
+          "account_id" => "660e8400-e29b-41d4-a716-446655440000",
+          "recording_session_id" => "rec_abc123",
+          "status" => "recording",
+          "started_at" => "2026-04-14T00:00:00Z",
+          "inserted_at" => "2026-04-14T00:00:00Z",
+          "updated_at" => "2026-04-14T00:00:00Z"
+        },
+        "session_token" => "srt_test_token"
+      }
+
+      result = Schemas.SessionRecordingCreateResponse.from_map(map)
+      assert %Schemas.SessionRecordingCreateResponse{} = result
+      assert result.session_token == "srt_test_token"
+      assert is_map(result.data)
+      assert result.data["recording_session_id"] == "rec_abc123"
+    end
+  end
+
+  describe "SessionRecordingResponse schema" do
+    test "from_map/1 converts a completed recording" do
+      map = %{
+        "data" => %{
+          "id" => "550e8400-e29b-41d4-a716-446655440000",
+          "account_id" => "660e8400-e29b-41d4-a716-446655440000",
+          "recording_session_id" => "rec_abc123",
+          "status" => "completed",
+          "started_at" => "2026-04-14T00:00:00Z",
+          "completed_at" => "2026-04-14T00:05:00Z",
+          "checksum" => "sha256:abc123",
+          "size_bytes" => 4096,
+          "event_count" => 42,
+          "inserted_at" => "2026-04-14T00:00:00Z",
+          "updated_at" => "2026-04-14T00:05:00Z"
+        }
+      }
+
+      result = Schemas.SessionRecordingResponse.from_map(map)
+      assert %Schemas.SessionRecordingResponse{} = result
+      assert is_map(result.data)
+      assert result.data["status"] == "completed"
+      assert result.data["event_count"] == 42
+    end
+  end
+
   describe "generated API functions" do
     test "all expected functions are exported" do
       Code.ensure_loaded!(GoodauditEx)
@@ -116,6 +165,9 @@ defmodule GoodauditExTest do
       assert function_exported?(GoodauditEx, :validate_action_mappings, 2)
       assert function_exported?(GoodauditEx, :update_action_mapping, 3)
       assert function_exported?(GoodauditEx, :delete_action_mapping, 2)
+      assert function_exported?(GoodauditEx, :start_session_recording, 2)
+      assert function_exported?(GoodauditEx, :append_session_recording_events, 3)
+      assert function_exported?(GoodauditEx, :complete_session_recording, 2)
     end
   end
 end
