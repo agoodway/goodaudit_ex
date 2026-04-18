@@ -1,1 +1,2638 @@
-{"components":{"responses":{},"schemas":{"ActionMappingListResponse":{"properties":{"data":{"items":{"properties":{"created_at":{"format":"date-time","type":"string","x-struct":null,"x-validate":null},"custom_action":{"type":"string","x-struct":null,"x-validate":null},"framework":{"type":"string","x-struct":null,"x-validate":null},"id":{"format":"uuid","type":"string","x-struct":null,"x-validate":null},"taxonomy_path":{"type":"string","x-struct":null,"x-validate":null},"taxonomy_version":{"type":"string","x-struct":null,"x-validate":null}},"required":["id","custom_action","framework","taxonomy_path","taxonomy_version","created_at"],"type":"object","x-struct":null,"x-validate":null},"type":"array","x-struct":null,"x-validate":null}},"required":["data"],"title":"ActionMappingListResponse","type":"object","x-struct":"Elixir.GAWeb.Schemas.ActionMappingListResponse","x-validate":null},"ActionMappingRequest":{"properties":{"custom_action":{"type":"string","x-struct":null,"x-validate":null},"framework":{"type":"string","x-struct":null,"x-validate":null},"taxonomy_path":{"type":"string","x-struct":null,"x-validate":null}},"required":["custom_action","framework","taxonomy_path"],"title":"ActionMappingRequest","type":"object","x-struct":"Elixir.GAWeb.Schemas.ActionMappingRequest","x-validate":null},"ActionMappingResponse":{"properties":{"data":{"properties":{"created_at":{"format":"date-time","type":"string","x-struct":null,"x-validate":null},"custom_action":{"type":"string","x-struct":null,"x-validate":null},"framework":{"type":"string","x-struct":null,"x-validate":null},"id":{"format":"uuid","type":"string","x-struct":null,"x-validate":null},"taxonomy_path":{"type":"string","x-struct":null,"x-validate":null},"taxonomy_version":{"type":"string","x-struct":null,"x-validate":null}},"required":["id","custom_action","framework","taxonomy_path","taxonomy_version","created_at"],"type":"object","x-struct":null,"x-validate":null}},"required":["data"],"title":"ActionMappingResponse","type":"object","x-struct":"Elixir.GAWeb.Schemas.ActionMappingResponse","x-validate":null},"ActionMappingValidateResponse":{"properties":{"data":{"properties":{"recognized":{"items":{"type":"string","x-struct":null,"x-validate":null},"type":"array","x-struct":null,"x-validate":null},"unmapped":{"items":{"type":"string","x-struct":null,"x-validate":null},"type":"array","x-struct":null,"x-validate":null}},"required":["recognized","unmapped"],"type":"object","x-struct":null,"x-validate":null}},"required":["data"],"title":"ActionMappingValidateResponse","type":"object","x-struct":"Elixir.GAWeb.Schemas.ActionMappingValidateResponse","x-validate":null},"AuditLogListResponse":{"properties":{"data":{"items":{"properties":{"account_id":{"format":"uuid","type":"string","x-struct":null,"x-validate":null},"action":{"type":"string","x-struct":null,"x-validate":null},"actor_id":{"type":"string","x-struct":null,"x-validate":null},"checksum":{"type":"string","x-struct":null,"x-validate":null},"extensions":{"additionalProperties":true,"type":"object","x-struct":null,"x-validate":null},"external_tenant_id":{"nullable":true,"type":"string","x-struct":null,"x-validate":null},"frameworks":{"items":{"type":"string","x-struct":null,"x-validate":null},"type":"array","x-struct":null,"x-validate":null},"id":{"format":"uuid","type":"string","x-struct":null,"x-validate":null},"inserted_at":{"format":"date-time","type":"string","x-struct":null,"x-validate":null},"metadata":{"additionalProperties":true,"type":"object","x-struct":null,"x-validate":null},"outcome":{"type":"string","x-struct":null,"x-validate":null},"previous_checksum":{"nullable":true,"type":"string","x-struct":null,"x-validate":null},"recording_session_id":{"nullable":true,"type":"string","x-struct":null,"x-validate":null},"resource_id":{"type":"string","x-struct":null,"x-validate":null},"resource_type":{"type":"string","x-struct":null,"x-validate":null},"sequence_number":{"type":"integer","x-struct":null,"x-validate":null},"timestamp":{"format":"date-time","type":"string","x-struct":null,"x-validate":null},"updated_at":{"format":"date-time","type":"string","x-struct":null,"x-validate":null}},"required":["id","account_id","sequence_number","checksum","actor_id","external_tenant_id","action","resource_type","resource_id","timestamp","outcome","extensions","frameworks","metadata","inserted_at","updated_at"],"type":"object","x-struct":null,"x-validate":null},"type":"array","x-struct":null,"x-validate":null},"meta":{"properties":{"count":{"type":"integer","x-struct":null,"x-validate":null},"next_cursor":{"nullable":true,"type":"integer","x-struct":null,"x-validate":null}},"required":["next_cursor","count"],"type":"object","x-struct":null,"x-validate":null}},"required":["data","meta"],"title":"AuditLogListResponse","type":"object","x-struct":"Elixir.GAWeb.Schemas.AuditLogListResponse","x-validate":null},"AuditLogRequest":{"properties":{"action":{"type":"string","x-struct":null,"x-validate":null},"actor_id":{"type":"string","x-struct":null,"x-validate":null},"extensions":{"additionalProperties":true,"type":"object","x-struct":null,"x-validate":null},"external_tenant_id":{"nullable":true,"type":"string","x-struct":null,"x-validate":null},"metadata":{"additionalProperties":true,"type":"object","x-struct":null,"x-validate":null},"outcome":{"enum":["success","failure"],"type":"string","x-struct":null,"x-validate":null},"recording_session_id":{"description":"Links this entry to a session recording","nullable":true,"type":"string","x-struct":null,"x-validate":null},"resource_id":{"type":"string","x-struct":null,"x-validate":null},"resource_type":{"type":"string","x-struct":null,"x-validate":null},"timestamp":{"format":"date-time","nullable":true,"type":"string","x-struct":null,"x-validate":null}},"required":["actor_id","action","resource_type","resource_id","outcome"],"title":"AuditLogRequest","type":"object","x-struct":"Elixir.GAWeb.Schemas.AuditLogRequest","x-validate":null},"AuditLogResponse":{"properties":{"data":{"properties":{"account_id":{"format":"uuid","type":"string","x-struct":null,"x-validate":null},"action":{"type":"string","x-struct":null,"x-validate":null},"actor_id":{"type":"string","x-struct":null,"x-validate":null},"checksum":{"type":"string","x-struct":null,"x-validate":null},"extensions":{"additionalProperties":true,"type":"object","x-struct":null,"x-validate":null},"external_tenant_id":{"nullable":true,"type":"string","x-struct":null,"x-validate":null},"frameworks":{"items":{"type":"string","x-struct":null,"x-validate":null},"type":"array","x-struct":null,"x-validate":null},"id":{"format":"uuid","type":"string","x-struct":null,"x-validate":null},"inserted_at":{"format":"date-time","type":"string","x-struct":null,"x-validate":null},"metadata":{"additionalProperties":true,"type":"object","x-struct":null,"x-validate":null},"outcome":{"type":"string","x-struct":null,"x-validate":null},"previous_checksum":{"nullable":true,"type":"string","x-struct":null,"x-validate":null},"recording_session_id":{"nullable":true,"type":"string","x-struct":null,"x-validate":null},"resource_id":{"type":"string","x-struct":null,"x-validate":null},"resource_type":{"type":"string","x-struct":null,"x-validate":null},"sequence_number":{"type":"integer","x-struct":null,"x-validate":null},"timestamp":{"format":"date-time","type":"string","x-struct":null,"x-validate":null},"updated_at":{"format":"date-time","type":"string","x-struct":null,"x-validate":null}},"required":["id","account_id","sequence_number","checksum","actor_id","external_tenant_id","action","resource_type","resource_id","timestamp","outcome","extensions","frameworks","metadata","inserted_at","updated_at"],"type":"object","x-struct":null,"x-validate":null}},"required":["data"],"title":"AuditLogResponse","type":"object","x-struct":"Elixir.GAWeb.Schemas.AuditLogResponse","x-validate":null},"CheckpointResponse":{"properties":{"data":{"oneOf":[{"properties":{"account_id":{"format":"uuid","type":"string","x-struct":null,"x-validate":null},"checksum":{"type":"string","x-struct":null,"x-validate":null},"id":{"format":"uuid","type":"string","x-struct":null,"x-validate":null},"inserted_at":{"format":"date-time","type":"string","x-struct":null,"x-validate":null},"sequence_number":{"type":"integer","x-struct":null,"x-validate":null},"signature":{"nullable":true,"type":"string","x-struct":null,"x-validate":null},"signing_key_id":{"format":"uuid","nullable":true,"type":"string","x-struct":null,"x-validate":null},"updated_at":{"format":"date-time","type":"string","x-struct":null,"x-validate":null},"verified_at":{"format":"date-time","nullable":true,"type":"string","x-struct":null,"x-validate":null}},"required":["id","account_id","sequence_number","checksum","signature","verified_at","signing_key_id","inserted_at","updated_at"],"type":"object","x-struct":null,"x-validate":null},{"items":{"properties":{"account_id":{"format":"uuid","type":"string","x-struct":null,"x-validate":null},"checksum":{"type":"string","x-struct":null,"x-validate":null},"id":{"format":"uuid","type":"string","x-struct":null,"x-validate":null},"inserted_at":{"format":"date-time","type":"string","x-struct":null,"x-validate":null},"sequence_number":{"type":"integer","x-struct":null,"x-validate":null},"signature":{"nullable":true,"type":"string","x-struct":null,"x-validate":null},"signing_key_id":{"format":"uuid","nullable":true,"type":"string","x-struct":null,"x-validate":null},"updated_at":{"format":"date-time","type":"string","x-struct":null,"x-validate":null},"verified_at":{"format":"date-time","nullable":true,"type":"string","x-struct":null,"x-validate":null}},"required":["id","account_id","sequence_number","checksum","signature","verified_at","signing_key_id","inserted_at","updated_at"],"type":"object","x-struct":null,"x-validate":null},"type":"array","x-struct":null,"x-validate":null}],"x-struct":null,"x-validate":null}},"required":["data"],"title":"CheckpointResponse","type":"object","x-struct":"Elixir.GAWeb.Schemas.CheckpointResponse","x-validate":null},"ErrorResponse":{"properties":{"errors":{"additionalProperties":true,"nullable":true,"type":"object","x-struct":null,"x-validate":null},"message":{"nullable":true,"type":"string","x-struct":null,"x-validate":null},"status":{"nullable":true,"type":"integer","x-struct":null,"x-validate":null}},"title":"ErrorResponse","type":"object","x-struct":"Elixir.GAWeb.Schemas.ErrorResponse","x-validate":null},"SessionRecordingCreateRequest":{"properties":{"recording_session_id":{"description":"Client-generated session identifier (1-128 chars, [A-Za-z0-9_-]+)","maxLength":128,"minLength":1,"pattern":"^[A-Za-z0-9_-]+$","type":"string","x-struct":null,"x-validate":null}},"required":["recording_session_id"],"title":"SessionRecordingCreateRequest","type":"object","x-struct":"Elixir.GAWeb.Schemas.SessionRecordingCreateRequest","x-validate":null},"SessionRecordingCreateResponse":{"properties":{"data":{"properties":{"account_id":{"format":"uuid","type":"string","x-struct":null,"x-validate":null},"checksum":{"nullable":true,"type":"string","x-struct":null,"x-validate":null},"completed_at":{"format":"date-time","nullable":true,"type":"string","x-struct":null,"x-validate":null},"event_count":{"nullable":true,"type":"integer","x-struct":null,"x-validate":null},"id":{"format":"uuid","type":"string","x-struct":null,"x-validate":null},"inserted_at":{"format":"date-time","type":"string","x-struct":null,"x-validate":null},"recording_session_id":{"type":"string","x-struct":null,"x-validate":null},"size_bytes":{"nullable":true,"type":"integer","x-struct":null,"x-validate":null},"started_at":{"format":"date-time","type":"string","x-struct":null,"x-validate":null},"status":{"enum":["recording","uploading","completed","failed"],"type":"string","x-struct":null,"x-validate":null},"updated_at":{"format":"date-time","type":"string","x-struct":null,"x-validate":null}},"required":["id","account_id","recording_session_id","status","started_at"],"type":"object","x-struct":null,"x-validate":null},"session_token":{"description":"Short-lived srt_-prefixed token for browser-direct authentication on events and complete endpoints","type":"string","x-struct":null,"x-validate":null}},"required":["data","session_token"],"title":"SessionRecordingCreateResponse","type":"object","x-struct":"Elixir.GAWeb.Schemas.SessionRecordingCreateResponse","x-validate":null},"SessionRecordingEventsRequest":{"properties":{"events":{"description":"Array of rrweb event objects","items":{"additionalProperties":true,"type":"object","x-struct":null,"x-validate":null},"type":"array","x-struct":null,"x-validate":null}},"required":["events"],"title":"SessionRecordingEventsRequest","type":"object","x-struct":"Elixir.GAWeb.Schemas.SessionRecordingEventsRequest","x-validate":null},"SessionRecordingResponse":{"properties":{"data":{"properties":{"account_id":{"format":"uuid","type":"string","x-struct":null,"x-validate":null},"checksum":{"nullable":true,"type":"string","x-struct":null,"x-validate":null},"completed_at":{"format":"date-time","nullable":true,"type":"string","x-struct":null,"x-validate":null},"event_count":{"nullable":true,"type":"integer","x-struct":null,"x-validate":null},"id":{"format":"uuid","type":"string","x-struct":null,"x-validate":null},"inserted_at":{"format":"date-time","type":"string","x-struct":null,"x-validate":null},"recording_session_id":{"type":"string","x-struct":null,"x-validate":null},"size_bytes":{"nullable":true,"type":"integer","x-struct":null,"x-validate":null},"started_at":{"format":"date-time","type":"string","x-struct":null,"x-validate":null},"status":{"enum":["recording","uploading","completed","failed"],"type":"string","x-struct":null,"x-validate":null},"updated_at":{"format":"date-time","type":"string","x-struct":null,"x-validate":null}},"required":["id","account_id","recording_session_id","status","started_at"],"type":"object","x-struct":null,"x-validate":null}},"required":["data"],"title":"SessionRecordingResponse","type":"object","x-struct":"Elixir.GAWeb.Schemas.SessionRecordingResponse","x-validate":null},"TaxonomyListResponse":{"properties":{"data":{"items":{"properties":{"framework":{"type":"string","x-struct":null,"x-validate":null},"version":{"type":"string","x-struct":null,"x-validate":null}},"required":["framework","version"],"type":"object","x-struct":null,"x-validate":null},"type":"array","x-struct":null,"x-validate":null}},"required":["data"],"title":"TaxonomyListResponse","type":"object","x-struct":"Elixir.GAWeb.Schemas.TaxonomyListResponse","x-validate":null},"TaxonomyShowResponse":{"properties":{"data":{"properties":{"framework":{"type":"string","x-struct":null,"x-validate":null},"taxonomy":{"additionalProperties":true,"type":"object","x-struct":null,"x-validate":null},"version":{"type":"string","x-struct":null,"x-validate":null}},"required":["framework","version","taxonomy"],"type":"object","x-struct":null,"x-validate":null}},"required":["data"],"title":"TaxonomyShowResponse","type":"object","x-struct":"Elixir.GAWeb.Schemas.TaxonomyShowResponse","x-validate":null},"VerificationResponse":{"properties":{"checkpoint_results":{"items":{"properties":{"sequence_number":{"type":"integer","x-struct":null,"x-validate":null},"valid":{"type":"boolean","x-struct":null,"x-validate":null}},"required":["sequence_number","valid"],"type":"object","x-struct":null,"x-validate":null},"type":"array","x-struct":null,"x-validate":null},"duration_ms":{"type":"integer","x-struct":null,"x-validate":null},"first_failure":{"additionalProperties":true,"nullable":true,"type":"object","x-struct":null,"x-validate":null},"sequence_gaps":{"items":{"properties":{"expected":{"type":"integer","x-struct":null,"x-validate":null},"found":{"type":"integer","x-struct":null,"x-validate":null},"missing":{"items":{"type":"integer","x-struct":null,"x-validate":null},"type":"array","x-struct":null,"x-validate":null},"missing_count":{"type":"integer","x-struct":null,"x-validate":null},"missing_range":{"nullable":true,"properties":{"from":{"type":"integer","x-struct":null,"x-validate":null},"to":{"type":"integer","x-struct":null,"x-validate":null}},"type":"object","x-struct":null,"x-validate":null},"missing_truncated":{"type":"boolean","x-struct":null,"x-validate":null}},"required":["expected","found","missing","missing_count","missing_truncated"],"type":"object","x-struct":null,"x-validate":null},"type":"array","x-struct":null,"x-validate":null},"total_entries":{"type":"integer","x-struct":null,"x-validate":null},"valid":{"type":"boolean","x-struct":null,"x-validate":null},"verified_entries":{"type":"integer","x-struct":null,"x-validate":null}},"required":["valid","total_entries","verified_entries","first_failure","sequence_gaps","checkpoint_results","duration_ms"],"title":"VerificationResponse","type":"object","x-struct":"Elixir.GAWeb.Schemas.VerificationResponse","x-validate":null}},"securitySchemes":{"bearerAuth":{"bearerFormat":"API Key","description":"Enter your API key: `pk_...` (read-only) or `sk_...` (read/write)\n","scheme":"bearer","type":"http"}}},"info":{"description":"GoodAudit API documentation.\n\n## Authentication\nAll API endpoints require authentication using API keys.\n\n### API Key Types\n- **Public Keys** (`pk_...`): Read-only access\n- **Private Keys** (`sk_...`): Full read/write access\n\n### How to Authenticate\n1. Log in to your account and create an API key\n2. Click the \"Authorize\" button in Swagger UI\n3. Enter your API key: `Bearer <your_api_key>`\n\nAll requests must include the `Authorization` header.\n\n### Multi-tenant Access\nAPI keys are scoped to your membership in a specific account.\nTo access multiple accounts, create separate API keys for each.\n","title":"GoodAudit API","version":"1.0.0"},"openapi":"3.0.0","paths":{"/api/v1/action-mappings":{"get":{"callbacks":{},"operationId":"GAWeb.Api.V1.ActionMappingController.index","parameters":[{"description":"","in":"query","name":"framework","required":false,"schema":{"type":"string","x-struct":null,"x-validate":null}},{"description":"","in":"query","name":"custom_action","required":false,"schema":{"type":"string","x-struct":null,"x-validate":null}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ActionMappingListResponse"}}},"description":"Action mappings"},"401":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Unauthorized"}},"security":[{"bearerAuth":[]}],"summary":"List action mappings","tags":["Action Mappings"]},"post":{"callbacks":{},"operationId":"GAWeb.Api.V1.ActionMappingController.create","parameters":[],"requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ActionMappingRequest"}}},"description":"Action mapping payload","required":true},"responses":{"201":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ActionMappingResponse"}}},"description":"Action mapping"},"401":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Unauthorized"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Forbidden"},"422":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Validation error"}},"security":[{"bearerAuth":[]}],"summary":"Create action mapping","tags":["Action Mappings"]}},"/api/v1/action-mappings/validate":{"post":{"callbacks":{},"operationId":"GAWeb.Api.V1.ActionMappingController.validate","parameters":[],"requestBody":{"content":{"application/json":{"schema":{"properties":{"framework":{"type":"string","x-struct":null,"x-validate":null}},"required":["framework"],"type":"object","x-struct":null,"x-validate":null}}},"description":"Validation request","required":true},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ActionMappingValidateResponse"}}},"description":"Validation report"},"401":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Unauthorized"},"422":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Validation error"}},"security":[{"bearerAuth":[]}],"summary":"Validate recent actions for framework strict-mode readiness","tags":["Action Mappings"]}},"/api/v1/action-mappings/{id}":{"delete":{"callbacks":{},"operationId":"GAWeb.Api.V1.ActionMappingController.delete","parameters":[{"description":"","in":"path","name":"id","required":true,"schema":{"format":"uuid","type":"string","x-struct":null,"x-validate":null}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ActionMappingResponse"}}},"description":"Deleted mapping"},"401":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Unauthorized"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Forbidden"},"404":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Not found"}},"security":[{"bearerAuth":[]}],"summary":"Delete action mapping","tags":["Action Mappings"]},"put":{"callbacks":{},"operationId":"GAWeb.Api.V1.ActionMappingController.update","parameters":[{"description":"","in":"path","name":"id","required":true,"schema":{"format":"uuid","type":"string","x-struct":null,"x-validate":null}}],"requestBody":{"content":{"application/json":{"schema":{"properties":{"taxonomy_path":{"type":"string","x-struct":null,"x-validate":null}},"required":["taxonomy_path"],"type":"object","x-struct":null,"x-validate":null}}},"description":"Action mapping payload","required":true},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ActionMappingResponse"}}},"description":"Action mapping"},"401":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Unauthorized"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Forbidden"},"404":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Not found"},"422":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Validation error"}},"security":[{"bearerAuth":[]}],"summary":"Update action mapping taxonomy path","tags":["Action Mappings"]}},"/api/v1/audit-logs":{"get":{"callbacks":{},"operationId":"GAWeb.Api.V1.AuditLogController.index","parameters":[{"description":"","in":"query","name":"after_sequence","required":false,"schema":{"type":"integer","x-struct":null,"x-validate":null}},{"description":"Cursor for backward pagination. Returns entries with sequence_number < value. Mutually exclusive with after_sequence.","in":"query","name":"before_sequence","required":false,"schema":{"type":"integer","x-struct":null,"x-validate":null}},{"description":"Sort order by sequence_number. Defaults to asc.","in":"query","name":"order","required":false,"schema":{"default":"asc","enum":["asc","desc"],"type":"string","x-struct":null,"x-validate":null}},{"description":"","in":"query","name":"limit","required":false,"schema":{"type":"integer","x-struct":null,"x-validate":null}},{"description":"","in":"query","name":"actor_id","required":false,"schema":{"type":"string","x-struct":null,"x-validate":null}},{"description":"","in":"query","name":"external_tenant_id","required":false,"schema":{"type":"string","x-struct":null,"x-validate":null}},{"description":"","in":"query","name":"action","required":false,"schema":{"type":"string","x-struct":null,"x-validate":null}},{"description":"","in":"query","name":"resource_type","required":false,"schema":{"type":"string","x-struct":null,"x-validate":null}},{"description":"","in":"query","name":"resource_id","required":false,"schema":{"type":"string","x-struct":null,"x-validate":null}},{"description":"","in":"query","name":"outcome","required":false,"schema":{"type":"string","x-struct":null,"x-validate":null}},{"description":"JSON object for extensions containment filtering","in":"query","name":"extensions","required":false,"schema":{"type":"string","x-struct":null,"x-validate":null}},{"description":"","in":"query","name":"from","required":false,"schema":{"format":"date-time","type":"string","x-struct":null,"x-validate":null}},{"description":"","in":"query","name":"to","required":false,"schema":{"format":"date-time","type":"string","x-struct":null,"x-validate":null}},{"description":"Taxonomy category filter in framework:pattern format (e.g. hipaa:access.*)","in":"query","name":"category","required":false,"schema":{"type":"string","x-struct":null,"x-validate":null}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/AuditLogListResponse"}}},"description":"Audit log list"},"401":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Unauthorized"},"422":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Validation error"}},"security":[{"bearerAuth":[]}],"summary":"List audit log entries","tags":["Audit Logs"]},"post":{"callbacks":{},"operationId":"GAWeb.Api.V1.AuditLogController.create","parameters":[],"requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/AuditLogRequest"}}},"description":"Audit log payload","required":true},"responses":{"201":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/AuditLogResponse"}}},"description":"Audit log entry"},"401":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Unauthorized"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Forbidden"},"422":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Validation error (example: {\"errors\": {\"extensions\": [\"hipaa.user_role is required\"]}})"}},"security":[{"bearerAuth":[]}],"summary":"Create audit log entry","tags":["Audit Logs"]}},"/api/v1/audit-logs/{id}":{"get":{"callbacks":{},"operationId":"GAWeb.Api.V1.AuditLogController.show","parameters":[{"description":"","in":"path","name":"id","required":true,"schema":{"format":"uuid","type":"string","x-struct":null,"x-validate":null}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/AuditLogResponse"}}},"description":"Audit log entry"},"401":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Unauthorized"},"404":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Not found"}},"security":[{"bearerAuth":[]}],"summary":"Get a single audit log entry","tags":["Audit Logs"]}},"/api/v1/checkpoints":{"get":{"callbacks":{},"operationId":"GAWeb.Api.V1.CheckpointController.index","parameters":[],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CheckpointResponse"}}},"description":"Checkpoint list"},"401":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Unauthorized"}},"security":[{"bearerAuth":[]}],"summary":"List checkpoints","tags":["Checkpoints"]},"post":{"callbacks":{},"operationId":"GAWeb.Api.V1.CheckpointController.create","parameters":[],"responses":{"201":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CheckpointResponse"}}},"description":"Checkpoint"},"401":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Unauthorized"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Forbidden"},"422":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"No entries"}},"security":[{"bearerAuth":[]}],"summary":"Create checkpoint","tags":["Checkpoints"]}},"/api/v1/session-recordings":{"post":{"callbacks":{},"operationId":"GAWeb.Api.V1.SessionRecordingController.create","parameters":[],"requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/SessionRecordingCreateRequest"}}},"description":"Session recording payload","required":true},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/SessionRecordingCreateResponse"}}},"description":"Existing active session"},"201":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/SessionRecordingCreateResponse"}}},"description":"Session recording"},"401":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Unauthorized"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Forbidden"},"409":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Duplicate recording_session_id"},"422":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Validation error"},"429":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Rate limited"}},"security":[{"bearerAuth":[]}],"summary":"Start a recording session","tags":["Session Recordings"]}},"/api/v1/session-recordings/{recording_session_id}/complete":{"post":{"callbacks":{},"operationId":"GAWeb.Api.V1.SessionRecordingController.complete","parameters":[{"description":"","in":"path","name":"recording_session_id","required":true,"schema":{"type":"string","x-struct":null,"x-validate":null}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/SessionRecordingResponse"}}},"description":"Completed recording"},"401":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Unauthorized"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Forbidden"},"404":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Session not found"},"409":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Finalization in progress"},"410":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Session already completed"},"422":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"No events or buffer missing"}},"security":[{"bearerAuth":[]}],"summary":"Complete a recording session","tags":["Session Recordings"]}},"/api/v1/session-recordings/{recording_session_id}/events":{"post":{"callbacks":{},"operationId":"GAWeb.Api.V1.SessionRecordingController.events","parameters":[{"description":"","in":"path","name":"recording_session_id","required":true,"schema":{"type":"string","x-struct":null,"x-validate":null}}],"requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/SessionRecordingEventsRequest"}}},"description":"Events batch","required":true},"responses":{"202":{"content":{"application/json":{"schema":{"type":"object","x-struct":null,"x-validate":null}}},"description":"Events accepted"},"401":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Unauthorized"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Forbidden"},"404":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Session not found"},"409":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Finalization in progress"},"410":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Session already completed"},"413":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Recording too large"},"422":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Validation error"},"429":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Rate limited"}},"security":[{"bearerAuth":[]}],"summary":"Stream rrweb events to a session","tags":["Session Recordings"]}},"/api/v1/taxonomies":{"get":{"callbacks":{},"operationId":"GAWeb.Api.V1.TaxonomyController.index","parameters":[],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/TaxonomyListResponse"}}},"description":"Taxonomy list"},"401":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Unauthorized"}},"security":[{"bearerAuth":[]}],"summary":"List registered framework taxonomies","tags":["Taxonomies"]}},"/api/v1/taxonomies/{framework}":{"get":{"callbacks":{},"operationId":"GAWeb.Api.V1.TaxonomyController.show","parameters":[{"description":"","in":"path","name":"framework","required":true,"schema":{"type":"string","x-struct":null,"x-validate":null}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/TaxonomyShowResponse"}}},"description":"Taxonomy"},"401":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Unauthorized"},"404":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Unknown framework"}},"security":[{"bearerAuth":[]}],"summary":"Get taxonomy tree for a framework","tags":["Taxonomies"]}},"/api/v1/verify":{"post":{"callbacks":{},"operationId":"GAWeb.Api.V1.VerificationController.create","parameters":[],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/VerificationResponse"}}},"description":"Verification report"},"401":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}},"description":"Unauthorized"}},"security":[{"bearerAuth":[]}],"summary":"Verify account chain integrity","tags":["Verification"]}}},"security":[{"bearerAuth":[]}],"servers":[{"url":"http://localhost:4000","variables":{}}],"tags":[]}
+{
+  "components": {
+    "responses": {},
+    "schemas": {
+      "ActionMappingListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "properties": {
+                "created_at": {
+                  "format": "date-time",
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "custom_action": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "framework": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "id": {
+                  "format": "uuid",
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "taxonomy_path": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "taxonomy_version": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                }
+              },
+              "required": [
+                "id",
+                "custom_action",
+                "framework",
+                "taxonomy_path",
+                "taxonomy_version",
+                "created_at"
+              ],
+              "type": "object",
+              "x-struct": null,
+              "x-validate": null
+            },
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "ActionMappingListResponse",
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.ActionMappingListResponse",
+        "x-validate": null
+      },
+      "ActionMappingRequest": {
+        "properties": {
+          "custom_action": {
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "framework": {
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "taxonomy_path": {
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": [
+          "custom_action",
+          "framework",
+          "taxonomy_path"
+        ],
+        "title": "ActionMappingRequest",
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.ActionMappingRequest",
+        "x-validate": null
+      },
+      "ActionMappingResponse": {
+        "properties": {
+          "data": {
+            "properties": {
+              "created_at": {
+                "format": "date-time",
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "custom_action": {
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "framework": {
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "id": {
+                "format": "uuid",
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "taxonomy_path": {
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "taxonomy_version": {
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              }
+            },
+            "required": [
+              "id",
+              "custom_action",
+              "framework",
+              "taxonomy_path",
+              "taxonomy_version",
+              "created_at"
+            ],
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "ActionMappingResponse",
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.ActionMappingResponse",
+        "x-validate": null
+      },
+      "ActionMappingValidateResponse": {
+        "properties": {
+          "data": {
+            "properties": {
+              "recognized": {
+                "items": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "type": "array",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "unmapped": {
+                "items": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "type": "array",
+                "x-struct": null,
+                "x-validate": null
+              }
+            },
+            "required": [
+              "recognized",
+              "unmapped"
+            ],
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "ActionMappingValidateResponse",
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.ActionMappingValidateResponse",
+        "x-validate": null
+      },
+      "AuditLogListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "properties": {
+                "account_id": {
+                  "format": "uuid",
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "action": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "actor_id": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "checksum": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "extensions": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "external_tenant_id": {
+                  "nullable": true,
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "frameworks": {
+                  "items": {
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
+                  },
+                  "type": "array",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "id": {
+                  "format": "uuid",
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "inserted_at": {
+                  "format": "date-time",
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "metadata": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "outcome": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "previous_checksum": {
+                  "nullable": true,
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "recording_session_id": {
+                  "nullable": true,
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "resource_id": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "resource_type": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "sequence_number": {
+                  "type": "integer",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "timestamp": {
+                  "format": "date-time",
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "updated_at": {
+                  "format": "date-time",
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                }
+              },
+              "required": [
+                "id",
+                "account_id",
+                "sequence_number",
+                "checksum",
+                "actor_id",
+                "external_tenant_id",
+                "action",
+                "resource_type",
+                "resource_id",
+                "timestamp",
+                "outcome",
+                "extensions",
+                "frameworks",
+                "metadata",
+                "inserted_at",
+                "updated_at"
+              ],
+              "type": "object",
+              "x-struct": null,
+              "x-validate": null
+            },
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "meta": {
+            "properties": {
+              "count": {
+                "type": "integer",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "next_cursor": {
+                "nullable": true,
+                "type": "integer",
+                "x-struct": null,
+                "x-validate": null
+              }
+            },
+            "required": [
+              "next_cursor",
+              "count"
+            ],
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "AuditLogListResponse",
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.AuditLogListResponse",
+        "x-validate": null
+      },
+      "AuditLogRequest": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "actor_id": {
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "extensions": {
+            "additionalProperties": true,
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "external_tenant_id": {
+            "nullable": true,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "description": "Free-form metadata. For consent certificates, GoodAudit expects fields like consent_text, page_url, time_on_page_seconds, and geo (city/region/country).",
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "outcome": {
+            "enum": [
+              "success",
+              "failure"
+            ],
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "recording_session_id": {
+            "description": "Links this entry to a session recording",
+            "nullable": true,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "resource_id": {
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "resource_type": {
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "timestamp": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": [
+          "actor_id",
+          "action",
+          "resource_type",
+          "resource_id",
+          "outcome"
+        ],
+        "title": "AuditLogRequest",
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.AuditLogRequest",
+        "x-validate": null
+      },
+      "AuditLogResponse": {
+        "properties": {
+          "data": {
+            "properties": {
+              "account_id": {
+                "format": "uuid",
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "action": {
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "actor_id": {
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "checksum": {
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "extensions": {
+                "additionalProperties": true,
+                "type": "object",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "external_tenant_id": {
+                "nullable": true,
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "frameworks": {
+                "items": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "type": "array",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "id": {
+                "format": "uuid",
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "inserted_at": {
+                "format": "date-time",
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "metadata": {
+                "additionalProperties": true,
+                "type": "object",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "outcome": {
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "previous_checksum": {
+                "nullable": true,
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "recording_session_id": {
+                "nullable": true,
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "resource_id": {
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "resource_type": {
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "sequence_number": {
+                "type": "integer",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "timestamp": {
+                "format": "date-time",
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "updated_at": {
+                "format": "date-time",
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              }
+            },
+            "required": [
+              "id",
+              "account_id",
+              "sequence_number",
+              "checksum",
+              "actor_id",
+              "external_tenant_id",
+              "action",
+              "resource_type",
+              "resource_id",
+              "timestamp",
+              "outcome",
+              "extensions",
+              "frameworks",
+              "metadata",
+              "inserted_at",
+              "updated_at"
+            ],
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "AuditLogResponse",
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.AuditLogResponse",
+        "x-validate": null
+      },
+      "CertificateUrlResponse": {
+        "properties": {
+          "expires_in": {
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "url": {
+            "format": "uri",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": [
+          "url",
+          "expires_in"
+        ],
+        "title": "CertificateUrlResponse",
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.CertificateUrlResponse",
+        "x-validate": null
+      },
+      "CheckpointResponse": {
+        "properties": {
+          "data": {
+            "oneOf": [
+              {
+                "properties": {
+                  "account_id": {
+                    "format": "uuid",
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
+                  },
+                  "checksum": {
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
+                  },
+                  "id": {
+                    "format": "uuid",
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
+                  },
+                  "inserted_at": {
+                    "format": "date-time",
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
+                  },
+                  "sequence_number": {
+                    "type": "integer",
+                    "x-struct": null,
+                    "x-validate": null
+                  },
+                  "signature": {
+                    "nullable": true,
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
+                  },
+                  "signing_key_id": {
+                    "format": "uuid",
+                    "nullable": true,
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
+                  },
+                  "updated_at": {
+                    "format": "date-time",
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
+                  },
+                  "verified_at": {
+                    "format": "date-time",
+                    "nullable": true,
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
+                  }
+                },
+                "required": [
+                  "id",
+                  "account_id",
+                  "sequence_number",
+                  "checksum",
+                  "signature",
+                  "verified_at",
+                  "signing_key_id",
+                  "inserted_at",
+                  "updated_at"
+                ],
+                "type": "object",
+                "x-struct": null,
+                "x-validate": null
+              },
+              {
+                "items": {
+                  "properties": {
+                    "account_id": {
+                      "format": "uuid",
+                      "type": "string",
+                      "x-struct": null,
+                      "x-validate": null
+                    },
+                    "checksum": {
+                      "type": "string",
+                      "x-struct": null,
+                      "x-validate": null
+                    },
+                    "id": {
+                      "format": "uuid",
+                      "type": "string",
+                      "x-struct": null,
+                      "x-validate": null
+                    },
+                    "inserted_at": {
+                      "format": "date-time",
+                      "type": "string",
+                      "x-struct": null,
+                      "x-validate": null
+                    },
+                    "sequence_number": {
+                      "type": "integer",
+                      "x-struct": null,
+                      "x-validate": null
+                    },
+                    "signature": {
+                      "nullable": true,
+                      "type": "string",
+                      "x-struct": null,
+                      "x-validate": null
+                    },
+                    "signing_key_id": {
+                      "format": "uuid",
+                      "nullable": true,
+                      "type": "string",
+                      "x-struct": null,
+                      "x-validate": null
+                    },
+                    "updated_at": {
+                      "format": "date-time",
+                      "type": "string",
+                      "x-struct": null,
+                      "x-validate": null
+                    },
+                    "verified_at": {
+                      "format": "date-time",
+                      "nullable": true,
+                      "type": "string",
+                      "x-struct": null,
+                      "x-validate": null
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "account_id",
+                    "sequence_number",
+                    "checksum",
+                    "signature",
+                    "verified_at",
+                    "signing_key_id",
+                    "inserted_at",
+                    "updated_at"
+                  ],
+                  "type": "object",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "type": "array",
+                "x-struct": null,
+                "x-validate": null
+              }
+            ],
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "CheckpointResponse",
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.CheckpointResponse",
+        "x-validate": null
+      },
+      "ErrorResponse": {
+        "properties": {
+          "errors": {
+            "additionalProperties": true,
+            "nullable": true,
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "message": {
+            "nullable": true,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "status": {
+            "nullable": true,
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "title": "ErrorResponse",
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.ErrorResponse",
+        "x-validate": null
+      },
+      "SessionRecordingCreateRequest": {
+        "properties": {
+          "recording_session_id": {
+            "description": "Client-generated session identifier (1-128 chars, [A-Za-z0-9_-]+)",
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": [
+          "recording_session_id"
+        ],
+        "title": "SessionRecordingCreateRequest",
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.SessionRecordingCreateRequest",
+        "x-validate": null
+      },
+      "SessionRecordingCreateResponse": {
+        "properties": {
+          "data": {
+            "properties": {
+              "account_id": {
+                "format": "uuid",
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "checksum": {
+                "nullable": true,
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "completed_at": {
+                "format": "date-time",
+                "nullable": true,
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "event_count": {
+                "nullable": true,
+                "type": "integer",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "id": {
+                "format": "uuid",
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "inserted_at": {
+                "format": "date-time",
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "recording_session_id": {
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "size_bytes": {
+                "nullable": true,
+                "type": "integer",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "started_at": {
+                "format": "date-time",
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "status": {
+                "enum": [
+                  "recording",
+                  "uploading",
+                  "completed",
+                  "failed"
+                ],
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "updated_at": {
+                "format": "date-time",
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              }
+            },
+            "required": [
+              "id",
+              "account_id",
+              "recording_session_id",
+              "status",
+              "started_at"
+            ],
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "session_token": {
+            "description": "Short-lived srt_-prefixed token for browser-direct authentication on events and complete endpoints",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": [
+          "data",
+          "session_token"
+        ],
+        "title": "SessionRecordingCreateResponse",
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.SessionRecordingCreateResponse",
+        "x-validate": null
+      },
+      "SessionRecordingEventsRequest": {
+        "properties": {
+          "events": {
+            "description": "Array of rrweb event objects",
+            "items": {
+              "additionalProperties": true,
+              "type": "object",
+              "x-struct": null,
+              "x-validate": null
+            },
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": [
+          "events"
+        ],
+        "title": "SessionRecordingEventsRequest",
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.SessionRecordingEventsRequest",
+        "x-validate": null
+      },
+      "SessionRecordingResponse": {
+        "properties": {
+          "data": {
+            "properties": {
+              "account_id": {
+                "format": "uuid",
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "checksum": {
+                "nullable": true,
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "completed_at": {
+                "format": "date-time",
+                "nullable": true,
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "event_count": {
+                "nullable": true,
+                "type": "integer",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "id": {
+                "format": "uuid",
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "inserted_at": {
+                "format": "date-time",
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "recording_session_id": {
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "size_bytes": {
+                "nullable": true,
+                "type": "integer",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "started_at": {
+                "format": "date-time",
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "status": {
+                "enum": [
+                  "recording",
+                  "uploading",
+                  "completed",
+                  "failed"
+                ],
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "updated_at": {
+                "format": "date-time",
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              }
+            },
+            "required": [
+              "id",
+              "account_id",
+              "recording_session_id",
+              "status",
+              "started_at"
+            ],
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "SessionRecordingResponse",
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.SessionRecordingResponse",
+        "x-validate": null
+      },
+      "TaxonomyListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "properties": {
+                "framework": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "version": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                }
+              },
+              "required": [
+                "framework",
+                "version"
+              ],
+              "type": "object",
+              "x-struct": null,
+              "x-validate": null
+            },
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "TaxonomyListResponse",
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.TaxonomyListResponse",
+        "x-validate": null
+      },
+      "TaxonomyShowResponse": {
+        "properties": {
+          "data": {
+            "properties": {
+              "framework": {
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "taxonomy": {
+                "additionalProperties": true,
+                "type": "object",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "version": {
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              }
+            },
+            "required": [
+              "framework",
+              "version",
+              "taxonomy"
+            ],
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "TaxonomyShowResponse",
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.TaxonomyShowResponse",
+        "x-validate": null
+      },
+      "VerificationResponse": {
+        "properties": {
+          "checkpoint_results": {
+            "items": {
+              "properties": {
+                "sequence_number": {
+                  "type": "integer",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "valid": {
+                  "type": "boolean",
+                  "x-struct": null,
+                  "x-validate": null
+                }
+              },
+              "required": [
+                "sequence_number",
+                "valid"
+              ],
+              "type": "object",
+              "x-struct": null,
+              "x-validate": null
+            },
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "duration_ms": {
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "first_failure": {
+            "additionalProperties": true,
+            "nullable": true,
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "sequence_gaps": {
+            "items": {
+              "properties": {
+                "expected": {
+                  "type": "integer",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "found": {
+                  "type": "integer",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "missing": {
+                  "items": {
+                    "type": "integer",
+                    "x-struct": null,
+                    "x-validate": null
+                  },
+                  "type": "array",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "missing_count": {
+                  "type": "integer",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "missing_range": {
+                  "nullable": true,
+                  "properties": {
+                    "from": {
+                      "type": "integer",
+                      "x-struct": null,
+                      "x-validate": null
+                    },
+                    "to": {
+                      "type": "integer",
+                      "x-struct": null,
+                      "x-validate": null
+                    }
+                  },
+                  "type": "object",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "missing_truncated": {
+                  "type": "boolean",
+                  "x-struct": null,
+                  "x-validate": null
+                }
+              },
+              "required": [
+                "expected",
+                "found",
+                "missing",
+                "missing_count",
+                "missing_truncated"
+              ],
+              "type": "object",
+              "x-struct": null,
+              "x-validate": null
+            },
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "total_entries": {
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "valid": {
+            "type": "boolean",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "verified_entries": {
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": [
+          "valid",
+          "total_entries",
+          "verified_entries",
+          "first_failure",
+          "sequence_gaps",
+          "checkpoint_results",
+          "duration_ms"
+        ],
+        "title": "VerificationResponse",
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.VerificationResponse",
+        "x-validate": null
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "bearerFormat": "API Key",
+        "description": "Enter your API key: `pk_...` (read-only) or `sk_...` (read/write)\n",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "GoodAudit API documentation.\n\n## Authentication\nAll API endpoints require authentication using API keys.\n\n### API Key Types\n- **Public Keys** (`pk_...`): Read-only access\n- **Private Keys** (`sk_...`): Full read/write access\n\n### How to Authenticate\n1. Log in to your account and create an API key\n2. Click the \"Authorize\" button in Swagger UI\n3. Enter your API key: `Bearer <your_api_key>`\n\nAll requests must include the `Authorization` header.\n\n### Multi-tenant Access\nAPI keys are scoped to your membership in a specific account.\nTo access multiple accounts, create separate API keys for each.\n",
+    "title": "GoodAudit API",
+    "version": "1.0.0"
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/action-mappings": {
+      "get": {
+        "callbacks": {},
+        "operationId": "GAWeb.Api.V1.ActionMappingController.index",
+        "parameters": [
+          {
+            "description": "",
+            "in": "query",
+            "name": "framework",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "custom_action",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionMappingListResponse"
+                }
+              }
+            },
+            "description": "Action mappings"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List action mappings",
+        "tags": [
+          "Action Mappings"
+        ]
+      },
+      "post": {
+        "callbacks": {},
+        "operationId": "GAWeb.Api.V1.ActionMappingController.create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActionMappingRequest"
+              }
+            }
+          },
+          "description": "Action mapping payload",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionMappingResponse"
+                }
+              }
+            },
+            "description": "Action mapping"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create action mapping",
+        "tags": [
+          "Action Mappings"
+        ]
+      }
+    },
+    "/api/v1/action-mappings/validate": {
+      "post": {
+        "callbacks": {},
+        "operationId": "GAWeb.Api.V1.ActionMappingController.validate",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "framework": {
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
+                  }
+                },
+                "required": [
+                  "framework"
+                ],
+                "type": "object",
+                "x-struct": null,
+                "x-validate": null
+              }
+            }
+          },
+          "description": "Validation request",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionMappingValidateResponse"
+                }
+              }
+            },
+            "description": "Validation report"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Validate recent actions for framework strict-mode readiness",
+        "tags": [
+          "Action Mappings"
+        ]
+      }
+    },
+    "/api/v1/action-mappings/{id}": {
+      "delete": {
+        "callbacks": {},
+        "operationId": "GAWeb.Api.V1.ActionMappingController.delete",
+        "parameters": [
+          {
+            "description": "",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionMappingResponse"
+                }
+              }
+            },
+            "description": "Deleted mapping"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete action mapping",
+        "tags": [
+          "Action Mappings"
+        ]
+      },
+      "put": {
+        "callbacks": {},
+        "operationId": "GAWeb.Api.V1.ActionMappingController.update",
+        "parameters": [
+          {
+            "description": "",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "taxonomy_path": {
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
+                  }
+                },
+                "required": [
+                  "taxonomy_path"
+                ],
+                "type": "object",
+                "x-struct": null,
+                "x-validate": null
+              }
+            }
+          },
+          "description": "Action mapping payload",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionMappingResponse"
+                }
+              }
+            },
+            "description": "Action mapping"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update action mapping taxonomy path",
+        "tags": [
+          "Action Mappings"
+        ]
+      }
+    },
+    "/api/v1/audit-logs": {
+      "get": {
+        "callbacks": {},
+        "operationId": "GAWeb.Api.V1.AuditLogController.index",
+        "parameters": [
+          {
+            "description": "",
+            "in": "query",
+            "name": "after_sequence",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Cursor for backward pagination. Returns entries with sequence_number < value. Mutually exclusive with after_sequence.",
+            "in": "query",
+            "name": "before_sequence",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Sort order by sequence_number. Defaults to asc.",
+            "in": "query",
+            "name": "order",
+            "required": false,
+            "schema": {
+              "default": "asc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "actor_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "external_tenant_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "action",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "resource_type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "resource_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "outcome",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "JSON object for extensions containment filtering",
+            "in": "query",
+            "name": "extensions",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Taxonomy category filter in framework:pattern format (e.g. hipaa:access.*)",
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditLogListResponse"
+                }
+              }
+            },
+            "description": "Audit log list"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List audit log entries",
+        "tags": [
+          "Audit Logs"
+        ]
+      },
+      "post": {
+        "callbacks": {},
+        "operationId": "GAWeb.Api.V1.AuditLogController.create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditLogRequest"
+              }
+            }
+          },
+          "description": "Audit log payload",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditLogResponse"
+                }
+              }
+            },
+            "description": "Audit log entry"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error (example: {\"errors\": {\"extensions\": [\"hipaa.user_role is required\"]}})"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create audit log entry",
+        "tags": [
+          "Audit Logs"
+        ]
+      }
+    },
+    "/api/v1/audit-logs/{id}": {
+      "get": {
+        "callbacks": {},
+        "operationId": "GAWeb.Api.V1.AuditLogController.show",
+        "parameters": [
+          {
+            "description": "",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditLogResponse"
+                }
+              }
+            },
+            "description": "Audit log entry"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get a single audit log entry",
+        "tags": [
+          "Audit Logs"
+        ]
+      }
+    },
+    "/api/v1/audit-logs/{id}/certificate-url": {
+      "post": {
+        "callbacks": {},
+        "description": "Creates a short-lived public certificate URL for a consent audit log entry. This endpoint requires a private sk_ API key.",
+        "operationId": "GAWeb.Api.V1.CertificateController.create",
+        "parameters": [
+          {
+            "description": "",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateUrlResponse"
+                }
+              }
+            },
+            "description": "Certificate URL"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not a consent log entry"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Mint consent certificate URL",
+        "tags": [
+          "Audit Logs"
+        ]
+      }
+    },
+    "/api/v1/checkpoints": {
+      "get": {
+        "callbacks": {},
+        "operationId": "GAWeb.Api.V1.CheckpointController.index",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckpointResponse"
+                }
+              }
+            },
+            "description": "Checkpoint list"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List checkpoints",
+        "tags": [
+          "Checkpoints"
+        ]
+      },
+      "post": {
+        "callbacks": {},
+        "operationId": "GAWeb.Api.V1.CheckpointController.create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckpointResponse"
+                }
+              }
+            },
+            "description": "Checkpoint"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "No entries"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create checkpoint",
+        "tags": [
+          "Checkpoints"
+        ]
+      }
+    },
+    "/api/v1/session-recordings": {
+      "post": {
+        "callbacks": {},
+        "operationId": "GAWeb.Api.V1.SessionRecordingController.create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionRecordingCreateRequest"
+              }
+            }
+          },
+          "description": "Session recording payload",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionRecordingCreateResponse"
+                }
+              }
+            },
+            "description": "Existing active session"
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionRecordingCreateResponse"
+                }
+              }
+            },
+            "description": "Session recording"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Duplicate recording_session_id"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limited"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Start a recording session",
+        "tags": [
+          "Session Recordings"
+        ]
+      }
+    },
+    "/api/v1/session-recordings/{recording_session_id}/complete": {
+      "post": {
+        "callbacks": {},
+        "operationId": "GAWeb.Api.V1.SessionRecordingController.complete",
+        "parameters": [
+          {
+            "description": "",
+            "in": "path",
+            "name": "recording_session_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionRecordingResponse"
+                }
+              }
+            },
+            "description": "Completed recording"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Session not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Finalization in progress"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Session already completed"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "No events or buffer missing"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Complete a recording session",
+        "tags": [
+          "Session Recordings"
+        ]
+      }
+    },
+    "/api/v1/session-recordings/{recording_session_id}/events": {
+      "post": {
+        "callbacks": {},
+        "operationId": "GAWeb.Api.V1.SessionRecordingController.events",
+        "parameters": [
+          {
+            "description": "",
+            "in": "path",
+            "name": "recording_session_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionRecordingEventsRequest"
+              }
+            }
+          },
+          "description": "Events batch",
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-struct": null,
+                  "x-validate": null
+                }
+              }
+            },
+            "description": "Events accepted"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Session not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Finalization in progress"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Session already completed"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Recording too large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limited"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Stream rrweb events to a session",
+        "tags": [
+          "Session Recordings"
+        ]
+      }
+    },
+    "/api/v1/taxonomies": {
+      "get": {
+        "callbacks": {},
+        "operationId": "GAWeb.Api.V1.TaxonomyController.index",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyListResponse"
+                }
+              }
+            },
+            "description": "Taxonomy list"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List registered framework taxonomies",
+        "tags": [
+          "Taxonomies"
+        ]
+      }
+    },
+    "/api/v1/taxonomies/{framework}": {
+      "get": {
+        "callbacks": {},
+        "operationId": "GAWeb.Api.V1.TaxonomyController.show",
+        "parameters": [
+          {
+            "description": "",
+            "in": "path",
+            "name": "framework",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyShowResponse"
+                }
+              }
+            },
+            "description": "Taxonomy"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unknown framework"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get taxonomy tree for a framework",
+        "tags": [
+          "Taxonomies"
+        ]
+      }
+    },
+    "/api/v1/verify": {
+      "post": {
+        "callbacks": {},
+        "operationId": "GAWeb.Api.V1.VerificationController.create",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationResponse"
+                }
+              }
+            },
+            "description": "Verification report"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Verify account chain integrity",
+        "tags": [
+          "Verification"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "http://localhost:4000",
+      "variables": {}
+    }
+  ],
+  "tags": []
+}

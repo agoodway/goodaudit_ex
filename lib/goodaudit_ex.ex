@@ -88,6 +88,17 @@ defmodule GoodauditEx do
     end
   end
 
+  @doc "Mint a short-lived public consent certificate URL. Requires an sk_ API key."
+  def create_certificate_url(%Client{} = client, id) do
+    case Client.request(client, :post, "/api/v1/audit-logs/#{id}/certificate-url") do
+      {:ok, body} when is_map(body) ->
+        {:ok, Schemas.CertificateUrlResponse.from_map(body)}
+
+      error ->
+        error
+    end
+  end
+
   # --- Checkpoints ---
 
   @doc "List checkpoints."

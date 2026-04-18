@@ -120,6 +120,20 @@ defmodule GoodauditExTest do
     end
   end
 
+  describe "CertificateUrlResponse schema" do
+    test "from_map/1 converts a certificate url response" do
+      map = %{
+        "url" => "https://api.goodaudit.io/certificates/crt_test_token",
+        "expires_in" => 3600
+      }
+
+      result = Schemas.CertificateUrlResponse.from_map(map)
+      assert %Schemas.CertificateUrlResponse{} = result
+      assert result.url =~ "/certificates/crt_"
+      assert result.expires_in == 3600
+    end
+  end
+
   describe "SessionRecordingResponse schema" do
     test "from_map/1 converts a completed recording" do
       map = %{
@@ -154,6 +168,7 @@ defmodule GoodauditExTest do
       assert function_exported?(GoodauditEx, :list_audit_logs, 2)
       assert function_exported?(GoodauditEx, :create_audit_log, 2)
       assert function_exported?(GoodauditEx, :get_audit_log, 2)
+      assert function_exported?(GoodauditEx, :create_certificate_url, 2)
       assert function_exported?(GoodauditEx, :list_checkpoints, 1)
       assert function_exported?(GoodauditEx, :create_checkpoint, 1)
       assert function_exported?(GoodauditEx, :verify, 1)

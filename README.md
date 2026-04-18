@@ -65,6 +65,9 @@ client = GoodauditEx.client(api_key: "sk_...")
 # Get a single entry
 {:ok, entry} = GoodauditEx.get_audit_log(client, "550e8400-...")
 
+# Mint a consent certificate URL (requires an sk_ key)
+{:ok, certificate} = GoodauditEx.create_certificate_url(client, "550e8400-...")
+
 # Create a checkpoint
 {:ok, checkpoint} = GoodauditEx.create_checkpoint(client)
 
@@ -119,6 +122,7 @@ All responses are typed structs under `GoodauditEx.Schemas`. Schemas are generat
 | `list_audit_logs/2` | `AuditLogListResponse` |
 | `create_audit_log/2` | `AuditLogResponse` |
 | `get_audit_log/2` | `AuditLogResponse` |
+| `create_certificate_url/2` | `CertificateUrlResponse` |
 | `list_checkpoints/1` | `CheckpointResponse` |
 | `create_checkpoint/1` | `CheckpointResponse` |
 | `verify/1` | `VerificationResponse` |
