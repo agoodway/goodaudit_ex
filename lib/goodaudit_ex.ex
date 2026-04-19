@@ -248,6 +248,27 @@ defmodule GoodauditEx do
   end
 
   @doc """
+  Mint a short-lived public replay URL for a completed recording session.
+
+  This endpoint requires an `sk_` API key. The returned URL is intended for
+  browser or backend fetches of raw rrweb event JSON.
+  """
+  def create_session_recording_playback_url(%Client{} = client, recording_session_id)
+      when is_binary(recording_session_id) do
+    case Client.request(
+           client,
+           :post,
+           "/api/v1/session-recordings/#{recording_session_id}/playback-url"
+         ) do
+      {:ok, body} when is_map(body) ->
+        {:ok, Schemas.PlaybackUrlResponse.from_map(body)}
+
+      error ->
+        error
+    end
+  end
+
+  @doc """
   Append a batch of rrweb events to an active recording session.
 
   Accepts either the `sk_` client or a client configured with an `srt_` session token.

@@ -134,6 +134,20 @@ defmodule GoodauditExTest do
     end
   end
 
+  describe "PlaybackUrlResponse schema" do
+    test "from_map/1 converts a playback url response" do
+      map = %{
+        "url" => "https://api.goodaudit.io/api/v1/session-recordings/playback/rpt_test_token",
+        "expires_in" => 3600
+      }
+
+      result = Schemas.PlaybackUrlResponse.from_map(map)
+      assert %Schemas.PlaybackUrlResponse{} = result
+      assert result.url =~ "/api/v1/session-recordings/playback/rpt_"
+      assert result.expires_in == 3600
+    end
+  end
+
   describe "SessionRecordingResponse schema" do
     test "from_map/1 converts a completed recording" do
       map = %{
@@ -181,6 +195,7 @@ defmodule GoodauditExTest do
       assert function_exported?(GoodauditEx, :update_action_mapping, 3)
       assert function_exported?(GoodauditEx, :delete_action_mapping, 2)
       assert function_exported?(GoodauditEx, :start_session_recording, 2)
+      assert function_exported?(GoodauditEx, :create_session_recording_playback_url, 2)
       assert function_exported?(GoodauditEx, :append_session_recording_events, 3)
       assert function_exported?(GoodauditEx, :complete_session_recording, 2)
     end

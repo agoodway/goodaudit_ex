@@ -9,35 +9,23 @@
               "properties": {
                 "created_at": {
                   "format": "date-time",
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
                 "custom_action": {
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
                 "framework": {
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
                 "id": {
                   "format": "uuid",
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
                 "taxonomy_path": {
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
                 "taxonomy_version": {
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 }
               },
               "required": [
@@ -48,39 +36,27 @@
                 "taxonomy_version",
                 "created_at"
               ],
-              "type": "object",
-              "x-struct": null,
-              "x-validate": null
+              "type": "object"
             },
-            "type": "array",
-            "x-struct": null,
-            "x-validate": null
+            "type": "array"
           }
         },
         "required": [
           "data"
         ],
         "title": "ActionMappingListResponse",
-        "type": "object",
-        "x-struct": "Elixir.GAWeb.Schemas.ActionMappingListResponse",
-        "x-validate": null
+        "type": "object"
       },
       "ActionMappingRequest": {
         "properties": {
           "custom_action": {
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
+            "type": "string"
           },
           "framework": {
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
+            "type": "string"
           },
           "taxonomy_path": {
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
+            "type": "string"
           }
         },
         "required": [
@@ -89,9 +65,7 @@
           "taxonomy_path"
         ],
         "title": "ActionMappingRequest",
-        "type": "object",
-        "x-struct": "Elixir.GAWeb.Schemas.ActionMappingRequest",
-        "x-validate": null
+        "type": "object"
       },
       "ActionMappingResponse": {
         "properties": {
@@ -99,35 +73,23 @@
             "properties": {
               "created_at": {
                 "format": "date-time",
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "custom_action": {
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "framework": {
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "id": {
                 "format": "uuid",
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "taxonomy_path": {
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "taxonomy_version": {
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               }
             },
             "required": [
@@ -138,18 +100,14 @@
               "taxonomy_version",
               "created_at"
             ],
-            "type": "object",
-            "x-struct": null,
-            "x-validate": null
+            "type": "object"
           }
         },
         "required": [
           "data"
         ],
         "title": "ActionMappingResponse",
-        "type": "object",
-        "x-struct": "Elixir.GAWeb.Schemas.ActionMappingResponse",
-        "x-validate": null
+        "type": "object"
       },
       "ActionMappingValidateResponse": {
         "properties": {
@@ -157,41 +115,29 @@
             "properties": {
               "recognized": {
                 "items": {
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
-                "type": "array",
-                "x-struct": null,
-                "x-validate": null
+                "type": "array"
               },
               "unmapped": {
                 "items": {
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
-                "type": "array",
-                "x-struct": null,
-                "x-validate": null
+                "type": "array"
               }
             },
             "required": [
               "recognized",
               "unmapped"
             ],
-            "type": "object",
-            "x-struct": null,
-            "x-validate": null
+            "type": "object"
           }
         },
         "required": [
           "data"
         ],
         "title": "ActionMappingValidateResponse",
-        "type": "object",
-        "x-struct": "Elixir.GAWeb.Schemas.ActionMappingValidateResponse",
-        "x-validate": null
+        "type": "object"
       },
       "AuditLogListResponse": {
         "properties": {
@@ -200,108 +146,70 @@
               "properties": {
                 "account_id": {
                   "format": "uuid",
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
                 "action": {
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
                 "actor_id": {
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
                 "checksum": {
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
                 "extensions": {
                   "additionalProperties": true,
-                  "type": "object",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "object"
                 },
                 "external_tenant_id": {
                   "nullable": true,
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
                 "frameworks": {
                   "items": {
-                    "type": "string",
-                    "x-struct": null,
-                    "x-validate": null
+                    "type": "string"
                   },
-                  "type": "array",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "array"
                 },
                 "id": {
                   "format": "uuid",
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
                 "inserted_at": {
                   "format": "date-time",
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
                 "metadata": {
                   "additionalProperties": true,
-                  "type": "object",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "object"
                 },
                 "outcome": {
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
                 "previous_checksum": {
                   "nullable": true,
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
                 "recording_session_id": {
                   "nullable": true,
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
                 "resource_id": {
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
                 "resource_type": {
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
                 "sequence_number": {
-                  "type": "integer",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "integer"
                 },
                 "timestamp": {
                   "format": "date-time",
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
                 "updated_at": {
                   "format": "date-time",
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 }
               },
               "required": [
@@ -322,35 +230,25 @@
                 "inserted_at",
                 "updated_at"
               ],
-              "type": "object",
-              "x-struct": null,
-              "x-validate": null
+              "type": "object"
             },
-            "type": "array",
-            "x-struct": null,
-            "x-validate": null
+            "type": "array"
           },
           "meta": {
             "properties": {
               "count": {
-                "type": "integer",
-                "x-struct": null,
-                "x-validate": null
+                "type": "integer"
               },
               "next_cursor": {
                 "nullable": true,
-                "type": "integer",
-                "x-struct": null,
-                "x-validate": null
+                "type": "integer"
               }
             },
             "required": [
               "next_cursor",
               "count"
             ],
-            "type": "object",
-            "x-struct": null,
-            "x-validate": null
+            "type": "object"
           }
         },
         "required": [
@@ -358,73 +256,51 @@
           "meta"
         ],
         "title": "AuditLogListResponse",
-        "type": "object",
-        "x-struct": "Elixir.GAWeb.Schemas.AuditLogListResponse",
-        "x-validate": null
+        "type": "object"
       },
       "AuditLogRequest": {
         "properties": {
           "action": {
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
+            "type": "string"
           },
           "actor_id": {
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
+            "type": "string"
           },
           "extensions": {
             "additionalProperties": true,
-            "type": "object",
-            "x-struct": null,
-            "x-validate": null
+            "type": "object"
           },
           "external_tenant_id": {
             "nullable": true,
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
+            "type": "string"
           },
           "metadata": {
             "additionalProperties": true,
             "description": "Free-form metadata. For consent certificates, GoodAudit expects fields like consent_text, page_url, time_on_page_seconds, and geo (city/region/country).",
-            "type": "object",
-            "x-struct": null,
-            "x-validate": null
+            "type": "object"
           },
           "outcome": {
             "enum": [
               "success",
               "failure"
             ],
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
+            "type": "string"
           },
           "recording_session_id": {
             "description": "Links this entry to a session recording",
             "nullable": true,
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
+            "type": "string"
           },
           "resource_id": {
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
+            "type": "string"
           },
           "resource_type": {
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
+            "type": "string"
           },
           "timestamp": {
             "format": "date-time",
             "nullable": true,
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
+            "type": "string"
           }
         },
         "required": [
@@ -435,9 +311,7 @@
           "outcome"
         ],
         "title": "AuditLogRequest",
-        "type": "object",
-        "x-struct": "Elixir.GAWeb.Schemas.AuditLogRequest",
-        "x-validate": null
+        "type": "object"
       },
       "AuditLogResponse": {
         "properties": {
@@ -445,108 +319,70 @@
             "properties": {
               "account_id": {
                 "format": "uuid",
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "action": {
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "actor_id": {
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "checksum": {
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "extensions": {
                 "additionalProperties": true,
-                "type": "object",
-                "x-struct": null,
-                "x-validate": null
+                "type": "object"
               },
               "external_tenant_id": {
                 "nullable": true,
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "frameworks": {
                 "items": {
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
-                "type": "array",
-                "x-struct": null,
-                "x-validate": null
+                "type": "array"
               },
               "id": {
                 "format": "uuid",
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "inserted_at": {
                 "format": "date-time",
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "metadata": {
                 "additionalProperties": true,
-                "type": "object",
-                "x-struct": null,
-                "x-validate": null
+                "type": "object"
               },
               "outcome": {
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "previous_checksum": {
                 "nullable": true,
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "recording_session_id": {
                 "nullable": true,
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "resource_id": {
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "resource_type": {
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "sequence_number": {
-                "type": "integer",
-                "x-struct": null,
-                "x-validate": null
+                "type": "integer"
               },
               "timestamp": {
                 "format": "date-time",
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "updated_at": {
                 "format": "date-time",
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               }
             },
             "required": [
@@ -567,31 +403,23 @@
               "inserted_at",
               "updated_at"
             ],
-            "type": "object",
-            "x-struct": null,
-            "x-validate": null
+            "type": "object"
           }
         },
         "required": [
           "data"
         ],
         "title": "AuditLogResponse",
-        "type": "object",
-        "x-struct": "Elixir.GAWeb.Schemas.AuditLogResponse",
-        "x-validate": null
+        "type": "object"
       },
       "CertificateUrlResponse": {
         "properties": {
           "expires_in": {
-            "type": "integer",
-            "x-struct": null,
-            "x-validate": null
+            "type": "integer"
           },
           "url": {
             "format": "uri",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
+            "type": "string"
           }
         },
         "required": [
@@ -599,9 +427,7 @@
           "expires_in"
         ],
         "title": "CertificateUrlResponse",
-        "type": "object",
-        "x-struct": "Elixir.GAWeb.Schemas.CertificateUrlResponse",
-        "x-validate": null
+        "type": "object"
       },
       "CheckpointResponse": {
         "properties": {
@@ -611,57 +437,39 @@
                 "properties": {
                   "account_id": {
                     "format": "uuid",
-                    "type": "string",
-                    "x-struct": null,
-                    "x-validate": null
+                    "type": "string"
                   },
                   "checksum": {
-                    "type": "string",
-                    "x-struct": null,
-                    "x-validate": null
+                    "type": "string"
                   },
                   "id": {
                     "format": "uuid",
-                    "type": "string",
-                    "x-struct": null,
-                    "x-validate": null
+                    "type": "string"
                   },
                   "inserted_at": {
                     "format": "date-time",
-                    "type": "string",
-                    "x-struct": null,
-                    "x-validate": null
+                    "type": "string"
                   },
                   "sequence_number": {
-                    "type": "integer",
-                    "x-struct": null,
-                    "x-validate": null
+                    "type": "integer"
                   },
                   "signature": {
                     "nullable": true,
-                    "type": "string",
-                    "x-struct": null,
-                    "x-validate": null
+                    "type": "string"
                   },
                   "signing_key_id": {
                     "format": "uuid",
                     "nullable": true,
-                    "type": "string",
-                    "x-struct": null,
-                    "x-validate": null
+                    "type": "string"
                   },
                   "updated_at": {
                     "format": "date-time",
-                    "type": "string",
-                    "x-struct": null,
-                    "x-validate": null
+                    "type": "string"
                   },
                   "verified_at": {
                     "format": "date-time",
                     "nullable": true,
-                    "type": "string",
-                    "x-struct": null,
-                    "x-validate": null
+                    "type": "string"
                   }
                 },
                 "required": [
@@ -675,66 +483,46 @@
                   "inserted_at",
                   "updated_at"
                 ],
-                "type": "object",
-                "x-struct": null,
-                "x-validate": null
+                "type": "object"
               },
               {
                 "items": {
                   "properties": {
                     "account_id": {
                       "format": "uuid",
-                      "type": "string",
-                      "x-struct": null,
-                      "x-validate": null
+                      "type": "string"
                     },
                     "checksum": {
-                      "type": "string",
-                      "x-struct": null,
-                      "x-validate": null
+                      "type": "string"
                     },
                     "id": {
                       "format": "uuid",
-                      "type": "string",
-                      "x-struct": null,
-                      "x-validate": null
+                      "type": "string"
                     },
                     "inserted_at": {
                       "format": "date-time",
-                      "type": "string",
-                      "x-struct": null,
-                      "x-validate": null
+                      "type": "string"
                     },
                     "sequence_number": {
-                      "type": "integer",
-                      "x-struct": null,
-                      "x-validate": null
+                      "type": "integer"
                     },
                     "signature": {
                       "nullable": true,
-                      "type": "string",
-                      "x-struct": null,
-                      "x-validate": null
+                      "type": "string"
                     },
                     "signing_key_id": {
                       "format": "uuid",
                       "nullable": true,
-                      "type": "string",
-                      "x-struct": null,
-                      "x-validate": null
+                      "type": "string"
                     },
                     "updated_at": {
                       "format": "date-time",
-                      "type": "string",
-                      "x-struct": null,
-                      "x-validate": null
+                      "type": "string"
                     },
                     "verified_at": {
                       "format": "date-time",
                       "nullable": true,
-                      "type": "string",
-                      "x-struct": null,
-                      "x-validate": null
+                      "type": "string"
                     }
                   },
                   "required": [
@@ -748,53 +536,54 @@
                     "inserted_at",
                     "updated_at"
                   ],
-                  "type": "object",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "object"
                 },
-                "type": "array",
-                "x-struct": null,
-                "x-validate": null
+                "type": "array"
               }
-            ],
-            "x-struct": null,
-            "x-validate": null
+            ]
           }
         },
         "required": [
           "data"
         ],
         "title": "CheckpointResponse",
-        "type": "object",
-        "x-struct": "Elixir.GAWeb.Schemas.CheckpointResponse",
-        "x-validate": null
+        "type": "object"
       },
       "ErrorResponse": {
         "properties": {
           "errors": {
             "additionalProperties": true,
             "nullable": true,
-            "type": "object",
-            "x-struct": null,
-            "x-validate": null
+            "type": "object"
           },
           "message": {
             "nullable": true,
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
+            "type": "string"
           },
           "status": {
             "nullable": true,
-            "type": "integer",
-            "x-struct": null,
-            "x-validate": null
+            "type": "integer"
           }
         },
         "title": "ErrorResponse",
-        "type": "object",
-        "x-struct": "Elixir.GAWeb.Schemas.ErrorResponse",
-        "x-validate": null
+        "type": "object"
+      },
+      "PlaybackUrlResponse": {
+        "properties": {
+          "expires_in": {
+            "type": "integer"
+          },
+          "url": {
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "expires_in"
+        ],
+        "title": "PlaybackUrlResponse",
+        "type": "object"
       },
       "SessionRecordingCreateRequest": {
         "properties": {
@@ -803,18 +592,14 @@
             "maxLength": 128,
             "minLength": 1,
             "pattern": "^[A-Za-z0-9_-]+$",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
+            "type": "string"
           }
         },
         "required": [
           "recording_session_id"
         ],
         "title": "SessionRecordingCreateRequest",
-        "type": "object",
-        "x-struct": "Elixir.GAWeb.Schemas.SessionRecordingCreateRequest",
-        "x-validate": null
+        "type": "object"
       },
       "SessionRecordingCreateResponse": {
         "properties": {
@@ -822,57 +607,39 @@
             "properties": {
               "account_id": {
                 "format": "uuid",
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "checksum": {
                 "nullable": true,
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "completed_at": {
                 "format": "date-time",
                 "nullable": true,
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "event_count": {
                 "nullable": true,
-                "type": "integer",
-                "x-struct": null,
-                "x-validate": null
+                "type": "integer"
               },
               "id": {
                 "format": "uuid",
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "inserted_at": {
                 "format": "date-time",
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "recording_session_id": {
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "size_bytes": {
                 "nullable": true,
-                "type": "integer",
-                "x-struct": null,
-                "x-validate": null
+                "type": "integer"
               },
               "started_at": {
                 "format": "date-time",
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "status": {
                 "enum": [
@@ -881,15 +648,11 @@
                   "completed",
                   "failed"
                 ],
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "updated_at": {
                 "format": "date-time",
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               }
             },
             "required": [
@@ -899,15 +662,11 @@
               "status",
               "started_at"
             ],
-            "type": "object",
-            "x-struct": null,
-            "x-validate": null
+            "type": "object"
           },
           "session_token": {
             "description": "Short-lived srt_-prefixed token for browser-direct authentication on events and complete endpoints",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
+            "type": "string"
           }
         },
         "required": [
@@ -915,9 +674,7 @@
           "session_token"
         ],
         "title": "SessionRecordingCreateResponse",
-        "type": "object",
-        "x-struct": "Elixir.GAWeb.Schemas.SessionRecordingCreateResponse",
-        "x-validate": null
+        "type": "object"
       },
       "SessionRecordingEventsRequest": {
         "properties": {
@@ -925,22 +682,16 @@
             "description": "Array of rrweb event objects",
             "items": {
               "additionalProperties": true,
-              "type": "object",
-              "x-struct": null,
-              "x-validate": null
+              "type": "object"
             },
-            "type": "array",
-            "x-struct": null,
-            "x-validate": null
+            "type": "array"
           }
         },
         "required": [
           "events"
         ],
         "title": "SessionRecordingEventsRequest",
-        "type": "object",
-        "x-struct": "Elixir.GAWeb.Schemas.SessionRecordingEventsRequest",
-        "x-validate": null
+        "type": "object"
       },
       "SessionRecordingResponse": {
         "properties": {
@@ -948,57 +699,39 @@
             "properties": {
               "account_id": {
                 "format": "uuid",
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "checksum": {
                 "nullable": true,
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "completed_at": {
                 "format": "date-time",
                 "nullable": true,
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "event_count": {
                 "nullable": true,
-                "type": "integer",
-                "x-struct": null,
-                "x-validate": null
+                "type": "integer"
               },
               "id": {
                 "format": "uuid",
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "inserted_at": {
                 "format": "date-time",
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "recording_session_id": {
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "size_bytes": {
                 "nullable": true,
-                "type": "integer",
-                "x-struct": null,
-                "x-validate": null
+                "type": "integer"
               },
               "started_at": {
                 "format": "date-time",
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "status": {
                 "enum": [
@@ -1007,15 +740,11 @@
                   "completed",
                   "failed"
                 ],
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "updated_at": {
                 "format": "date-time",
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               }
             },
             "required": [
@@ -1025,18 +754,14 @@
               "status",
               "started_at"
             ],
-            "type": "object",
-            "x-struct": null,
-            "x-validate": null
+            "type": "object"
           }
         },
         "required": [
           "data"
         ],
         "title": "SessionRecordingResponse",
-        "type": "object",
-        "x-struct": "Elixir.GAWeb.Schemas.SessionRecordingResponse",
-        "x-validate": null
+        "type": "object"
       },
       "TaxonomyListResponse": {
         "properties": {
@@ -1044,56 +769,40 @@
             "items": {
               "properties": {
                 "framework": {
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 },
                 "version": {
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "string"
                 }
               },
               "required": [
                 "framework",
                 "version"
               ],
-              "type": "object",
-              "x-struct": null,
-              "x-validate": null
+              "type": "object"
             },
-            "type": "array",
-            "x-struct": null,
-            "x-validate": null
+            "type": "array"
           }
         },
         "required": [
           "data"
         ],
         "title": "TaxonomyListResponse",
-        "type": "object",
-        "x-struct": "Elixir.GAWeb.Schemas.TaxonomyListResponse",
-        "x-validate": null
+        "type": "object"
       },
       "TaxonomyShowResponse": {
         "properties": {
           "data": {
             "properties": {
               "framework": {
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               },
               "taxonomy": {
                 "additionalProperties": true,
-                "type": "object",
-                "x-struct": null,
-                "x-validate": null
+                "type": "object"
               },
               "version": {
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
+                "type": "string"
               }
             },
             "required": [
@@ -1101,18 +810,14 @@
               "version",
               "taxonomy"
             ],
-            "type": "object",
-            "x-struct": null,
-            "x-validate": null
+            "type": "object"
           }
         },
         "required": [
           "data"
         ],
         "title": "TaxonomyShowResponse",
-        "type": "object",
-        "x-struct": "Elixir.GAWeb.Schemas.TaxonomyShowResponse",
-        "x-validate": null
+        "type": "object"
       },
       "VerificationResponse": {
         "properties": {
@@ -1120,90 +825,60 @@
             "items": {
               "properties": {
                 "sequence_number": {
-                  "type": "integer",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "integer"
                 },
                 "valid": {
-                  "type": "boolean",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "boolean"
                 }
               },
               "required": [
                 "sequence_number",
                 "valid"
               ],
-              "type": "object",
-              "x-struct": null,
-              "x-validate": null
+              "type": "object"
             },
-            "type": "array",
-            "x-struct": null,
-            "x-validate": null
+            "type": "array"
           },
           "duration_ms": {
-            "type": "integer",
-            "x-struct": null,
-            "x-validate": null
+            "type": "integer"
           },
           "first_failure": {
             "additionalProperties": true,
             "nullable": true,
-            "type": "object",
-            "x-struct": null,
-            "x-validate": null
+            "type": "object"
           },
           "sequence_gaps": {
             "items": {
               "properties": {
                 "expected": {
-                  "type": "integer",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "integer"
                 },
                 "found": {
-                  "type": "integer",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "integer"
                 },
                 "missing": {
                   "items": {
-                    "type": "integer",
-                    "x-struct": null,
-                    "x-validate": null
+                    "type": "integer"
                   },
-                  "type": "array",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "array"
                 },
                 "missing_count": {
-                  "type": "integer",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "integer"
                 },
                 "missing_range": {
                   "nullable": true,
                   "properties": {
                     "from": {
-                      "type": "integer",
-                      "x-struct": null,
-                      "x-validate": null
+                      "type": "integer"
                     },
                     "to": {
-                      "type": "integer",
-                      "x-struct": null,
-                      "x-validate": null
+                      "type": "integer"
                     }
                   },
-                  "type": "object",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "object"
                 },
                 "missing_truncated": {
-                  "type": "boolean",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "boolean"
                 }
               },
               "required": [
@@ -1213,28 +888,18 @@
                 "missing_count",
                 "missing_truncated"
               ],
-              "type": "object",
-              "x-struct": null,
-              "x-validate": null
+              "type": "object"
             },
-            "type": "array",
-            "x-struct": null,
-            "x-validate": null
+            "type": "array"
           },
           "total_entries": {
-            "type": "integer",
-            "x-struct": null,
-            "x-validate": null
+            "type": "integer"
           },
           "valid": {
-            "type": "boolean",
-            "x-struct": null,
-            "x-validate": null
+            "type": "boolean"
           },
           "verified_entries": {
-            "type": "integer",
-            "x-struct": null,
-            "x-validate": null
+            "type": "integer"
           }
         },
         "required": [
@@ -1247,9 +912,7 @@
           "duration_ms"
         ],
         "title": "VerificationResponse",
-        "type": "object",
-        "x-struct": "Elixir.GAWeb.Schemas.VerificationResponse",
-        "x-validate": null
+        "type": "object"
       }
     },
     "securitySchemes": {
@@ -1262,7 +925,7 @@
     }
   },
   "info": {
-    "description": "GoodAudit API documentation.\n\n## Authentication\nAll API endpoints require authentication using API keys.\n\n### API Key Types\n- **Public Keys** (`pk_...`): Read-only access\n- **Private Keys** (`sk_...`): Full read/write access\n\n### How to Authenticate\n1. Log in to your account and create an API key\n2. Click the \"Authorize\" button in Swagger UI\n3. Enter your API key: `Bearer <your_api_key>`\n\nAll requests must include the `Authorization` header.\n\n### Multi-tenant Access\nAPI keys are scoped to your membership in a specific account.\nTo access multiple accounts, create separate API keys for each.\n",
+    "description": "GoodAudit API documentation.\n\n## Authentication\nMost API endpoints require authentication using API keys.\n\n### API Key Types\n- **Public Keys** (`pk_...`): Read-only access\n- **Private Keys** (`sk_...`): Full read/write access\n\n### How to Authenticate\n1. Log in to your account and create an API key\n2. Click the \"Authorize\" button in Swagger UI\n3. Enter your API key: `Bearer <your_api_key>`\n\nAll authenticated requests must include the `Authorization` header.\n\nPublic tokenized artifact URLs, such as signed session replay URLs, are exceptions.\n\n### Multi-tenant Access\nAPI keys are scoped to your membership in a specific account.\nTo access multiple accounts, create separate API keys for each.\n",
     "title": "GoodAudit API",
     "version": "1.0.0"
   },
@@ -1279,9 +942,7 @@
             "name": "framework",
             "required": false,
             "schema": {
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+              "type": "string"
             }
           },
           {
@@ -1290,9 +951,7 @@
             "name": "custom_action",
             "required": false,
             "schema": {
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+              "type": "string"
             }
           }
         ],
@@ -1407,17 +1066,13 @@
               "schema": {
                 "properties": {
                   "framework": {
-                    "type": "string",
-                    "x-struct": null,
-                    "x-validate": null
+                    "type": "string"
                   }
                 },
                 "required": [
                   "framework"
                 ],
-                "type": "object",
-                "x-struct": null,
-                "x-validate": null
+                "type": "object"
               }
             }
           },
@@ -1479,9 +1134,7 @@
             "required": true,
             "schema": {
               "format": "uuid",
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+              "type": "string"
             }
           }
         ],
@@ -1548,9 +1201,7 @@
             "required": true,
             "schema": {
               "format": "uuid",
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+              "type": "string"
             }
           }
         ],
@@ -1560,17 +1211,13 @@
               "schema": {
                 "properties": {
                   "taxonomy_path": {
-                    "type": "string",
-                    "x-struct": null,
-                    "x-validate": null
+                    "type": "string"
                   }
                 },
                 "required": [
                   "taxonomy_path"
                 ],
-                "type": "object",
-                "x-struct": null,
-                "x-validate": null
+                "type": "object"
               }
             }
           },
@@ -1651,9 +1298,7 @@
             "name": "after_sequence",
             "required": false,
             "schema": {
-              "type": "integer",
-              "x-struct": null,
-              "x-validate": null
+              "type": "integer"
             }
           },
           {
@@ -1662,9 +1307,7 @@
             "name": "before_sequence",
             "required": false,
             "schema": {
-              "type": "integer",
-              "x-struct": null,
-              "x-validate": null
+              "type": "integer"
             }
           },
           {
@@ -1678,9 +1321,7 @@
                 "asc",
                 "desc"
               ],
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+              "type": "string"
             }
           },
           {
@@ -1689,9 +1330,7 @@
             "name": "limit",
             "required": false,
             "schema": {
-              "type": "integer",
-              "x-struct": null,
-              "x-validate": null
+              "type": "integer"
             }
           },
           {
@@ -1700,9 +1339,7 @@
             "name": "actor_id",
             "required": false,
             "schema": {
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+              "type": "string"
             }
           },
           {
@@ -1711,9 +1348,7 @@
             "name": "external_tenant_id",
             "required": false,
             "schema": {
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+              "type": "string"
             }
           },
           {
@@ -1722,9 +1357,7 @@
             "name": "action",
             "required": false,
             "schema": {
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+              "type": "string"
             }
           },
           {
@@ -1733,9 +1366,7 @@
             "name": "resource_type",
             "required": false,
             "schema": {
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+              "type": "string"
             }
           },
           {
@@ -1744,9 +1375,7 @@
             "name": "resource_id",
             "required": false,
             "schema": {
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+              "type": "string"
             }
           },
           {
@@ -1755,9 +1384,7 @@
             "name": "outcome",
             "required": false,
             "schema": {
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+              "type": "string"
             }
           },
           {
@@ -1766,9 +1393,7 @@
             "name": "extensions",
             "required": false,
             "schema": {
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+              "type": "string"
             }
           },
           {
@@ -1778,9 +1403,7 @@
             "required": false,
             "schema": {
               "format": "date-time",
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+              "type": "string"
             }
           },
           {
@@ -1790,9 +1413,7 @@
             "required": false,
             "schema": {
               "format": "date-time",
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+              "type": "string"
             }
           },
           {
@@ -1801,9 +1422,7 @@
             "name": "category",
             "required": false,
             "schema": {
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+              "type": "string"
             }
           }
         ],
@@ -1929,9 +1548,7 @@
             "required": true,
             "schema": {
               "format": "uuid",
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+              "type": "string"
             }
           }
         ],
@@ -1991,9 +1608,7 @@
             "required": true,
             "schema": {
               "format": "uuid",
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+              "type": "string"
             }
           }
         ],
@@ -2253,6 +1868,77 @@
         ]
       }
     },
+    "/api/v1/session-recordings/playback/{token}": {
+      "get": {
+        "callbacks": {},
+        "description": "Fetches raw rrweb event JSON using a signed playback URL. This endpoint is public and the token in the URL is the credential.",
+        "operationId": "GAWeb.Api.V1.SessionRecordingPlaybackController.show",
+        "parameters": [
+          {
+            "description": "",
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Replay JSON"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Account suspended"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Replay unavailable"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Replay token expired"
+          }
+        },
+        "security": [
+          []
+        ],
+        "summary": "Fetch public session replay JSON",
+        "tags": [
+          "Session Recordings"
+        ]
+      }
+    },
     "/api/v1/session-recordings/{recording_session_id}/complete": {
       "post": {
         "callbacks": {},
@@ -2264,9 +1950,7 @@
             "name": "recording_session_id",
             "required": true,
             "schema": {
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+              "type": "string"
             }
           }
         ],
@@ -2364,9 +2048,7 @@
             "name": "recording_session_id",
             "required": true,
             "schema": {
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+              "type": "string"
             }
           }
         ],
@@ -2386,9 +2068,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "x-struct": null,
-                  "x-validate": null
+                  "type": "object"
                 }
               }
             },
@@ -2486,6 +2166,85 @@
         ]
       }
     },
+    "/api/v1/session-recordings/{recording_session_id}/playback-url": {
+      "post": {
+        "callbacks": {},
+        "description": "Creates a short-lived public replay URL for a completed session recording. This endpoint requires a private sk_ API key.",
+        "operationId": "GAWeb.Api.V1.SessionRecordingController.playback_url",
+        "parameters": [
+          {
+            "description": "",
+            "in": "path",
+            "name": "recording_session_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaybackUrlResponse"
+                }
+              }
+            },
+            "description": "Playback URL"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Recording not available for playback"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Mint a signed playback URL",
+        "tags": [
+          "Session Recordings"
+        ]
+      }
+    },
     "/api/v1/taxonomies": {
       "get": {
         "callbacks": {},
@@ -2535,9 +2294,7 @@
             "name": "framework",
             "required": true,
             "schema": {
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+              "type": "string"
             }
           }
         ],
