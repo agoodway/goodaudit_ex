@@ -9,23 +9,35 @@
               "properties": {
                 "created_at": {
                   "format": "date-time",
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "custom_action": {
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "framework": {
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "id": {
                   "format": "uuid",
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "taxonomy_path": {
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "taxonomy_version": {
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 }
               },
               "required": [
@@ -36,27 +48,39 @@
                 "taxonomy_version",
                 "created_at"
               ],
-              "type": "object"
+              "type": "object",
+              "x-struct": null,
+              "x-validate": null
             },
-            "type": "array"
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
           }
         },
         "required": [
           "data"
         ],
         "title": "ActionMappingListResponse",
-        "type": "object"
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.ActionMappingListResponse",
+        "x-validate": null
       },
       "ActionMappingRequest": {
         "properties": {
           "custom_action": {
-            "type": "string"
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
           },
           "framework": {
-            "type": "string"
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
           },
           "taxonomy_path": {
-            "type": "string"
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
           }
         },
         "required": [
@@ -65,7 +89,9 @@
           "taxonomy_path"
         ],
         "title": "ActionMappingRequest",
-        "type": "object"
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.ActionMappingRequest",
+        "x-validate": null
       },
       "ActionMappingResponse": {
         "properties": {
@@ -73,23 +99,35 @@
             "properties": {
               "created_at": {
                 "format": "date-time",
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "custom_action": {
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "framework": {
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "id": {
                 "format": "uuid",
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "taxonomy_path": {
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "taxonomy_version": {
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               }
             },
             "required": [
@@ -100,14 +138,18 @@
               "taxonomy_version",
               "created_at"
             ],
-            "type": "object"
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
           }
         },
         "required": [
           "data"
         ],
         "title": "ActionMappingResponse",
-        "type": "object"
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.ActionMappingResponse",
+        "x-validate": null
       },
       "ActionMappingValidateResponse": {
         "properties": {
@@ -115,29 +157,41 @@
             "properties": {
               "recognized": {
                 "items": {
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
-                "type": "array"
+                "type": "array",
+                "x-struct": null,
+                "x-validate": null
               },
               "unmapped": {
                 "items": {
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
-                "type": "array"
+                "type": "array",
+                "x-struct": null,
+                "x-validate": null
               }
             },
             "required": [
               "recognized",
               "unmapped"
             ],
-            "type": "object"
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
           }
         },
         "required": [
           "data"
         ],
         "title": "ActionMappingValidateResponse",
-        "type": "object"
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.ActionMappingValidateResponse",
+        "x-validate": null
       },
       "AuditLogListResponse": {
         "properties": {
@@ -146,70 +200,108 @@
               "properties": {
                 "account_id": {
                   "format": "uuid",
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "action": {
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "actor_id": {
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "checksum": {
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "extensions": {
                   "additionalProperties": true,
-                  "type": "object"
+                  "type": "object",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "external_tenant_id": {
                   "nullable": true,
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "frameworks": {
                   "items": {
-                    "type": "string"
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
                   },
-                  "type": "array"
+                  "type": "array",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "id": {
                   "format": "uuid",
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "inserted_at": {
                   "format": "date-time",
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "metadata": {
                   "additionalProperties": true,
-                  "type": "object"
+                  "type": "object",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "outcome": {
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "previous_checksum": {
                   "nullable": true,
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "recording_session_id": {
                   "nullable": true,
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "resource_id": {
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "resource_type": {
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "sequence_number": {
-                  "type": "integer"
+                  "type": "integer",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "timestamp": {
                   "format": "date-time",
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "updated_at": {
                   "format": "date-time",
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 }
               },
               "required": [
@@ -230,25 +322,35 @@
                 "inserted_at",
                 "updated_at"
               ],
-              "type": "object"
+              "type": "object",
+              "x-struct": null,
+              "x-validate": null
             },
-            "type": "array"
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
           },
           "meta": {
             "properties": {
               "count": {
-                "type": "integer"
+                "type": "integer",
+                "x-struct": null,
+                "x-validate": null
               },
               "next_cursor": {
                 "nullable": true,
-                "type": "integer"
+                "type": "integer",
+                "x-struct": null,
+                "x-validate": null
               }
             },
             "required": [
               "next_cursor",
               "count"
             ],
-            "type": "object"
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
           }
         },
         "required": [
@@ -256,51 +358,73 @@
           "meta"
         ],
         "title": "AuditLogListResponse",
-        "type": "object"
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.AuditLogListResponse",
+        "x-validate": null
       },
       "AuditLogRequest": {
         "properties": {
           "action": {
-            "type": "string"
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
           },
           "actor_id": {
-            "type": "string"
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
           },
           "extensions": {
             "additionalProperties": true,
-            "type": "object"
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
           },
           "external_tenant_id": {
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
           },
           "metadata": {
             "additionalProperties": true,
             "description": "Free-form metadata. For consent certificates, GoodAudit expects fields like consent_text, page_url, time_on_page_seconds, and geo (city/region/country).",
-            "type": "object"
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
           },
           "outcome": {
             "enum": [
               "success",
               "failure"
             ],
-            "type": "string"
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
           },
           "recording_session_id": {
             "description": "Links this entry to a session recording",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
           },
           "resource_id": {
-            "type": "string"
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
           },
           "resource_type": {
-            "type": "string"
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
           },
           "timestamp": {
             "format": "date-time",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
           }
         },
         "required": [
@@ -311,7 +435,9 @@
           "outcome"
         ],
         "title": "AuditLogRequest",
-        "type": "object"
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.AuditLogRequest",
+        "x-validate": null
       },
       "AuditLogResponse": {
         "properties": {
@@ -319,70 +445,108 @@
             "properties": {
               "account_id": {
                 "format": "uuid",
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "action": {
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "actor_id": {
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "checksum": {
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "extensions": {
                 "additionalProperties": true,
-                "type": "object"
+                "type": "object",
+                "x-struct": null,
+                "x-validate": null
               },
               "external_tenant_id": {
                 "nullable": true,
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "frameworks": {
                 "items": {
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
-                "type": "array"
+                "type": "array",
+                "x-struct": null,
+                "x-validate": null
               },
               "id": {
                 "format": "uuid",
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "inserted_at": {
                 "format": "date-time",
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "metadata": {
                 "additionalProperties": true,
-                "type": "object"
+                "type": "object",
+                "x-struct": null,
+                "x-validate": null
               },
               "outcome": {
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "previous_checksum": {
                 "nullable": true,
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "recording_session_id": {
                 "nullable": true,
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "resource_id": {
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "resource_type": {
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "sequence_number": {
-                "type": "integer"
+                "type": "integer",
+                "x-struct": null,
+                "x-validate": null
               },
               "timestamp": {
                 "format": "date-time",
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "updated_at": {
                 "format": "date-time",
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               }
             },
             "required": [
@@ -403,23 +567,31 @@
               "inserted_at",
               "updated_at"
             ],
-            "type": "object"
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
           }
         },
         "required": [
           "data"
         ],
         "title": "AuditLogResponse",
-        "type": "object"
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.AuditLogResponse",
+        "x-validate": null
       },
       "CertificateUrlResponse": {
         "properties": {
           "expires_in": {
-            "type": "integer"
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
           },
           "url": {
             "format": "uri",
-            "type": "string"
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
           }
         },
         "required": [
@@ -427,7 +599,9 @@
           "expires_in"
         ],
         "title": "CertificateUrlResponse",
-        "type": "object"
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.CertificateUrlResponse",
+        "x-validate": null
       },
       "CheckpointResponse": {
         "properties": {
@@ -437,39 +611,57 @@
                 "properties": {
                   "account_id": {
                     "format": "uuid",
-                    "type": "string"
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
                   },
                   "checksum": {
-                    "type": "string"
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
                   },
                   "id": {
                     "format": "uuid",
-                    "type": "string"
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
                   },
                   "inserted_at": {
                     "format": "date-time",
-                    "type": "string"
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
                   },
                   "sequence_number": {
-                    "type": "integer"
+                    "type": "integer",
+                    "x-struct": null,
+                    "x-validate": null
                   },
                   "signature": {
                     "nullable": true,
-                    "type": "string"
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
                   },
                   "signing_key_id": {
                     "format": "uuid",
                     "nullable": true,
-                    "type": "string"
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
                   },
                   "updated_at": {
                     "format": "date-time",
-                    "type": "string"
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
                   },
                   "verified_at": {
                     "format": "date-time",
                     "nullable": true,
-                    "type": "string"
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
                   }
                 },
                 "required": [
@@ -483,46 +675,66 @@
                   "inserted_at",
                   "updated_at"
                 ],
-                "type": "object"
+                "type": "object",
+                "x-struct": null,
+                "x-validate": null
               },
               {
                 "items": {
                   "properties": {
                     "account_id": {
                       "format": "uuid",
-                      "type": "string"
+                      "type": "string",
+                      "x-struct": null,
+                      "x-validate": null
                     },
                     "checksum": {
-                      "type": "string"
+                      "type": "string",
+                      "x-struct": null,
+                      "x-validate": null
                     },
                     "id": {
                       "format": "uuid",
-                      "type": "string"
+                      "type": "string",
+                      "x-struct": null,
+                      "x-validate": null
                     },
                     "inserted_at": {
                       "format": "date-time",
-                      "type": "string"
+                      "type": "string",
+                      "x-struct": null,
+                      "x-validate": null
                     },
                     "sequence_number": {
-                      "type": "integer"
+                      "type": "integer",
+                      "x-struct": null,
+                      "x-validate": null
                     },
                     "signature": {
                       "nullable": true,
-                      "type": "string"
+                      "type": "string",
+                      "x-struct": null,
+                      "x-validate": null
                     },
                     "signing_key_id": {
                       "format": "uuid",
                       "nullable": true,
-                      "type": "string"
+                      "type": "string",
+                      "x-struct": null,
+                      "x-validate": null
                     },
                     "updated_at": {
                       "format": "date-time",
-                      "type": "string"
+                      "type": "string",
+                      "x-struct": null,
+                      "x-validate": null
                     },
                     "verified_at": {
                       "format": "date-time",
                       "nullable": true,
-                      "type": "string"
+                      "type": "string",
+                      "x-struct": null,
+                      "x-validate": null
                     }
                   },
                   "required": [
@@ -536,46 +748,66 @@
                     "inserted_at",
                     "updated_at"
                   ],
-                  "type": "object"
+                  "type": "object",
+                  "x-struct": null,
+                  "x-validate": null
                 },
-                "type": "array"
+                "type": "array",
+                "x-struct": null,
+                "x-validate": null
               }
-            ]
+            ],
+            "x-struct": null,
+            "x-validate": null
           }
         },
         "required": [
           "data"
         ],
         "title": "CheckpointResponse",
-        "type": "object"
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.CheckpointResponse",
+        "x-validate": null
       },
       "ErrorResponse": {
         "properties": {
           "errors": {
             "additionalProperties": true,
             "nullable": true,
-            "type": "object"
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
           },
           "message": {
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
           },
           "status": {
             "nullable": true,
-            "type": "integer"
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
           }
         },
         "title": "ErrorResponse",
-        "type": "object"
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.ErrorResponse",
+        "x-validate": null
       },
       "PlaybackUrlResponse": {
         "properties": {
           "expires_in": {
-            "type": "integer"
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
           },
           "url": {
             "format": "uri",
-            "type": "string"
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
           }
         },
         "required": [
@@ -583,7 +815,9 @@
           "expires_in"
         ],
         "title": "PlaybackUrlResponse",
-        "type": "object"
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.PlaybackUrlResponse",
+        "x-validate": null
       },
       "SessionRecordingCreateRequest": {
         "properties": {
@@ -592,14 +826,18 @@
             "maxLength": 128,
             "minLength": 1,
             "pattern": "^[A-Za-z0-9_-]+$",
-            "type": "string"
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
           }
         },
         "required": [
           "recording_session_id"
         ],
         "title": "SessionRecordingCreateRequest",
-        "type": "object"
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.SessionRecordingCreateRequest",
+        "x-validate": null
       },
       "SessionRecordingCreateResponse": {
         "properties": {
@@ -607,39 +845,57 @@
             "properties": {
               "account_id": {
                 "format": "uuid",
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "checksum": {
                 "nullable": true,
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "completed_at": {
                 "format": "date-time",
                 "nullable": true,
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "event_count": {
                 "nullable": true,
-                "type": "integer"
+                "type": "integer",
+                "x-struct": null,
+                "x-validate": null
               },
               "id": {
                 "format": "uuid",
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "inserted_at": {
                 "format": "date-time",
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "recording_session_id": {
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "size_bytes": {
                 "nullable": true,
-                "type": "integer"
+                "type": "integer",
+                "x-struct": null,
+                "x-validate": null
               },
               "started_at": {
                 "format": "date-time",
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "status": {
                 "enum": [
@@ -648,11 +904,15 @@
                   "completed",
                   "failed"
                 ],
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "updated_at": {
                 "format": "date-time",
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               }
             },
             "required": [
@@ -662,11 +922,15 @@
               "status",
               "started_at"
             ],
-            "type": "object"
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
           },
           "session_token": {
             "description": "Short-lived srt_-prefixed token for browser-direct authentication on events and complete endpoints",
-            "type": "string"
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
           }
         },
         "required": [
@@ -674,7 +938,9 @@
           "session_token"
         ],
         "title": "SessionRecordingCreateResponse",
-        "type": "object"
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.SessionRecordingCreateResponse",
+        "x-validate": null
       },
       "SessionRecordingEventsRequest": {
         "properties": {
@@ -682,16 +948,22 @@
             "description": "Array of rrweb event objects",
             "items": {
               "additionalProperties": true,
-              "type": "object"
+              "type": "object",
+              "x-struct": null,
+              "x-validate": null
             },
-            "type": "array"
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
           }
         },
         "required": [
           "events"
         ],
         "title": "SessionRecordingEventsRequest",
-        "type": "object"
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.SessionRecordingEventsRequest",
+        "x-validate": null
       },
       "SessionRecordingResponse": {
         "properties": {
@@ -699,39 +971,57 @@
             "properties": {
               "account_id": {
                 "format": "uuid",
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "checksum": {
                 "nullable": true,
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "completed_at": {
                 "format": "date-time",
                 "nullable": true,
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "event_count": {
                 "nullable": true,
-                "type": "integer"
+                "type": "integer",
+                "x-struct": null,
+                "x-validate": null
               },
               "id": {
                 "format": "uuid",
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "inserted_at": {
                 "format": "date-time",
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "recording_session_id": {
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "size_bytes": {
                 "nullable": true,
-                "type": "integer"
+                "type": "integer",
+                "x-struct": null,
+                "x-validate": null
               },
               "started_at": {
                 "format": "date-time",
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "status": {
                 "enum": [
@@ -740,11 +1030,15 @@
                   "completed",
                   "failed"
                 ],
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "updated_at": {
                 "format": "date-time",
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               }
             },
             "required": [
@@ -754,14 +1048,18 @@
               "status",
               "started_at"
             ],
-            "type": "object"
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
           }
         },
         "required": [
           "data"
         ],
         "title": "SessionRecordingResponse",
-        "type": "object"
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.SessionRecordingResponse",
+        "x-validate": null
       },
       "TaxonomyListResponse": {
         "properties": {
@@ -769,40 +1067,56 @@
             "items": {
               "properties": {
                 "framework": {
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "version": {
-                  "type": "string"
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
                 }
               },
               "required": [
                 "framework",
                 "version"
               ],
-              "type": "object"
+              "type": "object",
+              "x-struct": null,
+              "x-validate": null
             },
-            "type": "array"
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
           }
         },
         "required": [
           "data"
         ],
         "title": "TaxonomyListResponse",
-        "type": "object"
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.TaxonomyListResponse",
+        "x-validate": null
       },
       "TaxonomyShowResponse": {
         "properties": {
           "data": {
             "properties": {
               "framework": {
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               },
               "taxonomy": {
                 "additionalProperties": true,
-                "type": "object"
+                "type": "object",
+                "x-struct": null,
+                "x-validate": null
               },
               "version": {
-                "type": "string"
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
               }
             },
             "required": [
@@ -810,14 +1124,18 @@
               "version",
               "taxonomy"
             ],
-            "type": "object"
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
           }
         },
         "required": [
           "data"
         ],
         "title": "TaxonomyShowResponse",
-        "type": "object"
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.TaxonomyShowResponse",
+        "x-validate": null
       },
       "VerificationResponse": {
         "properties": {
@@ -825,60 +1143,90 @@
             "items": {
               "properties": {
                 "sequence_number": {
-                  "type": "integer"
+                  "type": "integer",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "valid": {
-                  "type": "boolean"
+                  "type": "boolean",
+                  "x-struct": null,
+                  "x-validate": null
                 }
               },
               "required": [
                 "sequence_number",
                 "valid"
               ],
-              "type": "object"
+              "type": "object",
+              "x-struct": null,
+              "x-validate": null
             },
-            "type": "array"
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
           },
           "duration_ms": {
-            "type": "integer"
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
           },
           "first_failure": {
             "additionalProperties": true,
             "nullable": true,
-            "type": "object"
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
           },
           "sequence_gaps": {
             "items": {
               "properties": {
                 "expected": {
-                  "type": "integer"
+                  "type": "integer",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "found": {
-                  "type": "integer"
+                  "type": "integer",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "missing": {
                   "items": {
-                    "type": "integer"
+                    "type": "integer",
+                    "x-struct": null,
+                    "x-validate": null
                   },
-                  "type": "array"
+                  "type": "array",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "missing_count": {
-                  "type": "integer"
+                  "type": "integer",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "missing_range": {
                   "nullable": true,
                   "properties": {
                     "from": {
-                      "type": "integer"
+                      "type": "integer",
+                      "x-struct": null,
+                      "x-validate": null
                     },
                     "to": {
-                      "type": "integer"
+                      "type": "integer",
+                      "x-struct": null,
+                      "x-validate": null
                     }
                   },
-                  "type": "object"
+                  "type": "object",
+                  "x-struct": null,
+                  "x-validate": null
                 },
                 "missing_truncated": {
-                  "type": "boolean"
+                  "type": "boolean",
+                  "x-struct": null,
+                  "x-validate": null
                 }
               },
               "required": [
@@ -888,18 +1236,28 @@
                 "missing_count",
                 "missing_truncated"
               ],
-              "type": "object"
+              "type": "object",
+              "x-struct": null,
+              "x-validate": null
             },
-            "type": "array"
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
           },
           "total_entries": {
-            "type": "integer"
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
           },
           "valid": {
-            "type": "boolean"
+            "type": "boolean",
+            "x-struct": null,
+            "x-validate": null
           },
           "verified_entries": {
-            "type": "integer"
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
           }
         },
         "required": [
@@ -912,7 +1270,9 @@
           "duration_ms"
         ],
         "title": "VerificationResponse",
-        "type": "object"
+        "type": "object",
+        "x-struct": "Elixir.GAWeb.Schemas.VerificationResponse",
+        "x-validate": null
       }
     },
     "securitySchemes": {
@@ -942,7 +1302,9 @@
             "name": "framework",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           },
           {
@@ -951,7 +1313,9 @@
             "name": "custom_action",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           }
         ],
@@ -1066,13 +1430,17 @@
               "schema": {
                 "properties": {
                   "framework": {
-                    "type": "string"
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
                   }
                 },
                 "required": [
                   "framework"
                 ],
-                "type": "object"
+                "type": "object",
+                "x-struct": null,
+                "x-validate": null
               }
             }
           },
@@ -1134,7 +1502,9 @@
             "required": true,
             "schema": {
               "format": "uuid",
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           }
         ],
@@ -1201,7 +1571,9 @@
             "required": true,
             "schema": {
               "format": "uuid",
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           }
         ],
@@ -1211,13 +1583,17 @@
               "schema": {
                 "properties": {
                   "taxonomy_path": {
-                    "type": "string"
+                    "type": "string",
+                    "x-struct": null,
+                    "x-validate": null
                   }
                 },
                 "required": [
                   "taxonomy_path"
                 ],
-                "type": "object"
+                "type": "object",
+                "x-struct": null,
+                "x-validate": null
               }
             }
           },
@@ -1298,7 +1674,9 @@
             "name": "after_sequence",
             "required": false,
             "schema": {
-              "type": "integer"
+              "type": "integer",
+              "x-struct": null,
+              "x-validate": null
             }
           },
           {
@@ -1307,7 +1685,9 @@
             "name": "before_sequence",
             "required": false,
             "schema": {
-              "type": "integer"
+              "type": "integer",
+              "x-struct": null,
+              "x-validate": null
             }
           },
           {
@@ -1321,7 +1701,9 @@
                 "asc",
                 "desc"
               ],
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           },
           {
@@ -1330,7 +1712,9 @@
             "name": "limit",
             "required": false,
             "schema": {
-              "type": "integer"
+              "type": "integer",
+              "x-struct": null,
+              "x-validate": null
             }
           },
           {
@@ -1339,7 +1723,9 @@
             "name": "actor_id",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           },
           {
@@ -1348,7 +1734,9 @@
             "name": "external_tenant_id",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           },
           {
@@ -1357,7 +1745,9 @@
             "name": "action",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           },
           {
@@ -1366,7 +1756,9 @@
             "name": "resource_type",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           },
           {
@@ -1375,7 +1767,9 @@
             "name": "resource_id",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           },
           {
@@ -1384,7 +1778,9 @@
             "name": "outcome",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           },
           {
@@ -1393,7 +1789,9 @@
             "name": "extensions",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           },
           {
@@ -1403,7 +1801,9 @@
             "required": false,
             "schema": {
               "format": "date-time",
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           },
           {
@@ -1413,7 +1813,9 @@
             "required": false,
             "schema": {
               "format": "date-time",
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           },
           {
@@ -1422,7 +1824,9 @@
             "name": "category",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           }
         ],
@@ -1548,7 +1952,9 @@
             "required": true,
             "schema": {
               "format": "uuid",
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           }
         ],
@@ -1608,7 +2014,9 @@
             "required": true,
             "schema": {
               "format": "uuid",
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           }
         ],
@@ -1880,7 +2288,9 @@
             "name": "token",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           }
         ],
@@ -1891,9 +2301,13 @@
                 "schema": {
                   "items": {
                     "additionalProperties": true,
-                    "type": "object"
+                    "type": "object",
+                    "x-struct": null,
+                    "x-validate": null
                   },
-                  "type": "array"
+                  "type": "array",
+                  "x-struct": null,
+                  "x-validate": null
                 }
               }
             },
@@ -1930,9 +2344,7 @@
             "description": "Replay token expired"
           }
         },
-        "security": [
-          []
-        ],
+        "security": [],
         "summary": "Fetch public session replay JSON",
         "tags": [
           "Session Recordings"
@@ -1950,7 +2362,9 @@
             "name": "recording_session_id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           }
         ],
@@ -2048,7 +2462,9 @@
             "name": "recording_session_id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           }
         ],
@@ -2068,7 +2484,9 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "type": "object",
+                  "x-struct": null,
+                  "x-validate": null
                 }
               }
             },
@@ -2178,7 +2596,9 @@
             "name": "recording_session_id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           }
         ],
@@ -2294,7 +2714,9 @@
             "name": "framework",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
             }
           }
         ],
